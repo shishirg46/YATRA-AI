@@ -1,0 +1,14 @@
+[
+  { "district": "Mugu", "name": "Rara Lakeshore", "lat": 29.5275, "lng": 82.0961, "alt": 2990 },
+  { "district": "Mugu", "name": "Murma Top", "lat": 29.5390, "lng": 82.1179, "alt": 3630 },
+  { "district": "Jumla", "name": "Chandannath Temple Area", "lat": 29.2748, "lng": 82.1836, "alt": 2370 },
+  { "district": "Jumla", "name": "Sinja Valley", "lat": 29.2295, "lng": 81.9905, "alt": 2490 },
+  { "district": "Dolpa", "name": "Shey Phoksundo Viewpoint", "lat": 29.2010, "lng": 82.9386, "alt": 3620 },
+  { "district": "Dolpa", "name": "Ringmo Village", "lat": 29.2102, "lng": 82.9757, "alt": 3730 },
+  { "district": "Humla", "name": "Simikot", "lat": 29.9633, "lng": 81.8225, "alt": 2910 },
+  { "district": "Kalikot", "name": "Nagma", "lat": 29.1388, "lng": 81.8843, "alt": 2110 },
+  { "district": "Dailekh", "name": "Panchakoshi", "lat": 28.8744, "lng": 81.7353, "alt": 1900 },
+  { "district": "Surkhet", "name": "Kakrebihar", "lat": 28.6017, "lng": 81.6329, "alt": 910 },
+  { "district": "Jajarkot", "name": "Khalanga Ridge", "lat": 28.7027, "lng": 82.1802, "alt": 1610 },
+  { "district": "Rukum West", "name": "Syarpu Tal", "lat": 28.5945, "lng": 82.4424, "alt": 1370 }
+]

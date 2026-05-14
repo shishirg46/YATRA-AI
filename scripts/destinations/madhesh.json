@@ -1,0 +1,14 @@
+[
+  { "district": "Parsa", "name": "Gadhimai Area", "lat": 27.0323, "lng": 85.0179, "alt": 120 },
+  { "district": "Parsa", "name": "Nijgadh Forest Edge", "lat": 27.0102, "lng": 85.0556, "alt": 168 },
+  { "district": "Bara", "name": "Simraungadh", "lat": 27.1642, "lng": 84.9093, "alt": 92 },
+  { "district": "Rautahat", "name": "Madhav Narayan Area", "lat": 27.1027, "lng": 85.1774, "alt": 87 },
+  { "district": "Sarlahi", "name": "Lalbandi", "lat": 27.0412, "lng": 85.5567, "alt": 136 },
+  { "district": "Mahottari", "name": "Bardibas Forest Belt", "lat": 26.9931, "lng": 85.8407, "alt": 145 },
+  { "district": "Dhanusha", "name": "Dhanushadham", "lat": 26.8608, "lng": 85.9685, "alt": 82 },
+  { "district": "Dhanusha", "name": "Janaki Temple Periphery", "lat": 26.7288, "lng": 85.9250, "alt": 74 },
+  { "district": "Siraha", "name": "Salhesh Fulbari", "lat": 26.7628, "lng": 86.2072, "alt": 92 },
+  { "district": "Saptari", "name": "Chhinnamasta Temple Area", "lat": 26.5427, "lng": 86.7388, "alt": 79 },
+  { "district": "Mahottari", "name": "Jaleshwar Wetland Belt", "lat": 26.6484, "lng": 85.8008, "alt": 72 },
+  { "district": "Siraha", "name": "Lahan Urban Forest Edge", "lat": 26.7236, "lng": 86.4824, "alt": 96 }
+]

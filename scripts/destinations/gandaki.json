@@ -1,0 +1,14 @@
+[
+  { "district": "Lamjung", "name": "Khudi", "lat": 28.2806, "lng": 84.3571, "alt": 790 },
+  { "district": "Lamjung", "name": "Ghalegaun", "lat": 28.2477, "lng": 84.3561, "alt": 2016 },
+  { "district": "Lamjung", "name": "Bhujung", "lat": 28.2796, "lng": 84.4324, "alt": 1690 },
+  { "district": "Kaski", "name": "Phewa Lakeside", "lat": 28.2096, "lng": 83.9562, "alt": 822 },
+  { "district": "Kaski", "name": "Kahun Danda", "lat": 28.2342, "lng": 84.0125, "alt": 1450 },
+  { "district": "Kaski", "name": "Sarangkot Viewpoint", "lat": 28.2458, "lng": 83.9483, "alt": 1600 },
+  { "district": "Manang", "name": "Ngawal", "lat": 28.6535, "lng": 84.0953, "alt": 3660 },
+  { "district": "Mustang", "name": "Marpha Village", "lat": 28.7768, "lng": 83.7046, "alt": 2670 },
+  { "district": "Mustang", "name": "Kagbeni", "lat": 28.8386, "lng": 83.7746, "alt": 2810 },
+  { "district": "Tanahu", "name": "Bandipur", "lat": 27.9366, "lng": 84.4060, "alt": 1030 },
+  { "district": "Gorkha", "name": "Barpak", "lat": 28.0569, "lng": 84.8615, "alt": 1915 },
+  { "district": "Syangja", "name": "Panchase", "lat": 28.2707, "lng": 83.8215, "alt": 2500 }
+]

@@ -1,0 +1,13 @@
+{
+  "province": "Karnali",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Birendranagar Surkhet",
+    "district": "Surkhet"
+  },
+  "excludeLocationNames": [
+    "Dunai Bazaar"
+  ],
+  "generateFromHub": false
+}

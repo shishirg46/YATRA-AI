@@ -1,0 +1,23 @@
+{
+  "province": "Madhesh",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Janakpur Dham",
+    "district": "Dhanusha"
+  },
+  "manualRoutes": [
+    {
+      "name": "Birgunj to Janakpur Corridor",
+      "origin": {
+        "name": "Birgunj Bazaar",
+        "district": "Parsa"
+      },
+      "destination": {
+        "name": "Janakpur Dham",
+        "district": "Dhanusha"
+      }
+    }
+  ],
+  "generateFromHub": false
+}

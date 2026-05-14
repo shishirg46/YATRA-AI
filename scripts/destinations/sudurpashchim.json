@@ -1,0 +1,14 @@
+[
+  { "district": "Bajhang", "name": "Khaptad Entry Ridge", "lat": 29.3678, "lng": 81.1066, "alt": 2760 },
+  { "district": "Bajura", "name": "Budhinanda Head Trail", "lat": 29.4134, "lng": 81.4671, "alt": 2870 },
+  { "district": "Darchula", "name": "Api Base Route", "lat": 29.8406, "lng": 80.7688, "alt": 3560 },
+  { "district": "Baitadi", "name": "Ninglashaini Temple Ridge", "lat": 29.5189, "lng": 80.5450, "alt": 1640 },
+  { "district": "Dadeldhura", "name": "Ugratara Area", "lat": 29.3056, "lng": 80.5896, "alt": 1680 },
+  { "district": "Doti", "name": "Khaptad National Park Gate", "lat": 29.3775, "lng": 81.0422, "alt": 2460 },
+  { "district": "Achham", "name": "Ramaroshan", "lat": 29.2198, "lng": 81.2727, "alt": 2550 },
+  { "district": "Kailali", "name": "Ghodaghodi Lake", "lat": 28.6785, "lng": 80.9953, "alt": 205 },
+  { "district": "Kailali", "name": "Tikapur Park Zone", "lat": 28.5254, "lng": 81.1223, "alt": 150 },
+  { "district": "Kanchanpur", "name": "Shuklaphanta Grassland Core", "lat": 28.8546, "lng": 80.1817, "alt": 170 },
+  { "district": "Kanchanpur", "name": "Dodhara Chandani", "lat": 28.9317, "lng": 80.1082, "alt": 142 },
+  { "district": "Dadeldhura", "name": "Ajaymeru", "lat": 29.2548, "lng": 80.5690, "alt": 1755 }
+]

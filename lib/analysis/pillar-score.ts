@@ -1,0 +1,508 @@
+import { fetchWeather } from "@/lib/collectors/weather";
+import { fetchHazard } from "@/lib/collectors/hazard";
+import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
+import { fetchHistoricalWeather } from "@/lib/collectors/historical-weather";
+import {
+  fetchHistoricalDisastersNearRoute,
+  fetchRealtimeDisastersNearRoute,
+  getDisasterImpactSummary,
+} from "@/lib/disaster-pipeline";
+import { generateRouteIntelligence } from "@/lib/route-intelligence";
+import { prisma } from "@/lib/prisma";
+
+type Level = "LOW" | "MEDIUM" | "HIGH";
+
+export interface PillarScoreItem {
+  id: "route_historic" | "route_realtime" | "destination_safety" | "weather_safety" | "personal_safety";
+  title: string;
+  maxPoints: number;
+  score: number;
+  level: Level;
+  summary: string;
+}
+
+export interface PillarModelResult {
+  totalScore: number;
+  overallLevel: "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME";
+  pillars: PillarScoreItem[];
+  route: {
+    highway: string;
+    breakpoints: string[];
+    segmentFlags: Array<{
+      where: string;
+      when: string;
+      what: string;
+      effect: string;
+      status: "Clear" | "Advisory" | "Blocked";
+      sources: string[];
+    }>;
+    realtimeEvidenceCount: number;
+    historicalEvidenceCount: number;
+    incidentBreakdown: Array<{ section: string; total: number; roadAccidents: number; floods: number; landslides: number }>;
+  };
+  destination: {
+    historicProfile: string;
+    realtimeSnapshot: string;
+    notableEvents: Array<{ date: string; type: string; description: string; severity: string }>;
+  };
+  weather: {
+    home: { name: string; altitude: number; temp: number; humidity: number };
+    destination: { name: string; altitude: number; temp: number; humidity: number; uvIndexEstimate: number };
+    deltas: { temperature: number; altitude: number; humidity: number; rainfallRatio: number };
+    acclimatizationDays: number;
+    forecastWeek: Array<{
+      date: string;
+      weatherCode: number;
+      tempMax: number;
+      tempMin: number;
+      rainProb: number;
+      windMax: number;
+      isTravelDate: boolean;
+    }>;
+  };
+  personal: {
+    clearance: string;
+    flags: string[];
+    soloSummary: string;
+    guideRequired: boolean;
+    emergencyPreparedness: {
+      hospital: string;
+      helicopter: string;
+      mobileCoverage: "Good" | "Partial" | "None";
+      pavedRoadAccessHours: number;
+      evacuationWarning: string | null;
+    };
+  };
+}
+
+function clamp(n: number, lo: number, hi: number) {
+  return Math.max(lo, Math.min(hi, n));
+}
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function toLevelByRatio(score: number, max: number): Level {
+  const r = max <= 0 ? 0 : score / max;
+  if (r >= 0.7) return "LOW";
+  if (r >= 0.4) return "MEDIUM";
+  return "HIGH";
+}
+
+function toOverallLevel(score: number): "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME" {
+  if (score >= 80) return "SAFE";
+  if (score >= 60) return "CAUTION";
+  if (score >= 40) return "HIGH_RISK";
+  return "EXTREME";
+}
+
+function estimateUvIndex(altitudeM: number, baseUv = 8): number {
+  const multiplier = 1 + Math.max(0, altitudeM) / 1000;
+  return Math.round(baseUv * multiplier);
+}
+
+function extractMonthsHint(month: number): string {
+  if (month >= 6 && month <= 9) return "June-September (monsoon peak)";
+  if (month >= 12 || month <= 2) return "December-February (winter)";
+  return "Shoulder season pattern";
+}
+
+function inferRoadSection(routeName: string, from: string, to: string): string {
+  return `${from}-${to} section of ${routeName}`;
+}
+
+type PlacePoint = { name: string; lat: number; lon: number };
+
+async function loadPlaces(): Promise<PlacePoint[]> {
+  const rows = await prisma.location.findMany({
+    select: { name: true, latitude: true, longitude: true },
+  });
+  return rows
+    .filter((r) => Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
+    .map((r) => ({ name: r.name, lat: r.latitude, lon: r.longitude }));
+}
+
+function nearestPlaceName(lat: number, lon: number, places: PlacePoint[]): string | null {
+  if (!places.length) return null;
+  let best: PlacePoint | null = null;
+  let minDist = Infinity;
+  for (const p of places) {
+    const d = haversineKm(lat, lon, p.lat, p.lon);
+    if (d < minDist) {
+      minDist = d;
+      best = p;
+    }
+  }
+  if (!best) return null;
+  return minDist <= 12 ? best.name : null;
+}
+
+function normalizeSectionKey(from: string, to: string): string {
+  const a = from.trim().toLowerCase();
+  const b = to.trim().toLowerCase();
+  return `${a}->${b}`;
+}
+
+async function fetchForecastWeek(lat: number, lon: number, travelDate: string) {
+  type ForecastDay = {
+    date: string;
+    weatherCode: number;
+    tempMax: number;
+    tempMin: number;
+    rainProb: number;
+    windMax: number;
+    isTravelDate: boolean;
+  };
+  const url = new URL("https://api.open-meteo.com/v1/forecast");
+  url.searchParams.set("latitude", String(lat));
+  url.searchParams.set("longitude", String(lon));
+  url.searchParams.set("daily", "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max");
+  url.searchParams.set("timezone", "Asia/Kathmandu");
+  const res = await fetch(url.toString(), { cache: "no-store", signal: AbortSignal.timeout(10000) });
+  if (!res.ok) return [];
+  const data = await res.json() as any;
+  const daily = data?.daily;
+  if (!daily?.time) return [];
+  const all: ForecastDay[] = daily.time.map((d: string, i: number) => ({
+    date: d,
+    weatherCode: Number(daily.weathercode?.[i] ?? 0),
+    tempMax: Number(daily.temperature_2m_max?.[i] ?? 0),
+    tempMin: Number(daily.temperature_2m_min?.[i] ?? 0),
+    rainProb: Number(daily.precipitation_probability_max?.[i] ?? 0),
+    windMax: Number(daily.windspeed_10m_max?.[i] ?? 0),
+    isTravelDate: d === travelDate,
+  }));
+  const travelTs = Date.parse(`${travelDate}T00:00:00Z`);
+  const startTs = travelTs - 2 * 24 * 60 * 60 * 1000;
+  const endTs = travelTs + 4 * 24 * 60 * 60 * 1000;
+  const centered = all.filter((d: ForecastDay) => {
+    const ts = Date.parse(`${d.date}T00:00:00Z`);
+    return ts >= startTs && ts <= endTs;
+  });
+  if (centered.length >= 5) return centered;
+
+  // Fallback: nearest 7 available days around travel date
+  const travelIdx = all.findIndex((d: ForecastDay) => d.date === travelDate);
+  if (travelIdx >= 0) {
+    const from = Math.max(0, travelIdx - 2);
+    return all.slice(from, Math.min(all.length, from + 7));
+  }
+  return all.slice(0, 7);
+}
+
+export async function computePillarModel(input: {
+  destination: {
+    name: string;
+    district: string;
+    province: string;
+    lat: number;
+    lon: number;
+    altitude: number | null;
+  };
+  home: {
+    name: string;
+    district: string;
+    province: string;
+    lat: number;
+    lon: number;
+    altitude: number | null;
+  };
+  travelDate: string;
+  tripType: "SOLO" | "GROUP";
+  userHealth: {
+    fitnessLevel: "LOW" | "MODERATE" | "HIGH";
+    mobilityLimited: boolean;
+    chronicConditions: string[];
+  } | null;
+}): Promise<PillarModelResult> {
+  const travelMonth = new Date(input.travelDate).getMonth() + 1;
+
+  const routeIntel = await generateRouteIntelligence(
+    { lat: input.home.lat, lon: input.home.lon, name: input.home.name },
+    { lat: input.destination.lat, lon: input.destination.lon, name: input.destination.name },
+    input.travelDate
+  );
+  const bestRoute = routeIntel.bestRoute ?? routeIntel.routes[0] ?? null;
+  const destinationNameLc = input.destination.name.toLowerCase();
+  const forcedPalpaRoute = destinationNameLc.includes("palpa") || destinationNameLc.includes("tansen");
+  const routePoints = (bestRoute?.waypoints ?? []).map((w) => ({ lat: w.lat, lon: w.lon }));
+  const routeName = forcedPalpaRoute
+    ? "Siddhartha Highway (Kathmandu -> Mugling -> Narayanghat -> Butwal -> Tansen/Palpa)"
+    : (bestRoute?.name ?? "Primary route");
+
+  const [routeHistorical, routeRealtime, impactSummary, destinationHistorical, destinationWeather, homeWeather, destinationLiveHazard, destinationLiveWeather, forecastWeek, places] =
+    await Promise.all([
+      routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 15).catch(() => []) : Promise.resolve([]),
+      routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 15, 7).catch(() => []) : Promise.resolve([]),
+      routePoints.length ? getDisasterImpactSummary(routePoints, 12).catch(() => ({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 })) : Promise.resolve({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 }),
+      fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
+      fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
+      fetchWeather(input.home.lat, input.home.lon).catch(() => null),
+      fetchHazard(input.destination.district, input.destination.lat, input.destination.lon).catch(() => null),
+      fetchWeather(input.destination.lat, input.destination.lon).catch(() => null),
+      fetchForecastWeek(input.destination.lat, input.destination.lon, input.travelDate).catch(() => []),
+      loadPlaces().catch(() => [] as PlacePoint[]),
+    ]);
+
+  // i) Route historic (25)
+  let routeHistoricPenalty = 0;
+  const segFlags: PillarModelResult["route"]["segmentFlags"] = [];
+  const incidentBreakdown: PillarModelResult["route"]["incidentBreakdown"] = [];
+  const seenFlagSections = new Set<string>();
+  const incidentBySection = new Map<string, { section: string; total: number; roadAccidents: number; floods: number; landslides: number }>();
+  const segmentNames = (bestRoute?.segments ?? []).slice(0, 8);
+  for (const seg of segmentNames) {
+    const flood = seg.historical?.floodRisk ?? 0;
+    const land = seg.historical?.landslideRisk ?? 0;
+    const eqEvents = seg.evidence?.historical?.notableEvents ?? [];
+    const recencyWeightedEq = eqEvents.reduce((sum, ev) => {
+      const y = Number(String(ev.date).slice(0, 4));
+      const recentBoost = y >= new Date().getFullYear() - 2 ? 2 : 1;
+      const sevWeight = ev.severity === "HIGH" ? 3 : ev.severity === "MEDIUM" ? 1.5 : 1;
+      return sum + recentBoost * sevWeight;
+    }, 0);
+    const segPenalty = (flood * 4) + (land * 5) + Math.min(3, recencyWeightedEq / 6);
+    routeHistoricPenalty += segPenalty;
+
+    const districtFrom = seg.startPoint.name ?? nearestPlaceName(seg.startPoint.lat, seg.startPoint.lon, places) ?? "Unknown";
+    const districtTo = seg.endPoint.name ?? nearestPlaceName(seg.endPoint.lat, seg.endPoint.lon, places) ?? "Unknown";
+    const floodCount = Math.round(flood * 12);
+    const landslideCount = Math.round(land * 12);
+    const estimatedRoadRiskEvents = Math.max(0, Math.round(segPenalty * 4) - floodCount - landslideCount);
+    const section = inferRoadSection(routeName, districtFrom, districtTo);
+    const sectionKey = normalizeSectionKey(districtFrom, districtTo);
+    const existing = incidentBySection.get(sectionKey);
+    if (existing) {
+      existing.total += estimatedRoadRiskEvents + floodCount + landslideCount;
+      existing.roadAccidents += estimatedRoadRiskEvents;
+      existing.floods += floodCount;
+      existing.landslides += landslideCount;
+    } else if (districtFrom !== districtTo) {
+      incidentBySection.set(sectionKey, {
+        section,
+        total: estimatedRoadRiskEvents + floodCount + landslideCount,
+        roadAccidents: estimatedRoadRiskEvents,
+        floods: floodCount,
+        landslides: landslideCount,
+      });
+    }
+    if ((segPenalty >= 1.25 || (seg.hazards ?? []).length > 0) && districtFrom !== districtTo && !seenFlagSections.has(sectionKey)) {
+      seenFlagSections.add(sectionKey);
+      segFlags.push({
+        where: `${districtFrom} / ${districtTo} — ${section}`,
+        when: extractMonthsHint(travelMonth),
+        what: `${Math.round(flood * 100)}% flood risk, ${Math.round(land * 100)}% landslide risk, ${eqEvents.length} notable seismic events`,
+        effect: segPenalty > 2 ? "Possible delays or partial road blockage. Keep 1 extra buffer day." : "Monitor advisories before departure.",
+        status: segPenalty > 2.8 ? "Blocked" : segPenalty > 1.4 ? "Advisory" : "Clear",
+        sources: [
+          seg.evidence?.historical?.source ?? "bipad+usgs",
+          "OpenStreetMap route geometry",
+        ],
+      });
+    }
+  }
+  incidentBreakdown.push(...incidentBySection.values());
+  // Road accident / bridge washout proxy from disaster impact counts
+  routeHistoricPenalty += clamp((impactSummary.dead * 3 + impactSummary.injured * 1.5 + impactSummary.affected / 1000) / 20, 0, 5);
+  // Known risky corridors prior
+  if (/prithvi|narayanghat|butwal|araniko/i.test(routeName)) routeHistoricPenalty += 3;
+  const routeHistoricScore = Math.round(clamp(25 - routeHistoricPenalty, 0, 25));
+
+  // ii) Route realtime (15)
+  let routeRealtimePenalty = 0;
+  routeRealtimePenalty += Math.min(8, routeRealtime.length * 0.9);
+  const blockedSegments = segFlags.filter((s) => s.status === "Blocked").length;
+  if (blockedSegments > 0) routeRealtimePenalty += 6;
+  const hasActiveHigh = (bestRoute?.segments ?? []).some((s) => (s.realtime?.floodIndex ?? 0) > 0.7 || (s.realtime?.landslideIndex ?? 0) > 0.7);
+  if (hasActiveHigh) routeRealtimePenalty += 6;
+  const routeRealtimeScore = Math.round(clamp(15 - routeRealtimePenalty, 0, 15));
+
+  // iii) Destination safety (20)
+  let destinationPenalty = 0;
+  const histFlood = destinationHistorical?.historicalFloodRisk ?? 0;
+  const histLand = destinationHistorical?.historicalLandslideRisk ?? 0;
+  const histEq = destinationHistorical?.historicalEarthquakeRisk ?? 0;
+  destinationPenalty += histFlood * 4 + histLand * 4 + histEq * 2.5;
+  const liveFlood = destinationLiveHazard?.floodIndex ?? 0;
+  const liveLand = destinationLiveHazard?.landslideIndex ?? 0;
+  const liveEq = destinationLiveHazard?.earthquakeIndex ?? 0;
+  destinationPenalty += (liveFlood + liveLand + liveEq) * 3.5;
+  if ((destinationLiveHazard?.airQuality ?? 0) > 0.7) destinationPenalty += 2;
+  const destinationScore = Math.round(clamp(20 - destinationPenalty, 0, 20));
+
+  // iv) Weather safety home vs destination (20)
+  const homeTemp = homeWeather?.temperature ?? 24;
+  const homeHumidity = homeWeather?.humidity ?? 60;
+  const destTemp = destinationLiveWeather?.temperature ?? (destinationWeather?.avgTempMax ?? 18);
+  const destHumidity = destinationLiveWeather?.humidity ?? 45;
+  const tempDelta = destTemp - homeTemp;
+  const altitudeDelta = (input.destination.altitude ?? 0) - (input.home.altitude ?? 1400);
+  const humidityDelta = destHumidity - homeHumidity;
+  const homeRain = Math.max(0.1, homeWeather?.rainfall ?? 1);
+  const destRain = destinationLiveWeather?.rainfall ?? (destinationWeather?.avgRainfall ?? 2);
+  const rainfallRatio = destRain / homeRain;
+  const uv = estimateUvIndex(input.destination.altitude ?? 0);
+  let weatherPenalty = 0;
+  const absTempDelta = Math.abs(tempDelta);
+  if (absTempDelta > 20) weatherPenalty += 4;
+  if (absTempDelta > 30) weatherPenalty += 4;
+  if (altitudeDelta > 2500) weatherPenalty += 6;
+  if (altitudeDelta > 3500) weatherPenalty += 4;
+  if (travelMonth >= 6 && travelMonth <= 9 && (destinationWeather?.avgRainfall ?? 0) > 20) weatherPenalty += 4;
+  if ((destinationLiveWeather?.rainfall ?? 0) > 10) weatherPenalty += 3;
+  const effectiveWindChill = destTemp - ((destinationLiveWeather?.windSpeed ?? 0) * 1.5);
+  if (effectiveWindChill < -15) weatherPenalty += 4;
+  if (uv > 11) weatherPenalty += 2;
+  if (homeHumidity - destHumidity > 40) weatherPenalty += 2;
+  const weatherScore = Math.round(clamp(20 - weatherPenalty, 0, 20));
+
+  // v) Personal safety (20)
+  let personalPenalty = 0;
+  const flags: string[] = [];
+  const fitness = input.userHealth?.fitnessLevel ?? "MODERATE";
+  const mobility = input.userHealth?.mobilityLimited ?? false;
+  const chronic = input.userHealth?.chronicConditions ?? [];
+  const terrainDifficulty: "Easy" | "Moderate" | "Hard" | "Expert" =
+    (input.destination.altitude ?? 0) > 4500 ? "Expert" : (input.destination.altitude ?? 0) > 3000 ? "Hard" : (input.destination.altitude ?? 0) > 1800 ? "Moderate" : "Easy";
+  if (fitness === "LOW" && (terrainDifficulty === "Hard" || terrainDifficulty === "Expert")) {
+    personalPenalty += 5;
+    flags.push("Low fitness vs hard terrain");
+  }
+  if (fitness === "MODERATE" && terrainDifficulty === "Expert") {
+    personalPenalty += 3;
+    flags.push("Moderate fitness vs expert terrain");
+  }
+  if (chronic.includes("heart") && (input.destination.altitude ?? 0) > 3000) {
+    personalPenalty += 5;
+    flags.push("Heart condition at high altitude");
+  }
+  if (chronic.includes("asthma") && (input.destination.altitude ?? 0) > 3000) {
+    personalPenalty += 3;
+    flags.push("Asthma trigger risk in cold/dry altitude");
+  }
+  if (chronic.includes("diabetes") && (input.destination.altitude ?? 0) > 3000) {
+    personalPenalty += 3;
+    flags.push("Diabetes management risk in remote altitude");
+  }
+  if (mobility && (terrainDifficulty === "Hard" || terrainDifficulty === "Expert")) {
+    personalPenalty += 5;
+    flags.push("Mobility limitation on difficult terrain");
+  }
+  const guideRequired = (input.destination.altitude ?? 0) > 4000 || terrainDifficulty === "Expert" || routeRealtimeScore < 8;
+  if (input.tripType === "SOLO" && guideRequired) {
+    personalPenalty += 4;
+    flags.push("Solo risk elevated without guide");
+  }
+  const personalScore = Math.round(clamp(20 - personalPenalty, 0, 20));
+
+  const acclimatizationDays = altitudeDelta > 3000 ? Math.ceil((altitudeDelta - 2500) / 500) : altitudeDelta > 1500 ? 1 : 0;
+
+  const pillars: PillarScoreItem[] = [
+    {
+      id: "route_historic",
+      title: "Route Safety - Historic",
+      maxPoints: 25,
+      score: routeHistoricScore,
+      level: toLevelByRatio(routeHistoricScore, 25),
+      summary: `${segFlags.length} flagged route sections, weighted by recency, severity, and frequency.`,
+    },
+    {
+      id: "route_realtime",
+      title: "Route Safety - Realtime",
+      maxPoints: 15,
+      score: routeRealtimeScore,
+      level: toLevelByRatio(routeRealtimeScore, 15),
+      summary: `${routeRealtime.length} recent incidents near corridor, active status checked across route segments.`,
+    },
+    {
+      id: "destination_safety",
+      title: "Destination Safety",
+      maxPoints: 20,
+      score: destinationScore,
+      level: toLevelByRatio(destinationScore, 20),
+      summary: "Combined historical district hazard profile and live local incident/weather condition signals.",
+    },
+    {
+      id: "weather_safety",
+      title: "Weather Safety - Home vs Destination",
+      maxPoints: 20,
+      score: weatherScore,
+      level: toLevelByRatio(weatherScore, 20),
+      summary: `Altitude delta ${Math.round(altitudeDelta)}m, temp delta ${Math.round(tempDelta)}°C, humidity delta ${Math.round(humidityDelta)}%.`,
+    },
+    {
+      id: "personal_safety",
+      title: "Personal Safety",
+      maxPoints: 20,
+      score: personalScore,
+      level: toLevelByRatio(personalScore, 20),
+      summary: guideRequired ? "Personal profile indicates guide support is recommended." : "Profile and terrain are broadly compatible with precautions.",
+    },
+  ];
+
+  const totalScore = pillars.reduce((s, p) => s + p.score, 0);
+
+  const clearance =
+    personalScore >= 15
+      ? "Suitable with standard precautions."
+      : personalScore >= 10
+      ? "Requires precautions before travel."
+      : "Not recommended without medical and safety clearance.";
+  const soloSummary =
+    input.tripType === "SOLO"
+      ? guideRequired
+        ? "Solo emergency response may be delayed. Guide or satellite communicator strongly recommended."
+        : "Solo travel possible, but share itinerary and register your trip."
+      : "Group travel reduces solo-response risk, but keep emergency communication redundancy.";
+
+  const emergencyHours = (input.destination.altitude ?? 0) > 3500 ? 7 : (input.destination.altitude ?? 0) > 2200 ? 4 : 2;
+  const emergencyWarning = emergencyHours > 6 ? "Evacuation may take over 6 hours in bad weather." : null;
+
+  return {
+    totalScore,
+    overallLevel: toOverallLevel(totalScore),
+    pillars,
+    route: {
+      highway: routeName,
+      breakpoints: (bestRoute?.waypoints ?? [])
+        .filter((w, i) => i % Math.max(1, Math.floor((bestRoute?.waypoints.length ?? 1) / 6)) === 0)
+        .map((w) => nearestPlaceName(w.lat, w.lon, places) || w.name || `${w.lat.toFixed(3)},${w.lon.toFixed(3)}`)
+        .slice(0, 8),
+      segmentFlags: segFlags,
+      realtimeEvidenceCount: routeRealtime.length,
+      historicalEvidenceCount: routeHistorical.length,
+      incidentBreakdown,
+    },
+    destination: {
+      historicProfile: `In ${extractMonthsHint(travelMonth)}, ${input.destination.district} has averaged ${destinationHistorical?.floodIncidents ?? 0} flood and ${destinationHistorical?.landslideIncidents ?? 0} landslide incidents over ${destinationHistorical?.yearsAnalysed ?? 5} years.`,
+      realtimeSnapshot: `Live hazard indices - Flood ${Math.round(liveFlood * 100)}%, Landslide ${Math.round(liveLand * 100)}%, Quake ${Math.round(liveEq * 100)}%.`,
+      notableEvents: destinationHistorical?.notableEvents ?? [],
+    },
+    weather: {
+      home: { name: input.home.name, altitude: input.home.altitude ?? 1400, temp: homeTemp, humidity: homeHumidity },
+      destination: { name: input.destination.name, altitude: input.destination.altitude ?? 0, temp: destTemp, humidity: destHumidity, uvIndexEstimate: uv },
+      deltas: { temperature: tempDelta, altitude: altitudeDelta, humidity: humidityDelta, rainfallRatio },
+      acclimatizationDays,
+      forecastWeek,
+    },
+    personal: {
+      clearance,
+      flags,
+      soloSummary,
+      guideRequired,
+      emergencyPreparedness: {
+        hospital: `Nearest district hospital (estimated): ${input.destination.district} District Hospital`,
+        helicopter: `Nearest helicopter-capable zone: ${input.destination.name} helipad/municipal ground (verify locally)`,
+        mobileCoverage: (input.destination.altitude ?? 0) > 4200 ? "Partial" : "Good",
+        pavedRoadAccessHours: emergencyHours,
+        evacuationWarning: emergencyWarning,
+      },
+    },
+  };
+}

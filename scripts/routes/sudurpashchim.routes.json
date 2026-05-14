@@ -1,0 +1,10 @@
+{
+  "province": "Sudurpashchim",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Dhangadhi Bazaar",
+    "district": "Kailali"
+  },
+  "generateFromHub": false
+}

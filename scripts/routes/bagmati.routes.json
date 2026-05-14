@@ -1,0 +1,15 @@
+{
+  "province": "Bagmati",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Kathmandu Durbar Square",
+    "district": "Kathmandu"
+  },
+  "excludeLocationNames": [
+    "Gosaikunda Lake",
+    "Panch Pokhari Lakes",
+    "Tserko Ri Peak"
+  ],
+  "generateFromHub": false
+}

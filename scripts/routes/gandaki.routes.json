@@ -1,0 +1,15 @@
+{
+  "province": "Gandaki",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Pokhara Lakeside",
+    "district": "Kaski"
+  },
+  "excludeLocationNames": [
+    "Annapurna Base Camp",
+    "Dhaulagiri Base Camp",
+    "Tilicho Lake"
+  ],
+  "generateFromHub": false
+}

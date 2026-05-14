@@ -1,0 +1,10 @@
+{
+  "province": "Lumbini",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Butwal Junction",
+    "district": "Rupandehi"
+  },
+  "generateFromHub": false
+}

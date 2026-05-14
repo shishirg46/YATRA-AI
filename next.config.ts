@@ -1,0 +1,42 @@
+/**
+ * FILE: next.config.ts
+ * LOCATION: /next.config.ts  (project root, same level as package.json)
+ * PURPOSE: Next.js configuration
+ *
+ * KEY CHANGE: images.remotePatterns allows next/image to load from Cloudinary.
+ * Without this, any <Image src="https://res.cloudinary.com/..." /> will throw:
+ *   "Error: Invalid src prop ... hostname not configured under images"
+ */
+
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      // Cloudinary — used for user profile photos uploaded via /api/user/avatar
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        // pathname: "/your_cloud_name/**",  // optionally restrict to your cloud
+      },
+      // Google — used for avatars from Google OAuth sign-in
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      // Gravatar — fallback avatars from Better Auth email accounts
+      {
+        protocol: "https",
+        hostname: "www.gravatar.com",
+      },
+    ],
+  },
+
+  // Turbopack root — silences the "multiple lockfiles" warning in Next.js 16
+  // Set this to the directory containing YOUR app's package.json
+  turbopack: {
+    root: "/home/elshishir/Documents/yatraAI",
+  },
+};
+
+export default nextConfig;

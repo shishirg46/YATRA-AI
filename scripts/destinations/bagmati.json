@@ -1,0 +1,14 @@
+[
+  { "district": "Kathmandu", "name": "Tarebhir", "lat": 27.8182, "lng": 85.4360, "alt": 2050 },
+  { "district": "Kathmandu", "name": "Jamacho Gumba", "lat": 27.7777, "lng": 85.2767, "alt": 2128 },
+  { "district": "Kathmandu", "name": "Nagarkot View Tower", "lat": 27.7152, "lng": 85.5208, "alt": 2175 },
+  { "district": "Lalitpur", "name": "Phulchowki Peak", "lat": 27.5792, "lng": 85.4148, "alt": 2762 },
+  { "district": "Lalitpur", "name": "Godavari Botanical Garden", "lat": 27.5909, "lng": 85.3868, "alt": 1520 },
+  { "district": "Bhaktapur", "name": "Pilot Baba Hill", "lat": 27.6552, "lng": 85.4849, "alt": 1650 },
+  { "district": "Chitwan", "name": "Sauraha Riverside", "lat": 27.5764, "lng": 84.4920, "alt": 180 },
+  { "district": "Rasuwa", "name": "Briddhim", "lat": 28.2008, "lng": 85.2947, "alt": 2229 },
+  { "district": "Sindhupalchok", "name": "Chisapani", "lat": 27.8464, "lng": 85.4508, "alt": 2195 },
+  { "district": "Kavrepalanchok", "name": "Dhulikhel Viewpoint", "lat": 27.6229, "lng": 85.5416, "alt": 1550 },
+  { "district": "Makwanpur", "name": "Markhu", "lat": 27.5133, "lng": 85.0678, "alt": 1350 },
+  { "district": "Nuwakot", "name": "Shivapuri Ridge Camp", "lat": 27.7934, "lng": 85.4041, "alt": 2450 }
+]

@@ -1,0 +1,13 @@
+{
+  "province": "Koshi",
+  "sourceTag": "province-json-v1",
+  "includeAllProvinceLocations": true,
+  "hub": {
+    "name": "Biratnagar Market",
+    "district": "Morang"
+  },
+  "excludeLocationNames": [
+    "Morang"
+  ],
+  "generateFromHub": false
+}

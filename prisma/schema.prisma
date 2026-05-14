@@ -1,0 +1,540 @@
+/////////////////////////////////////////////////
+// GENERATOR & DATASOURCE
+/////////////////////////////////////////////////
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/////////////////////////////////////////////////
+// ENUMS
+/////////////////////////////////////////////////
+
+enum Role {
+  USER
+  ADMIN
+  ANALYST
+}
+
+enum SafetyLevel {
+  SAFE
+  CAUTION
+  HIGH_RISK
+  EXTREME
+}
+
+enum TravelStatus {
+  PENDING
+  ANALYZED
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+enum AssessmentType {
+  SOLO
+  GROUP
+}
+
+enum FitnessLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  BLOCKED
+}
+
+enum MemberStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+/////////////////////////////////////////////////
+// USER DOMAIN
+/////////////////////////////////////////////////
+
+model User {
+  id            String  @id @default(cuid())
+  name          String
+  username         String?  @unique              // null for Google users until onboarding
+  displayUsername  String?                       // optional display version
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  image         String?
+  role          Role    @default(USER)
+  isActive      Boolean @default(true)
+
+  homeLocationId   String?
+  homeLocation     Location?           @relation("HomeLocation", fields: [homeLocationId], references: [id])
+  createdGroups    TravelGroup[]       @relation("GroupCreator")
+  travelPlans      TravelPlan[]        @relation("TripLeader")
+  planMemberships  TravelPlanMember[]
+  groupMemberships TravelGroupMember[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+
+  health           UserHealth?
+  preference       UserPreference?
+  behavior         UserBehavior?
+  sentRequests     Friendship[]        @relation("FriendRequests")
+  receivedRequests Friendship[]        @relation("FriendReceived")
+
+  // Better Auth
+  sessions         Session[]
+  accounts         Account[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([email])
+  @@index([username])
+  @@map("user")
+}
+
+/////////////////////////////////////////////////
+// USER HEALTH — NEW
+/////////////////////////////////////////////////
+
+model UserHealth {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  bloodType          String?      // A+, A-, B+, B-, O+, O-, AB+, AB-
+  fitnessLevel       FitnessLevel @default(MODERATE)
+  mobilityLimited    Boolean      @default(false)
+  chronicConditions  String[]     // ["diabetes", "hypertension", "asthma", "heart"]
+  allergies          String[]     // ["peanuts", "penicillin", "pollen"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/////////////////////////////////////////////////
+// USER PREFERENCES & BEHAVIOR
+/////////////////////////////////////////////////
+
+model UserPreference {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // 1. Location (Could be mapped to District/Province or lat/lon)
+  locationLat Float?
+  locationLng Float?
+
+  // 2. Primary interests
+  interests String[]
+
+  // 3. Risk tolerance
+  riskTolerance String @default("MEDIUM")
+
+  // 4. Travel style
+  travelStyle String[]
+
+  // 5. Trip constraints
+  maxDistanceKm Float?
+  typicalDurationDays Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserBehavior {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // JSON format for clicks/ignores per category/destination
+  metrics Json @default("{}")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/////////////////////////////////////////////////
+// FRIENDSHIPS — NEW
+/////////////////////////////////////////////////
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String           // user who sent the request
+  receiverId  String           // user who received it
+  status      FriendshipStatus @default(PENDING)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requester User @relation("FriendRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiver  User @relation("FriendReceived",  fields: [receiverId],  references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId]) // prevent duplicate requests
+  @@index([receiverId, status])       // fast lookup of pending requests
+  @@index([requesterId, status])
+}
+
+/////////////////////////////////////////////////
+// BETTER AUTH
+/////////////////////////////////////////////////
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+/////////////////////////////////////////////////
+// GEOGRAPHY DOMAIN
+/////////////////////////////////////////////////
+
+model Province {
+  id   String @id @default(uuid())
+  name String @unique
+
+  districts District[]
+}
+
+model District {
+  id         String @id @default(uuid())
+  name       String
+  provinceId String
+
+  province  Province   @relation(fields: [provinceId], references: [id])
+  locations Location[]
+
+  @@unique([name, provinceId])
+}
+
+model Location {
+  id         String @id @default(uuid())
+  name       String
+  districtId String
+
+  latitude  Float
+  longitude Float
+  altitude  Int?
+
+  district    District         @relation(fields: [districtId], references: [id])
+  weatherData WeatherData[]
+  hazardData  HazardData[]
+  riskReports RiskAssessment[]
+  travelStops TravelStop[]
+  routeOrigins RouteTemplate[] @relation("RouteTemplateOrigin")
+  routeDestinations RouteTemplate[] @relation("RouteTemplateDestination")
+  routePoints RouteTemplatePoint[] @relation("RoutePointLocation")
+  residents   User[]           @relation("HomeLocation")
+  groupTrips  TravelGroup[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([name, districtId])
+  @@index([latitude, longitude])
+}
+
+/////////////////////////////////////////////////
+// STORED ROUTE CORRIDORS
+/////////////////////////////////////////////////
+
+model RouteTemplate {
+  id String @id @default(uuid())
+
+  originLocationId      String
+  destinationLocationId String
+  name                  String
+  distanceKm            Float?
+  source                String?
+  isActive              Boolean  @default(true)
+
+  points RouteTemplatePoint[]
+
+  originLocation      Location @relation("RouteTemplateOrigin", fields: [originLocationId], references: [id], onDelete: Cascade)
+  destinationLocation Location @relation("RouteTemplateDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([originLocationId, destinationLocationId, isActive])
+  @@unique([originLocationId, destinationLocationId, name])
+}
+
+model RouteTemplatePoint {
+  id String @id @default(uuid())
+
+  routeTemplateId String
+  seq             Int
+  lat             Float
+  lon             Float
+  kmFromStart     Float
+  placeName       String?
+  matchedLocationId String?
+
+  routeTemplate RouteTemplate @relation(fields: [routeTemplateId], references: [id], onDelete: Cascade)
+  matchedLocation Location? @relation("RoutePointLocation", fields: [matchedLocationId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([routeTemplateId, seq])
+  @@index([lat, lon])
+  @@unique([routeTemplateId, seq])
+}
+
+/////////////////////////////////////////////////
+// WEATHER (TIME SERIES)
+/////////////////////////////////////////////////
+
+model WeatherData {
+  id         String @id @default(uuid())
+  locationId String
+
+  temperature Float
+  humidity    Float
+  rainfall    Float
+  windSpeed   Float
+  pressure    Float?
+
+  source     String?
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId, recordedAt])
+}
+
+/////////////////////////////////////////////////
+// HAZARD INTELLIGENCE
+/////////////////////////////////////////////////
+
+model HazardData {
+  id         String @id @default(uuid())
+  locationId String
+
+  floodIndex     Float?
+  landslideIndex Float?
+  heatIndex      Float?
+  airQuality     Float?
+
+  source     String?
+  recordedAt DateTime
+  createdAt  DateTime @default(now())
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId, recordedAt])
+}
+
+/////////////////////////////////////////////////
+// AI RISK ASSESSMENT
+/////////////////////////////////////////////////
+
+model RiskAssessment {
+  id         String         @id @default(uuid())
+  locationId String
+  type       AssessmentType
+
+  safetyScore Float
+  safetyLevel SafetyLevel
+  confidence  Float?
+
+  decisionTrace   Json
+  weatherSnapshot Json?
+  hazardSnapshot  Json?
+
+  modelVersion String?
+  createdAt    DateTime @default(now())
+
+  location     Location      @relation(fields: [locationId], references: [id])
+
+  @@index([locationId, createdAt])
+}
+
+/////////////////////////////////////////////////
+// SOLO TRAVEL
+/////////////////////////////////////////////////
+
+// ── Trip Plan (solo or group, multi-stop route) ───────────────────────────────
+
+model TravelPlan {
+  id          String      @id @default(uuid())
+  title       String                         // e.g. "Annapurna Circuit"
+  leaderId    String                         // always the creator
+  tripType    AssessmentType @default(SOLO)
+  status      TravelStatus   @default(PENDING)
+
+  startDate   DateTime
+  endDate     DateTime
+  budgetNPR   Float?                         // total trip budget
+
+  // Cached group risk analysis result
+  groupRiskResult Json?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  leader  User              @relation("TripLeader",   fields: [leaderId],  references: [id], onDelete: Cascade)
+  stops   TravelStop[]
+  members TravelPlanMember[]
+
+  @@index([leaderId])
+}
+
+// Each stop in the route (ordered)
+model TravelStop {
+  id           String   @id @default(uuid())
+  planId       String
+  locationId   String
+  stopOrder    Int                            // 1, 2, 3…
+  arrivalDate  DateTime
+  departureDate DateTime
+
+  // Cached per-stop risk snapshot
+  riskSnapshot Json?
+
+  plan     TravelPlan @relation(fields: [planId],     references: [id], onDelete: Cascade)
+  location Location   @relation(fields: [locationId], references: [id])
+
+  @@unique([planId, stopOrder])
+  @@index([planId])
+}
+
+// Group members with invitation workflow
+model TravelPlanMember {
+  id        String           @id @default(uuid())
+  planId    String
+  userId    String
+  status    MemberStatus     @default(PENDING)
+  invitedAt DateTime         @default(now())
+  respondedAt DateTime?
+
+  // Per-member risk snapshot (computed at analysis time)
+  riskSnapshot Json?
+
+  plan TravelPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, userId])
+  @@index([planId])
+  @@index([userId])
+}
+
+// Legacy — kept for backwards compatibility, no longer used for new plans
+model TravelGroup {
+  id   String @id @default(uuid())
+  name String
+
+  destinationId String
+  startDate     DateTime
+  endDate       DateTime
+
+  status      TravelStatus @default(PENDING)
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  destination Location            @relation(fields: [destinationId], references: [id])
+  createdBy   User                @relation("GroupCreator", fields: [createdById], references: [id])
+  members     TravelGroupMember[]
+
+  @@index([destinationId])
+}
+
+model TravelGroupMember {
+  id       String   @id @default(uuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  group TravelGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+/////////////////////////////////////////////////
+// NOTIFICATIONS
+/////////////////////////////////////////////////
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+/////////////////////////////////////////////////
+// AUDIT LOG
+/////////////////////////////////////////////////
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entity, entityId])
+}
