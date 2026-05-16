@@ -7,6 +7,8 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter }             from "next/navigation";
 import Link                                       from "next/link";
+import { AppShell } from "@/components/app-shell";
+import RouteMapLoader from "@/components/route-map-loader";
 import {
   Mountain, Search, X, Calendar, MapPin, Users, User,
   ArrowLeft, Loader2, Shield, AlertTriangle, Zap, XCircle,
@@ -224,6 +226,7 @@ function QuickRouteCheck({ destination, travelDate, originLat, originLon }: {
           body: JSON.stringify({
             origin: originLat && originLon ? { lat: originLat, lon: originLon } : null,
             destination: {
+              id: destination.id,
               lat: destination.latitude || 0,
               lon: destination.longitude || 0,
               name: destination.name,
@@ -386,7 +389,7 @@ function DestSearch({ value, onChange }: {
           : null}
       </div>
       {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden shadow-2xl"
+        <div className="absolute top-full left-0 right-0 mt-1 z-[120] rounded-xl overflow-hidden shadow-2xl"
           style={{ background: "rgba(10,15,30,0.98)", border: "1px solid rgba(255,255,255,0.1)" }}>
           {results.map((d) => (
             <button key={d.id} onClick={() => { onChange(d); setQ(d.name); setOpen(false); setResults([]); }}
@@ -523,8 +526,9 @@ function PlanInner() {
   const [showAllRiskFactors, setShowAllRiskFactors] = useState(false);
   const [showAllRecommendations, setShowAllRecommendations] = useState(false);
   const [showAllHealthAdvisories, setShowAllHealthAdvisories] = useState(false);
-  const ORIGIN_CACHE_KEY = "yatraai:last-origin";
-
+  const [locationWarning, setLocationWarning] = useState<string | null>(null);
+  const [displayOriginLat, setDisplayOriginLat] = useState<number | null>(null);
+  const [displayOriginLon, setDisplayOriginLon] = useState<number | null>(null);
   const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
@@ -549,20 +553,6 @@ function PlanInner() {
         setOriginLon(lon);
       }
     }
-    if (!qOriginLat || !qOriginLon) {
-      try {
-        const cached = localStorage.getItem(ORIGIN_CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached) as { lat?: number; lon?: number };
-          if (Number.isFinite(parsed?.lat) && Number.isFinite(parsed?.lon)) {
-            setOriginLat(parsed.lat as number);
-            setOriginLon(parsed.lon as number);
-          }
-        }
-      } catch {
-        // ignore cache parse issues
-      }
-    }
     if (qPlanId) setSavedPlanId(qPlanId);
   }, []);
 
@@ -578,7 +568,7 @@ function PlanInner() {
     if (!travelDate)  { setError("Travel date is required."); return; }
     if (tripType === "GROUP" && members.length === 0) { setError("Group trips require at least one partner."); return; }
 
-    setSubmitting(true); setError(null); setReport(null);
+    setSubmitting(true); setError(null); setReport(null); setLocationWarning(null);
     try {
       let requestOriginLat = originLat;
       let requestOriginLon = originLon;
@@ -586,11 +576,12 @@ function PlanInner() {
       // Fallback for direct /plan URLs without origin params:
       // use browser geolocation at submit-time if permission exists.
       if ((requestOriginLat == null || requestOriginLon == null) && typeof navigator !== "undefined" && navigator.geolocation) {
-        const geo = await new Promise<{ lat: number; lon: number } | null>((resolve) => {
+        const geo = await new Promise<{ lat: number; lon: number; accuracy: number } | null>((resolve) => {
           let done = false;
           const timer = setTimeout(() => {
             if (done) return;
             done = true;
+            setLocationWarning("Location request timed out. Proceeding without precise origin location.");
             resolve(null);
           }, 4500);
 
@@ -599,18 +590,51 @@ function PlanInner() {
               if (done) return;
               done = true;
               clearTimeout(timer);
-              resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude });
+              
+              const accuracy = pos.coords.accuracy;
+              console.log(`Geolocation received. Accuracy: ${accuracy.toFixed(1)}m`);
+              
+              // If accuracy is extremely poor (>10km), warn and reject
+              if (!Number.isFinite(accuracy) || accuracy > 10000) {
+                setLocationWarning(
+                  `Location accuracy is very low (${accuracy > 10000 ? (accuracy / 1000).toFixed(0) + "km" : Math.round(accuracy) + "m"}). ` +
+                  `Move to an open area or enable high-accuracy location, then try again.`
+                );
+                resolve(null);
+                return;
+              }
+              
+              // If accuracy is suboptimal but usable (150m - 10km), warn but accept
+              if (accuracy > 150) {
+                setLocationWarning(
+                  `Location accuracy is moderate (${accuracy.toFixed(0)}m). Results may be less precise. ` +
+                  `For better accuracy, move to an open area with clear sky view.`
+                );
+              }
+              
+              resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy });
             },
-            () => {
+            (error) => {
               if (done) return;
               done = true;
               clearTimeout(timer);
+              
+              let warningMsg = "Could not access device location. ";
+              if (error.code === 1) {
+                warningMsg += "Location permission denied. Grant location access in your browser settings.";
+              } else if (error.code === 2) {
+                warningMsg += "Location unavailable. Move outdoors and ensure location services are enabled.";
+              } else if (error.code === 3) {
+                warningMsg += "Location request timed out.";
+              }
+              
+              setLocationWarning(warningMsg);
               resolve(null);
             },
             {
-              enableHighAccuracy: false,
-              timeout: 4000,
-              maximumAge: 120000,
+              enableHighAccuracy: true,
+              timeout: 12000,
+              maximumAge: 0,
             }
           );
         });
@@ -619,11 +643,9 @@ function PlanInner() {
           requestOriginLon = geo.lon;
           setOriginLat(geo.lat);
           setOriginLon(geo.lon);
-          try {
-            localStorage.setItem(ORIGIN_CACHE_KEY, JSON.stringify({ lat: geo.lat, lon: geo.lon }));
-          } catch {
-            // ignore storage errors
-          }
+          setDisplayOriginLat(geo.lat);
+          setDisplayOriginLon(geo.lon);
+          console.log(`Using geolocation: lat=${geo.lat}, lon=${geo.lon}, accuracy=${geo.accuracy.toFixed(1)}m`);
         }
       }
 
@@ -645,6 +667,8 @@ function PlanInner() {
       setShowAllRiskFactors(false);
       setShowAllHealthAdvisories(false);
       setShowAllRecommendations(false);
+      setDisplayOriginLat(requestOriginLat);
+      setDisplayOriginLon(requestOriginLon);
       setReport(data);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -1005,6 +1029,25 @@ function PlanInner() {
           </div>
         )}
 
+        {/* ── Interactive route map ────────────────────────────────────── */}
+        {displayOriginLat && displayOriginLon && (
+          <div className="plan-card rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin size={15} className="text-amber-400" />
+              <span className="font-display font-bold text-white text-sm">Route Preview</span>
+            </div>
+            <RouteMapLoader
+              startLat={displayOriginLat}
+              startLon={displayOriginLon}
+              endLat={report.destination.altitude ? 27.7 : 27.7} // Use actual destination coords if available
+              endLon={report.destination.altitude ? 85.3 : 85.3}
+              originName="Your Location"
+              destinationName={report.destination.name}
+              riskLevel={report.overallLevel}
+            />
+          </div>
+        )}
+
         {/* ── Pillar scorecard ─────────────────────────────────────────────── */}
         {Array.isArray(report.pillarScores) && report.pillarScores.length > 0 && (
           <Section title="Pillar Scoring Model" icon={Shield} defaultOpen>
@@ -1208,7 +1251,7 @@ function PlanInner() {
 
   return (
     <div className="max-w-xl mx-auto px-4 pb-16">
-      <div className="plan-card rounded-2xl p-6 md:p-8">
+      <div className="plan-card plan-form-card rounded-2xl p-6 md:p-8">
         <div className="mb-6">
           <h2 className="font-display text-2xl font-bold text-white mb-1">
             Plan your <em className="shimmer-text not-italic">trip</em>
@@ -1218,6 +1261,13 @@ function PlanInner() {
 
         {error && (
           <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-body text-sm">{error}</div>
+        )}
+
+        {locationWarning && (
+          <div className="mb-5 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 font-body text-sm flex items-start gap-2">
+            <AlertCircle size={16} className="flex-shrink-0 mt-0.5"/>
+            <div>{locationWarning}</div>
+          </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -1331,44 +1381,11 @@ function PlanInner() {
 // ── Page wrapper ──────────────────────────────────────────────────────────────
 
 export default function PlanPage() {
-  const router = useRouter();
   return (
-    <div className="min-h-screen" style={{ background: "#0a0f1e" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@300;400;500&display=swap');
-        .font-display{font-family:'Playfair Display',Georgia,serif}
-        .font-body{font-family:'DM Sans',system-ui,sans-serif}
-        @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-        .shimmer-text{background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b,#fbbf24);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
-        .glow-dot{position:fixed;border-radius:9999px;filter:blur(100px);pointer-events:none;z-index:0}
-        .nav-blur{background:rgba(10,15,30,.92);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px)}
-        .plan-card{background:rgba(15,23,42,.8);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(16px)}
-        .plan-input{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:white;font-family:'DM Sans',system-ui,sans-serif;transition:border-color .2s,box-shadow .2s}
-        .plan-input:focus{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.08);outline:none}
-        .plan-input::placeholder{color:rgba(255,255,255,.25)}
-        .plan-input::-webkit-calendar-picker-indicator{filter:invert(1) opacity(0.5)}
-        .amber-btn{background:#f59e0b;color:#0a0f1e;font-family:'DM Sans',system-ui,sans-serif;font-weight:600;border-radius:10px;transition:background .2s,box-shadow .2s,transform .15s}
-        .amber-btn:hover:not(:disabled){background:#fbbf24;box-shadow:0 0 28px rgba(245,158,11,.35);transform:translateY(-1px)}
-      `}</style>
-      <div className="glow-dot w-[400px] h-[300px] bg-amber-500/8 -top-20 -right-20"/>
-      <div className="glow-dot w-[300px] h-[250px] bg-sky-500/5 bottom-0 -left-10"/>
-      <nav className="nav-blur fixed top-0 inset-x-0 z-30 flex items-center justify-between px-4 md:px-8 h-16">
-        <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors font-body text-sm">
-            <ArrowLeft size={15}/> Back
-          </button>
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Mountain className="text-amber-400" size={20}/>
-            <span className="font-display font-bold text-white">YatraAI</span>
-          </Link>
-        </div>
-        <span className="font-body text-sm text-slate-400 hidden sm:block">Plan a Trip</span>
-      </nav>
-      <div className="pt-24 pb-8 relative z-10">
-        <Suspense fallback={<div className="flex justify-center pt-20"><Loader2 size={32} className="text-amber-400 animate-spin"/></div>}>
-          <PlanInner/>
-        </Suspense>
-      </div>
-    </div>
+    <AppShell active="plan" title="Plan a Trip" subpage contentClassName="pt-20 max-w-3xl mx-auto px-4 pb-20 relative z-10">
+      <Suspense fallback={<div className="flex justify-center pt-20"><Loader2 size={32} className="text-amber-400 animate-spin"/></div>}>
+        <PlanInner/>
+      </Suspense>
+    </AppShell>
   );
 }

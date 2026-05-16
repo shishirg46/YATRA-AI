@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isPointInNepal } from "@/lib/routing/geo";
 import { headers } from "next/headers";
 import { PrismaClient } from "@/app/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
@@ -38,6 +39,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Risk tolerance is required." }, { status: 400 });
     if (!travelStyle?.length)
       return NextResponse.json({ message: "Travel style is required." }, { status: 400 });
+
+    if (locationLat !== undefined && locationLng !== undefined && (locationLat !== 0 || locationLng !== 0)) {
+      if (!isPointInNepal(locationLat, locationLng)) {
+        return NextResponse.json({ message: "Location must be within Nepal. This service is only available for Nepal." }, { status: 400 });
+      }
+    }
 
     // Validate + save username for Google OAuth users
     if (username) {

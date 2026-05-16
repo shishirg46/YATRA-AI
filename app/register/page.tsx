@@ -99,14 +99,6 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden" style={{ background: "#0a0f1e" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap');
-        .font-display{font-family:'Playfair Display',Georgia,serif}.font-body{font-family:'DM Sans',system-ui,sans-serif}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-        .anim-1{animation:fadeUp .6s ease both}.anim-2{animation:fadeUp .6s .1s ease both}
-        .anim-3{animation:fadeUp .6s .2s ease both}.anim-4{animation:fadeUp .6s .3s ease both}
-        .shimmer-text{background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b,#fbbf24);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
-        .glow-dot{position:absolute;border-radius:9999px;filter:blur(80px);pointer-events:none}
         .auth-card{background:rgba(15,23,42,0.85);border:1px solid rgba(245,158,11,0.15);backdrop-filter:blur(24px);border-radius:24px}
         .auth-input{background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.1)!important;color:white!important;font-family:'DM Sans',system-ui,sans-serif;border-radius:10px!important;transition:border-color .2s,box-shadow .2s}
         .auth-input:focus{border-color:rgba(245,158,11,.5)!important;box-shadow:0 0 0 3px rgba(245,158,11,.1)!important;outline:none!important}
@@ -120,7 +112,6 @@ export default function RegisterPage() {
         .outline-btn:hover:not(:disabled){border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.05)}
         .outline-btn:disabled{opacity:.6;cursor:not-allowed}
         .divider-line{flex:1;height:1px;background:rgba(255,255,255,0.08)}
-        .mountain-wave{clip-path:polygon(0 40%,10% 25%,22% 38%,35% 10%,48% 30%,60% 5%,72% 22%,85% 12%,95% 28%,100% 18%,100% 100%,0 100%)}
         .strength-bar{height:3px;border-radius:99px;transition:width .4s ease,background .4s ease}
       `}</style>
 

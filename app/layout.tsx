@@ -5,12 +5,20 @@
  */
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const playfair = Playfair_Display({
   subsets: ["latin"],
+  weight: ["700", "900"],
+  variable: "--font-playfair",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  variable: "--font-dm-sans",
 });
 
 const geistMono = Geist_Mono({
@@ -20,53 +28,33 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    // Default title shown on pages that don't set their own
-    default:  "YatraAI — Travel Safe Across Nepal",
-    // Per-page titles will appear as "Dashboard — YatraAI"
+    default: "YatraAI — Travel Safe Across Nepal",
     template: "%s — YatraAI",
   },
   description:
     "AI-powered travel safety scores, real-time hazard alerts, and personalised health advisories for every destination in Nepal.",
   keywords: ["Nepal travel", "travel safety", "hiking Nepal", "trekking safety", "YatraAI"],
   authors: [{ name: "YatraAI" }],
-
-  // ── Favicon ────────────────────────────────────────────────────────────────
-  // Uses an inline SVG so no image file is needed.
-  // The mountain emoji ⛰️ is rendered as an SVG favicon — works in all
-  // modern browsers. If you later want a custom PNG icon, drop it in /public
-  // as favicon.ico and replace the icon entry below with just:
-  //   icon: "/favicon.ico"
   icons: {
     icon: [
       {
-        // SVG favicon — renders the ⛰️ mountain emoji as a browser tab icon
         url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⛰️</text></svg>",
         type: "image/svg+xml",
       },
     ],
-    // Apple touch icon — used when user adds site to iOS home screen
-    // Drop a 180×180 PNG at /public/apple-touch-icon.png to enable this
-    // apple: "/apple-touch-icon.png",
   },
-
-  // ── Open Graph (social share previews) ────────────────────────────────────
   openGraph: {
-    title:       "YatraAI — Travel Safe Across Nepal",
+    title: "YatraAI — Travel Safe Across Nepal",
     description: "Live safety scores, hazard alerts and personalised travel advisories for Nepal.",
-    url:         "https://yatraai.com",
-    siteName:    "YatraAI",
-    locale:      "en_US",
-    type:        "website",
-    // Drop a 1200×630 image at /public/og-image.png to enable the preview card
-    // images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "YatraAI" }],
+    url: "https://yatraai.com",
+    siteName: "YatraAI",
+    locale: "en_US",
+    type: "website",
   },
-
-  // ── Twitter card ──────────────────────────────────────────────────────────
   twitter: {
-    card:        "summary_large_image",
-    title:       "YatraAI — Travel Safe Across Nepal",
+    card: "summary_large_image",
+    title: "YatraAI — Travel Safe Across Nepal",
     description: "Live safety scores, hazard alerts and personalised travel advisories for Nepal.",
-    // images: ["/og-image.png"],
   },
 };
 
@@ -76,9 +64,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${geistMono.variable}`}>
+      <body className="antialiased">
         {children}
+        <Toaster theme="dark" position="top-center" richColors closeButton />
       </body>
     </html>
   );

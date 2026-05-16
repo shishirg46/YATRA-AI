@@ -13,6 +13,7 @@ import {
   CheckCircle2, X, Clock, AlertTriangle, Shield,
   Zap, XCircle, ArrowRight, Loader2, RefreshCw,
 } from "lucide-react";
+import { AppShell } from "@/components/app-shell";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -189,40 +190,16 @@ export default function TripsPage() {
   const currentPlans = tab === "led" ? (data?.led ?? []) : tab === "joined" ? (data?.joined ?? []) : (data?.pending ?? []);
 
   return (
-    <div className="min-h-screen" style={{ background: "#0a0f1e" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
-        .font-display{font-family:'Playfair Display',Georgia,serif}
-        .font-body{font-family:'DM Sans',system-ui,sans-serif}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .anim{animation:fadeUp .4s ease both}
-        .nav-blur{background:rgba(10,15,30,.92);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px)}
-        .trip-card{background:rgba(15,23,42,.8);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px);transition:border-color .2s}
-        .trip-card:hover{border-color:rgba(245,158,11,.2)}
-        .glow-dot{position:fixed;border-radius:9999px;filter:blur(100px);pointer-events:none;z-index:0}
-      `}</style>
-
-      <div className="glow-dot w-[400px] h-[300px] bg-amber-500/7 -top-20 -left-20" />
-      <div className="glow-dot w-[300px] h-[200px] bg-sky-500/5 bottom-0 right-0" />
-
-      {/* Navbar */}
-      <nav className="nav-blur fixed top-0 inset-x-0 z-30 flex items-center justify-between px-4 md:px-8 h-16">
-        <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <Mountain className="text-amber-400" size={20} />
-            <span className="font-display font-bold text-white">YatraAI</span>
-          </Link>
-          <span className="text-slate-700">·</span>
-          <span className="font-body text-sm text-slate-400">Your Plans</span>
-        </div>
-        <Link href="/trips/new">
-          <button className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-body font-semibold text-sm transition-all">
-            <Plus size={15} /> New Trip
-          </button>
+    <AppShell
+      active="trips"
+      title="Your Plans"
+      contentClassName="pt-20 max-w-3xl mx-auto px-4 md:px-8 pb-20 relative z-10"
+      actions={
+        <Link href="/trips/new" className="yatra-cta">
+          <Plus size={15} /> New Trip
         </Link>
-      </nav>
-
-      <div className="pt-20 max-w-3xl mx-auto px-4 md:px-8 pb-16 relative z-10">
+      }
+    >
 
         {/* Header */}
         <div className="mb-6 anim">
@@ -310,7 +287,6 @@ export default function TripsPage() {
           ))}
         </div>
 
-      </div>
-    </div>
+    </AppShell>
   );
 }

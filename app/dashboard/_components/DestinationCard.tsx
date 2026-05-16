@@ -2,10 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Compass, Eye, MapPin, Navigation, Route, X } from "lucide-react";
 import { Destination } from "./types";
 import { SafetyBadge, ScoreRing } from "./ui";
+import { OverlayPortal } from "@/components/overlay-portal";
+import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 
 type RouteSummary = { count: number };
 type RouteSegment = {
@@ -72,6 +75,15 @@ type PipelineRisk = {
 const summaryCache = new Map<string, RouteSummary>();
 const detailCache = new Map<string, RouteDetail[]>();
 
+const RouteMapLoader = dynamic(() => import("@/components/route-map-loader"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-72 w-full bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center">
+      <span className="text-sm text-slate-400">Loading map…</span>
+    </div>
+  ),
+});
+
 function keyFor(userLat: number, userLon: number, destLat: number, destLon: number) {
   return `${userLat.toFixed(4)},${userLon.toFixed(4)}:${destLat.toFixed(4)},${destLon.toFixed(4)}`;
 }
@@ -101,6 +113,12 @@ export function DestinationCard({
   highlighted,
   userLat,
   userLon,
+  displayUserLat,
+  displayUserLon,
+  originName,
+  originRouteNodeId,
+  gpsAccuracyMeters,
+  originAlreadyResolved = false,
   onRequestLocation,
   requestingLocation,
   shouldFetchRoute = true,
@@ -111,6 +129,12 @@ export function DestinationCard({
   highlighted: boolean;
   userLat?: number;
   userLon?: number;
+  displayUserLat?: number;
+  displayUserLon?: number;
+  originName?: string;
+  originRouteNodeId?: string;
+  gpsAccuracyMeters?: number;
+  originAlreadyResolved?: boolean;
   onRequestLocation?: () => void;
   requestingLocation?: boolean;
   shouldFetchRoute?: boolean;
@@ -154,6 +178,8 @@ export function DestinationCard({
             startLon: userLon,
             endLat: dest.latitude,
             endLon: dest.longitude,
+            destinationId: dest.id,
+            destinationName: dest.name,
           }),
           signal: controller.signal,
         });
@@ -196,8 +222,9 @@ export function DestinationCard({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          origin: { lat: userLat, lon: userLon },
-          destination: { lat: dest.latitude, lon: dest.longitude, name: dest.name },
+          origin: { lat: userLat, lon: userLon, name: originName || "Your location" },
+          destination: { lat: dest.latitude, lon: dest.longitude, name: dest.name, id: dest.id },
+          destinationId: dest.id,
           departureDate: new Date().toISOString().split("T")[0],
         }),
         signal: controller.signal,
@@ -275,7 +302,7 @@ export function DestinationCard({
   return (
     <>
       <div
-        className={`dest-card p-5 flex flex-col ${highlighted ? "border-amber-400/20" : ""}`}
+        className={`destination-card p-5 flex flex-col ${highlighted ? "border-amber-400/20" : ""}`}
         style={{ animation: `fadeUp .4s ease ${index * 0.03}s both` }}
       >
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -398,18 +425,118 @@ export function DestinationCard({
       </div>
 
       {openRoutes && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-4xl max-h-[85vh] overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+        <RouteModal
+          dest={dest}
+          userLat={userLat}
+          userLon={userLon}
+          displayUserLat={displayUserLat}
+          displayUserLon={displayUserLon}
+          originName={originName}
+          originRouteNodeId={originRouteNodeId}
+          gpsAccuracyMeters={gpsAccuracyMeters}
+          originAlreadyResolved={originAlreadyResolved}
+          routeDetails={routeDetails}
+          loadingDetails={loadingDetails}
+          routeDetailsError={routeDetailsError}
+          loadingPipelineRisk={loadingPipelineRisk}
+          pipelineRiskByRoute={pipelineRiskByRoute}
+          onClose={() => setOpenRoutes(false)}
+        />
+      )}
+    </>
+  );
+}
+
+function RouteModal({
+  dest,
+  userLat,
+  userLon,
+  displayUserLat,
+  displayUserLon,
+  originName,
+  originRouteNodeId,
+  gpsAccuracyMeters,
+  originAlreadyResolved,
+  routeDetails,
+  loadingDetails,
+  routeDetailsError,
+  loadingPipelineRisk,
+  pipelineRiskByRoute,
+  onClose,
+}: {
+  dest: Destination;
+  userLat?: number;
+  userLon?: number;
+  displayUserLat?: number;
+  displayUserLon?: number;
+  originName?: string;
+  originRouteNodeId?: string;
+  gpsAccuracyMeters?: number;
+  originAlreadyResolved?: boolean;
+  routeDetails: RouteDetail[];
+  loadingDetails: boolean;
+  routeDetailsError: string | null;
+  loadingPipelineRisk: boolean;
+  pipelineRiskByRoute: Record<number, PipelineRisk | null | undefined>;
+  onClose: () => void;
+}) {
+  useBodyScrollLock(true);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  return (
+    <OverlayPortal>
+      <div
+        className="fixed inset-0 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Route analysis"
+        className="fixed inset-4 z-[110] flex items-center justify-center pointer-events-none"
+      >
+        <div
+          className="pointer-events-auto w-full max-w-4xl max-h-[85vh] overflow-hidden rounded-xl border border-slate-700 bg-slate-900"
+          onClick={(e) => e.stopPropagation()}
+        >
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
               <div>
                 <p className="font-display text-white text-base font-semibold">Route Analysis</p>
                 <p className="font-body text-xs text-slate-400">{dest.name}</p>
               </div>
-              <button type="button" onClick={() => setOpenRoutes(false)} className="p-1 rounded text-slate-300 hover:text-white">
+              <button type="button" onClick={onClose} className="p-1 rounded text-slate-300 hover:text-white">
                 <X size={16} />
               </button>
             </div>
             <div className="p-4 overflow-y-auto max-h-[75vh] space-y-3">
+              {userLat && userLon && dest.latitude && dest.longitude && (
+                <RouteMapLoader
+                  startLat={userLat}
+                  startLon={userLon}
+                  displayStartLat={displayUserLat ?? userLat}
+                  displayStartLon={displayUserLon ?? userLon}
+                  endLat={dest.latitude}
+                  endLon={dest.longitude}
+                  destinationId={dest.id}
+                  destinationName={dest.name}
+                  originName={originName || "Your location"}
+                  originRouteNodeId={originRouteNodeId}
+                  gpsAccuracy={gpsAccuracyMeters}
+                  originAlreadyResolved={originAlreadyResolved}
+                  riskLevel={
+                    (routeDetails[0]?.riskLevel as "LOW" | "MEDIUM" | "HIGH" | "EXTREME") ?? "MEDIUM"
+                  }
+                  height="h-72"
+                />
+              )}
               {loadingDetails && <p className="font-body text-sm text-slate-400">Loading route hazards and disaster data…</p>}
               {!loadingDetails && routeDetailsError && (
                 <p className="font-body text-sm text-amber-300">{routeDetailsError}</p>
@@ -478,8 +605,7 @@ export function DestinationCard({
             </div>
           </div>
         </div>
-      )}
-    </>
+    </OverlayPortal>
   );
 }
 

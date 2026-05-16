@@ -168,6 +168,7 @@ export type DistrictWhereInput = {
   provinceId?: Prisma.StringFilter<"District"> | string
   province?: Prisma.XOR<Prisma.ProvinceScalarRelationFilter, Prisma.ProvinceWhereInput>
   locations?: Prisma.LocationListRelationFilter
+  places?: Prisma.PlaceListRelationFilter
 }
 
 export type DistrictOrderByWithRelationInput = {
@@ -176,6 +177,7 @@ export type DistrictOrderByWithRelationInput = {
   provinceId?: Prisma.SortOrder
   province?: Prisma.ProvinceOrderByWithRelationInput
   locations?: Prisma.LocationOrderByRelationAggregateInput
+  places?: Prisma.PlaceOrderByRelationAggregateInput
 }
 
 export type DistrictWhereUniqueInput = Prisma.AtLeast<{
@@ -188,6 +190,7 @@ export type DistrictWhereUniqueInput = Prisma.AtLeast<{
   provinceId?: Prisma.StringFilter<"District"> | string
   province?: Prisma.XOR<Prisma.ProvinceScalarRelationFilter, Prisma.ProvinceWhereInput>
   locations?: Prisma.LocationListRelationFilter
+  places?: Prisma.PlaceListRelationFilter
 }, "id" | "name_provinceId">
 
 export type DistrictOrderByWithAggregationInput = {
@@ -213,6 +216,7 @@ export type DistrictCreateInput = {
   name: string
   province: Prisma.ProvinceCreateNestedOneWithoutDistrictsInput
   locations?: Prisma.LocationCreateNestedManyWithoutDistrictInput
+  places?: Prisma.PlaceCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictUncheckedCreateInput = {
@@ -220,6 +224,7 @@ export type DistrictUncheckedCreateInput = {
   name: string
   provinceId: string
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutDistrictInput
+  places?: Prisma.PlaceUncheckedCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictUpdateInput = {
@@ -227,6 +232,7 @@ export type DistrictUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   province?: Prisma.ProvinceUpdateOneRequiredWithoutDistrictsNestedInput
   locations?: Prisma.LocationUpdateManyWithoutDistrictNestedInput
+  places?: Prisma.PlaceUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictUncheckedUpdateInput = {
@@ -234,6 +240,7 @@ export type DistrictUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   provinceId?: Prisma.StringFieldUpdateOperationsInput | string
   locations?: Prisma.LocationUncheckedUpdateManyWithoutDistrictNestedInput
+  places?: Prisma.PlaceUncheckedUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictCreateManyInput = {
@@ -289,6 +296,11 @@ export type DistrictMinOrderByAggregateInput = {
 export type DistrictScalarRelationFilter = {
   is?: Prisma.DistrictWhereInput
   isNot?: Prisma.DistrictWhereInput
+}
+
+export type DistrictNullableScalarRelationFilter = {
+  is?: Prisma.DistrictWhereInput | null
+  isNot?: Prisma.DistrictWhereInput | null
 }
 
 export type DistrictCreateNestedManyWithoutProvinceInput = {
@@ -347,16 +359,34 @@ export type DistrictUpdateOneRequiredWithoutLocationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DistrictUpdateToOneWithWhereWithoutLocationsInput, Prisma.DistrictUpdateWithoutLocationsInput>, Prisma.DistrictUncheckedUpdateWithoutLocationsInput>
 }
 
+export type DistrictCreateNestedOneWithoutPlacesInput = {
+  create?: Prisma.XOR<Prisma.DistrictCreateWithoutPlacesInput, Prisma.DistrictUncheckedCreateWithoutPlacesInput>
+  connectOrCreate?: Prisma.DistrictCreateOrConnectWithoutPlacesInput
+  connect?: Prisma.DistrictWhereUniqueInput
+}
+
+export type DistrictUpdateOneWithoutPlacesNestedInput = {
+  create?: Prisma.XOR<Prisma.DistrictCreateWithoutPlacesInput, Prisma.DistrictUncheckedCreateWithoutPlacesInput>
+  connectOrCreate?: Prisma.DistrictCreateOrConnectWithoutPlacesInput
+  upsert?: Prisma.DistrictUpsertWithoutPlacesInput
+  disconnect?: Prisma.DistrictWhereInput | boolean
+  delete?: Prisma.DistrictWhereInput | boolean
+  connect?: Prisma.DistrictWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DistrictUpdateToOneWithWhereWithoutPlacesInput, Prisma.DistrictUpdateWithoutPlacesInput>, Prisma.DistrictUncheckedUpdateWithoutPlacesInput>
+}
+
 export type DistrictCreateWithoutProvinceInput = {
   id?: string
   name: string
   locations?: Prisma.LocationCreateNestedManyWithoutDistrictInput
+  places?: Prisma.PlaceCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictUncheckedCreateWithoutProvinceInput = {
   id?: string
   name: string
   locations?: Prisma.LocationUncheckedCreateNestedManyWithoutDistrictInput
+  places?: Prisma.PlaceUncheckedCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictCreateOrConnectWithoutProvinceInput = {
@@ -398,12 +428,14 @@ export type DistrictCreateWithoutLocationsInput = {
   id?: string
   name: string
   province: Prisma.ProvinceCreateNestedOneWithoutDistrictsInput
+  places?: Prisma.PlaceCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictUncheckedCreateWithoutLocationsInput = {
   id?: string
   name: string
   provinceId: string
+  places?: Prisma.PlaceUncheckedCreateNestedManyWithoutDistrictInput
 }
 
 export type DistrictCreateOrConnectWithoutLocationsInput = {
@@ -426,12 +458,58 @@ export type DistrictUpdateWithoutLocationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   province?: Prisma.ProvinceUpdateOneRequiredWithoutDistrictsNestedInput
+  places?: Prisma.PlaceUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictUncheckedUpdateWithoutLocationsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   provinceId?: Prisma.StringFieldUpdateOperationsInput | string
+  places?: Prisma.PlaceUncheckedUpdateManyWithoutDistrictNestedInput
+}
+
+export type DistrictCreateWithoutPlacesInput = {
+  id?: string
+  name: string
+  province: Prisma.ProvinceCreateNestedOneWithoutDistrictsInput
+  locations?: Prisma.LocationCreateNestedManyWithoutDistrictInput
+}
+
+export type DistrictUncheckedCreateWithoutPlacesInput = {
+  id?: string
+  name: string
+  provinceId: string
+  locations?: Prisma.LocationUncheckedCreateNestedManyWithoutDistrictInput
+}
+
+export type DistrictCreateOrConnectWithoutPlacesInput = {
+  where: Prisma.DistrictWhereUniqueInput
+  create: Prisma.XOR<Prisma.DistrictCreateWithoutPlacesInput, Prisma.DistrictUncheckedCreateWithoutPlacesInput>
+}
+
+export type DistrictUpsertWithoutPlacesInput = {
+  update: Prisma.XOR<Prisma.DistrictUpdateWithoutPlacesInput, Prisma.DistrictUncheckedUpdateWithoutPlacesInput>
+  create: Prisma.XOR<Prisma.DistrictCreateWithoutPlacesInput, Prisma.DistrictUncheckedCreateWithoutPlacesInput>
+  where?: Prisma.DistrictWhereInput
+}
+
+export type DistrictUpdateToOneWithWhereWithoutPlacesInput = {
+  where?: Prisma.DistrictWhereInput
+  data: Prisma.XOR<Prisma.DistrictUpdateWithoutPlacesInput, Prisma.DistrictUncheckedUpdateWithoutPlacesInput>
+}
+
+export type DistrictUpdateWithoutPlacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.ProvinceUpdateOneRequiredWithoutDistrictsNestedInput
+  locations?: Prisma.LocationUpdateManyWithoutDistrictNestedInput
+}
+
+export type DistrictUncheckedUpdateWithoutPlacesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  provinceId?: Prisma.StringFieldUpdateOperationsInput | string
+  locations?: Prisma.LocationUncheckedUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictCreateManyProvinceInput = {
@@ -443,12 +521,14 @@ export type DistrictUpdateWithoutProvinceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   locations?: Prisma.LocationUpdateManyWithoutDistrictNestedInput
+  places?: Prisma.PlaceUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictUncheckedUpdateWithoutProvinceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   locations?: Prisma.LocationUncheckedUpdateManyWithoutDistrictNestedInput
+  places?: Prisma.PlaceUncheckedUpdateManyWithoutDistrictNestedInput
 }
 
 export type DistrictUncheckedUpdateManyWithoutProvinceInput = {
@@ -463,10 +543,12 @@ export type DistrictUncheckedUpdateManyWithoutProvinceInput = {
 
 export type DistrictCountOutputType = {
   locations: number
+  places: number
 }
 
 export type DistrictCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   locations?: boolean | DistrictCountOutputTypeCountLocationsArgs
+  places?: boolean | DistrictCountOutputTypeCountPlacesArgs
 }
 
 /**
@@ -486,6 +568,13 @@ export type DistrictCountOutputTypeCountLocationsArgs<ExtArgs extends runtime.Ty
   where?: Prisma.LocationWhereInput
 }
 
+/**
+ * DistrictCountOutputType without action
+ */
+export type DistrictCountOutputTypeCountPlacesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PlaceWhereInput
+}
+
 
 export type DistrictSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -493,6 +582,7 @@ export type DistrictSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   provinceId?: boolean
   province?: boolean | Prisma.ProvinceDefaultArgs<ExtArgs>
   locations?: boolean | Prisma.District$locationsArgs<ExtArgs>
+  places?: boolean | Prisma.District$placesArgs<ExtArgs>
   _count?: boolean | Prisma.DistrictCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["district"]>
 
@@ -520,6 +610,7 @@ export type DistrictOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs =
 export type DistrictInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   province?: boolean | Prisma.ProvinceDefaultArgs<ExtArgs>
   locations?: boolean | Prisma.District$locationsArgs<ExtArgs>
+  places?: boolean | Prisma.District$placesArgs<ExtArgs>
   _count?: boolean | Prisma.DistrictCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DistrictIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -534,6 +625,7 @@ export type $DistrictPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   objects: {
     province: Prisma.$ProvincePayload<ExtArgs>
     locations: Prisma.$LocationPayload<ExtArgs>[]
+    places: Prisma.$PlacePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -935,6 +1027,7 @@ export interface Prisma__DistrictClient<T, Null = never, ExtArgs extends runtime
   readonly [Symbol.toStringTag]: "PrismaPromise"
   province<T extends Prisma.ProvinceDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProvinceDefaultArgs<ExtArgs>>): Prisma.Prisma__ProvinceClient<runtime.Types.Result.GetResult<Prisma.$ProvincePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   locations<T extends Prisma.District$locationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.District$locationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  places<T extends Prisma.District$placesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.District$placesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1389,6 +1482,30 @@ export type District$locationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.LocationScalarFieldEnum | Prisma.LocationScalarFieldEnum[]
+}
+
+/**
+ * District.places
+ */
+export type District$placesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Place
+   */
+  select?: Prisma.PlaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Place
+   */
+  omit?: Prisma.PlaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlaceInclude<ExtArgs> | null
+  where?: Prisma.PlaceWhereInput
+  orderBy?: Prisma.PlaceOrderByWithRelationInput | Prisma.PlaceOrderByWithRelationInput[]
+  cursor?: Prisma.PlaceWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PlaceScalarFieldEnum | Prisma.PlaceScalarFieldEnum[]
 }
 
 /**

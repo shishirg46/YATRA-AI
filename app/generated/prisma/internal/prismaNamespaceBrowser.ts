@@ -59,9 +59,14 @@ export const ModelName = {
   Session: 'Session',
   Account: 'Account',
   Verification: 'Verification',
+  Destination: 'Destination',
   Province: 'Province',
   District: 'District',
   Location: 'Location',
+  Place: 'Place',
+  RouteNode: 'RouteNode',
+  RouteEdge: 'RouteEdge',
+  UserSavedLocation: 'UserSavedLocation',
   RouteTemplate: 'RouteTemplate',
   RouteTemplatePoint: 'RouteTemplatePoint',
   WeatherData: 'WeatherData',
@@ -211,6 +216,36 @@ export const VerificationScalarFieldEnum = {
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
 
 
+export const DestinationScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  normalizedName: 'normalizedName',
+  district: 'district',
+  province: 'province',
+  municipality: 'municipality',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  altitude: 'altitude',
+  category: 'category',
+  description: 'description',
+  image: 'image',
+  tags: 'tags',
+  osmId: 'osmId',
+  source: 'source',
+  verified: 'verified',
+  verifiedBy: 'verifiedBy',
+  verifiedAt: 'verifiedAt',
+  routeAccessible: 'routeAccessible',
+  coordinateAccuracy: 'coordinateAccuracy',
+  dataQualityScore: 'dataQualityScore',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  sourceLastFetch: 'sourceLastFetch'
+} as const
+
+export type DestinationScalarFieldEnum = (typeof DestinationScalarFieldEnum)[keyof typeof DestinationScalarFieldEnum]
+
+
 export const ProvinceScalarFieldEnum = {
   id: 'id',
   name: 'name'
@@ -239,6 +274,65 @@ export const LocationScalarFieldEnum = {
 } as const
 
 export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
+
+
+export const PlaceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  parentId: 'parentId',
+  districtId: 'districtId',
+  locationId: 'locationId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlaceScalarFieldEnum = (typeof PlaceScalarFieldEnum)[keyof typeof PlaceScalarFieldEnum]
+
+
+export const RouteNodeScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  placeId: 'placeId',
+  isHub: 'isHub',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RouteNodeScalarFieldEnum = (typeof RouteNodeScalarFieldEnum)[keyof typeof RouteNodeScalarFieldEnum]
+
+
+export const RouteEdgeScalarFieldEnum = {
+  id: 'id',
+  fromNodeId: 'fromNodeId',
+  toNodeId: 'toNodeId',
+  distanceKm: 'distanceKm',
+  roadName: 'roadName',
+  isBidirectional: 'isBidirectional'
+} as const
+
+export type RouteEdgeScalarFieldEnum = (typeof RouteEdgeScalarFieldEnum)[keyof typeof RouteEdgeScalarFieldEnum]
+
+
+export const UserSavedLocationScalarFieldEnum = {
+  userId: 'userId',
+  placeName: 'placeName',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  nearestRouteNodeId: 'nearestRouteNodeId',
+  accuracyMeters: 'accuracyMeters',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserSavedLocationScalarFieldEnum = (typeof UserSavedLocationScalarFieldEnum)[keyof typeof UserSavedLocationScalarFieldEnum]
 
 
 export const RouteTemplateScalarFieldEnum = {

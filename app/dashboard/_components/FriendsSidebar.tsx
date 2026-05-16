@@ -5,6 +5,9 @@
  */
 "use client";
 
+import { OverlayPortal } from "@/components/overlay-portal";
+import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
+
 import { useState, useEffect, useRef } from "react";
 import {
   Users, X, Loader2, UserMinus, UserCheck,
@@ -92,10 +95,17 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useBodyScrollLock(open);
+
   return (
-    <>
-      <div className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} onClick={onClose} />
-      <div className={`fixed top-0 left-0 z-50 h-full w-full max-w-xs friends-panel transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"}`}>
+    <OverlayPortal active={open}>
+      <div className={`fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`} onClick={onClose} aria-hidden={!open} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Travel network"
+        className={`fixed top-0 left-0 z-[110] h-full w-full max-w-xs friends-panel transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full"}`}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
@@ -254,6 +264,6 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
           </div>
         </div>
       </div>
-    </>
+    </OverlayPortal>
   );
 }

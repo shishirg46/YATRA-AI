@@ -256,6 +256,7 @@ export type UserWhereInput = {
   health?: Prisma.XOR<Prisma.UserHealthNullableScalarRelationFilter, Prisma.UserHealthWhereInput> | null
   preference?: Prisma.XOR<Prisma.UserPreferenceNullableScalarRelationFilter, Prisma.UserPreferenceWhereInput> | null
   behavior?: Prisma.XOR<Prisma.UserBehaviorNullableScalarRelationFilter, Prisma.UserBehaviorWhereInput> | null
+  savedLocation?: Prisma.XOR<Prisma.UserSavedLocationNullableScalarRelationFilter, Prisma.UserSavedLocationWhereInput> | null
   sentRequests?: Prisma.FriendshipListRelationFilter
   receivedRequests?: Prisma.FriendshipListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -286,6 +287,7 @@ export type UserOrderByWithRelationInput = {
   health?: Prisma.UserHealthOrderByWithRelationInput
   preference?: Prisma.UserPreferenceOrderByWithRelationInput
   behavior?: Prisma.UserBehaviorOrderByWithRelationInput
+  savedLocation?: Prisma.UserSavedLocationOrderByWithRelationInput
   sentRequests?: Prisma.FriendshipOrderByRelationAggregateInput
   receivedRequests?: Prisma.FriendshipOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
@@ -319,6 +321,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   health?: Prisma.XOR<Prisma.UserHealthNullableScalarRelationFilter, Prisma.UserHealthWhereInput> | null
   preference?: Prisma.XOR<Prisma.UserPreferenceNullableScalarRelationFilter, Prisma.UserPreferenceWhereInput> | null
   behavior?: Prisma.XOR<Prisma.UserBehaviorNullableScalarRelationFilter, Prisma.UserBehaviorWhereInput> | null
+  savedLocation?: Prisma.XOR<Prisma.UserSavedLocationNullableScalarRelationFilter, Prisma.UserSavedLocationWhereInput> | null
   sentRequests?: Prisma.FriendshipListRelationFilter
   receivedRequests?: Prisma.FriendshipListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -386,6 +389,7 @@ export type UserCreateInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -415,6 +419,7 @@ export type UserUncheckedCreateInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -444,6 +449,7 @@ export type UserUpdateInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -473,6 +479,7 @@ export type UserUncheckedUpdateInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -758,6 +765,20 @@ export type UserUncheckedUpdateManyWithoutHomeLocationNestedInput = {
   deleteMany?: Prisma.UserScalarWhereInput | Prisma.UserScalarWhereInput[]
 }
 
+export type UserCreateNestedOneWithoutSavedLocationInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSavedLocationInput, Prisma.UserUncheckedCreateWithoutSavedLocationInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSavedLocationInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSavedLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSavedLocationInput, Prisma.UserUncheckedCreateWithoutSavedLocationInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSavedLocationInput
+  upsert?: Prisma.UserUpsertWithoutSavedLocationInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSavedLocationInput, Prisma.UserUpdateWithoutSavedLocationInput>, Prisma.UserUncheckedUpdateWithoutSavedLocationInput>
+}
+
 export type UserCreateNestedOneWithoutTravelPlansInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutTravelPlansInput, Prisma.UserUncheckedCreateWithoutTravelPlansInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTravelPlansInput
@@ -866,6 +887,7 @@ export type UserCreateWithoutHealthInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -894,6 +916,7 @@ export type UserUncheckedCreateWithoutHealthInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -938,6 +961,7 @@ export type UserUpdateWithoutHealthInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -966,6 +990,7 @@ export type UserUncheckedUpdateWithoutHealthInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -994,6 +1019,7 @@ export type UserCreateWithoutPreferenceInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1022,6 +1048,7 @@ export type UserUncheckedCreateWithoutPreferenceInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1066,6 +1093,7 @@ export type UserUpdateWithoutPreferenceInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1094,6 +1122,7 @@ export type UserUncheckedUpdateWithoutPreferenceInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1122,6 +1151,7 @@ export type UserCreateWithoutBehaviorInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1150,6 +1180,7 @@ export type UserUncheckedCreateWithoutBehaviorInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1194,6 +1225,7 @@ export type UserUpdateWithoutBehaviorInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1222,6 +1254,7 @@ export type UserUncheckedUpdateWithoutBehaviorInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1251,6 +1284,7 @@ export type UserCreateWithoutSentRequestsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1279,6 +1313,7 @@ export type UserUncheckedCreateWithoutSentRequestsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1312,6 +1347,7 @@ export type UserCreateWithoutReceivedRequestsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1340,6 +1376,7 @@ export type UserUncheckedCreateWithoutReceivedRequestsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1384,6 +1421,7 @@ export type UserUpdateWithoutSentRequestsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1412,6 +1450,7 @@ export type UserUncheckedUpdateWithoutSentRequestsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1451,6 +1490,7 @@ export type UserUpdateWithoutReceivedRequestsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1479,6 +1519,7 @@ export type UserUncheckedUpdateWithoutReceivedRequestsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1507,6 +1548,7 @@ export type UserCreateWithoutSessionsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
@@ -1535,6 +1577,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
@@ -1579,6 +1622,7 @@ export type UserUpdateWithoutSessionsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
@@ -1607,6 +1651,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
@@ -1635,6 +1680,7 @@ export type UserCreateWithoutAccountsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1663,6 +1709,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1707,6 +1754,7 @@ export type UserUpdateWithoutAccountsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1735,6 +1783,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1762,6 +1811,7 @@ export type UserCreateWithoutHomeLocationInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1790,6 +1840,7 @@ export type UserUncheckedCreateWithoutHomeLocationInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1841,6 +1892,138 @@ export type UserScalarWhereInput = {
   deletedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
 }
 
+export type UserCreateWithoutSavedLocationInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSavedLocationInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSavedLocationInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSavedLocationInput, Prisma.UserUncheckedCreateWithoutSavedLocationInput>
+}
+
+export type UserUpsertWithoutSavedLocationInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSavedLocationInput, Prisma.UserUncheckedUpdateWithoutSavedLocationInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSavedLocationInput, Prisma.UserUncheckedCreateWithoutSavedLocationInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSavedLocationInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSavedLocationInput, Prisma.UserUncheckedUpdateWithoutSavedLocationInput>
+}
+
+export type UserUpdateWithoutSavedLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSavedLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+}
+
 export type UserCreateWithoutTravelPlansInput = {
   id?: string
   name: string
@@ -1863,6 +2046,7 @@ export type UserCreateWithoutTravelPlansInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -1891,6 +2075,7 @@ export type UserUncheckedCreateWithoutTravelPlansInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -1935,6 +2120,7 @@ export type UserUpdateWithoutTravelPlansInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -1963,6 +2149,7 @@ export type UserUncheckedUpdateWithoutTravelPlansInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -1991,6 +2178,7 @@ export type UserCreateWithoutPlanMembershipsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2019,6 +2207,7 @@ export type UserUncheckedCreateWithoutPlanMembershipsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2063,6 +2252,7 @@ export type UserUpdateWithoutPlanMembershipsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2091,6 +2281,7 @@ export type UserUncheckedUpdateWithoutPlanMembershipsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2119,6 +2310,7 @@ export type UserCreateWithoutCreatedGroupsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2147,6 +2339,7 @@ export type UserUncheckedCreateWithoutCreatedGroupsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2191,6 +2384,7 @@ export type UserUpdateWithoutCreatedGroupsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2219,6 +2413,7 @@ export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2247,6 +2442,7 @@ export type UserCreateWithoutGroupMembershipsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2275,6 +2471,7 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2319,6 +2516,7 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2347,6 +2545,7 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2375,6 +2574,7 @@ export type UserCreateWithoutNotificationsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2403,6 +2603,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2447,6 +2648,7 @@ export type UserUpdateWithoutNotificationsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2475,6 +2677,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2503,6 +2706,7 @@ export type UserCreateWithoutAuditLogsInput = {
   health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
@@ -2531,6 +2735,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
   sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
   receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
@@ -2575,6 +2780,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2603,6 +2809,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2646,6 +2853,7 @@ export type UserUpdateWithoutHomeLocationInput = {
   health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
@@ -2674,6 +2882,7 @@ export type UserUncheckedUpdateWithoutHomeLocationInput = {
   health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
   sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
   receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
@@ -2831,6 +3040,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   health?: boolean | Prisma.User$healthArgs<ExtArgs>
   preference?: boolean | Prisma.User$preferenceArgs<ExtArgs>
   behavior?: boolean | Prisma.User$behaviorArgs<ExtArgs>
+  savedLocation?: boolean | Prisma.User$savedLocationArgs<ExtArgs>
   sentRequests?: boolean | Prisma.User$sentRequestsArgs<ExtArgs>
   receivedRequests?: boolean | Prisma.User$receivedRequestsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -2900,6 +3110,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   health?: boolean | Prisma.User$healthArgs<ExtArgs>
   preference?: boolean | Prisma.User$preferenceArgs<ExtArgs>
   behavior?: boolean | Prisma.User$behaviorArgs<ExtArgs>
+  savedLocation?: boolean | Prisma.User$savedLocationArgs<ExtArgs>
   sentRequests?: boolean | Prisma.User$sentRequestsArgs<ExtArgs>
   receivedRequests?: boolean | Prisma.User$receivedRequestsArgs<ExtArgs>
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
@@ -2926,6 +3137,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     health: Prisma.$UserHealthPayload<ExtArgs> | null
     preference: Prisma.$UserPreferencePayload<ExtArgs> | null
     behavior: Prisma.$UserBehaviorPayload<ExtArgs> | null
+    savedLocation: Prisma.$UserSavedLocationPayload<ExtArgs> | null
     sentRequests: Prisma.$FriendshipPayload<ExtArgs>[]
     receivedRequests: Prisma.$FriendshipPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
@@ -3349,6 +3561,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   health<T extends Prisma.User$healthArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$healthArgs<ExtArgs>>): Prisma.Prisma__UserHealthClient<runtime.Types.Result.GetResult<Prisma.$UserHealthPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   preference<T extends Prisma.User$preferenceArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$preferenceArgs<ExtArgs>>): Prisma.Prisma__UserPreferenceClient<runtime.Types.Result.GetResult<Prisma.$UserPreferencePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   behavior<T extends Prisma.User$behaviorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$behaviorArgs<ExtArgs>>): Prisma.Prisma__UserBehaviorClient<runtime.Types.Result.GetResult<Prisma.$UserBehaviorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  savedLocation<T extends Prisma.User$savedLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$savedLocationArgs<ExtArgs>>): Prisma.Prisma__UserSavedLocationClient<runtime.Types.Result.GetResult<Prisma.$UserSavedLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   sentRequests<T extends Prisma.User$sentRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FriendshipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   receivedRequests<T extends Prisma.User$receivedRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$receivedRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FriendshipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4013,6 +4226,25 @@ export type User$behaviorArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.UserBehaviorInclude<ExtArgs> | null
   where?: Prisma.UserBehaviorWhereInput
+}
+
+/**
+ * User.savedLocation
+ */
+export type User$savedLocationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserSavedLocation
+   */
+  select?: Prisma.UserSavedLocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserSavedLocation
+   */
+  omit?: Prisma.UserSavedLocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserSavedLocationInclude<ExtArgs> | null
+  where?: Prisma.UserSavedLocationWhereInput
 }
 
 /**

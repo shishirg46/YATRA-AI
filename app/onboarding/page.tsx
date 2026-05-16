@@ -87,10 +87,6 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState("");
   const [province, setProvince] = useState("");
   const [district, setDistrict] = useState("");
-  const [locationLat, setLocationLat] = useState<number | null>(null);
-  const [locationLng, setLocationLng] = useState<number | null>(null);
-  const [locating, setLocating] = useState(false);
-  const [locationNote, setLocationNote] = useState<string | null>(null);
 
   // ── Step 2: Interests ──────────────────────────────────────────────────────
   const [interests, setInterests] = useState<string[]>([]);
@@ -114,78 +110,7 @@ export default function OnboardingPage() {
     return value.toLowerCase().replace(/[^a-z0-9]/g, "");
   }
 
-  function toProvinceLabel(value: string) {
-    const v = value.toLowerCase();
-    if (v.includes("koshi") || v.includes("province1")) return "Koshi";
-    if (v.includes("madhesh") || v.includes("province2")) return "Madhesh";
-    if (v.includes("bagmati") || v.includes("province3")) return "Bagmati";
-    if (v.includes("gandaki") || v.includes("province4")) return "Gandaki";
-    if (v.includes("lumbini") || v.includes("province5")) return "Lumbini";
-    if (v.includes("karnali") || v.includes("province6")) return "Karnali";
-    if (v.includes("sudurpashchim") || v.includes("sudurpaschim") || v.includes("province7")) return "Sudurpashchim";
-    return "";
-  }
 
-  async function autofillFromBrowserLocation() {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setLocationNote("Location is not supported in this browser.");
-      return;
-    }
-    setLocating(true);
-    setLocationNote(null);
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { latitude, longitude } = pos.coords;
-          setLocationLat(latitude);
-          setLocationLng(longitude);
-
-          const reverseRes = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&zoom=10&addressdetails=1`,
-            { headers: { Accept: "application/json", "Accept-Language": "en-US,en;q=0.9" } }
-          );
-          if (!reverseRes.ok) {
-            setLocationNote("Location found, but auto-fill failed. Please select manually.");
-            return;
-          }
-
-          const payload = await reverseRes.json();
-          const address = payload?.address ?? {};
-          const provinceCandidate = String(address.state ?? address.region ?? "").trim();
-          const districtCandidate = String(address.state_district ?? address.county ?? address.city_district ?? "").trim();
-
-          const detectedProvince = toProvinceLabel(provinceCandidate);
-          if (!detectedProvince) {
-            setLocationNote("Could not detect province from your location. Please select manually.");
-            return;
-          }
-
-          const districtList = PROVINCES[detectedProvince] ?? [];
-          const detectedDistrict = districtList.find((d) => normalizeName(d) === normalizeName(districtCandidate)) ?? "";
-
-          setProvince(detectedProvince);
-          if (detectedDistrict) {
-            setDistrict(detectedDistrict);
-            setLocationNote(`Auto-filled: ${detectedDistrict}, ${detectedProvince} Province.`);
-          } else {
-            setDistrict("");
-            setLocationNote(`Detected ${detectedProvince} Province. Please choose your district.`);
-          }
-          setError(null);
-        } catch {
-          setLocationNote("Location found, but auto-fill failed. Please select manually.");
-        } finally {
-          setLocating(false);
-        }
-      },
-      () => {
-        setLocating(false);
-        setLocationNote("Location permission denied or unavailable. Please select manually.");
-      },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-    );
-  }
 
   useEffect(() => {
     fetch("/api/user/profile-status", { credentials: "include" })
@@ -260,8 +185,6 @@ export default function OnboardingPage() {
           username: needsUsername ? username : undefined,
           province, 
           district,
-          locationLat,
-          locationLng,
           interests,
           riskTolerance,
           travelStyle,
@@ -311,40 +234,8 @@ export default function OnboardingPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
-      style={{ background: "#0a0f1e" }}
+      className="yatra-page min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden"
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@300;400;500&display=swap');
-        .font-display{font-family:'Playfair Display',Georgia,serif}
-        .font-body{font-family:'DM Sans',system-ui,sans-serif}
-        @keyframes fadeUp  {from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes slideIn {from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:translateX(0)}}
-        @keyframes shimmer {0%{background-position:-200% center}100%{background-position:200% center}}
-        .anim-1  {animation:fadeUp  .6s ease both}
-        .anim-2  {animation:fadeUp  .6s .1s ease both}
-        .slide-in{animation:slideIn .3s ease both}
-        .shimmer-text{background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b,#fbbf24);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
-        .glow-dot{position:absolute;border-radius:9999px;filter:blur(80px);pointer-events:none}
-        .auth-card{background:rgba(15,23,42,0.88);border:1px solid rgba(245,158,11,0.15);backdrop-filter:blur(24px);border-radius:24px}
-        .mountain-wave{clip-path:polygon(0 40%,10% 25%,22% 38%,35% 10%,48% 30%,60% 5%,72% 22%,85% 12%,95% 28%,100% 18%,100% 100%,0 100%)}
-        .auth-input,.auth-select{background:rgba(255,255,255,0.04)!important;border:1px solid rgba(255,255,255,0.1)!important;color:white!important;font-family:'DM Sans',system-ui,sans-serif!important;border-radius:10px!important;transition:border-color .2s,box-shadow .2s}
-        .auth-input:focus,.auth-select:focus{border-color:rgba(245,158,11,.5)!important;box-shadow:0 0 0 3px rgba(245,158,11,.1)!important;outline:none!important}
-        .auth-input::placeholder{color:rgba(255,255,255,0.25)!important}
-        .auth-select option{background:#0f1729;color:white}
-        .purpose-card{background:rgba(255,255,255,0.03);border:1.5px solid rgba(255,255,255,0.08);border-radius:14px;cursor:pointer;transition:all .2s;padding:14px;position:relative;overflow:hidden;}
-        .purpose-card:hover{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08);transform:translateY(-1px)}
-        .purpose-card.active{border-color:#f59e0b;background:rgba(245,158,11,.15);box-shadow:0 0 0 1px #f59e0b inset,0 4px 20px rgba(245,158,11,.15);}
-        .purpose-card.active::after{content:'✓';position:absolute;top:12px;right:14px;color:#f59e0b;font-weight:bold;font-size:16px;}
-        .pill-btn{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:9999px;cursor:pointer;transition:all .2s;font-family:'DM Sans',system-ui,sans-serif}
-        .pill-btn:hover{border-color:rgba(245,158,11,.4);background:rgba(245,158,11,.08)}
-        .pill-btn.active{background:rgba(245,158,11,.2);border-color:#f59e0b;color:#fcd34d;box-shadow:0 0 0 1px #f59e0b inset;}
-        .amber-btn{background:#f59e0b;color:#0a0f1e;font-family:'DM Sans',system-ui,sans-serif;font-weight:600;border-radius:10px;transition:background .2s,box-shadow .2s,transform .15s}
-        .amber-btn:hover:not(:disabled){background:#fbbf24;box-shadow:0 0 32px rgba(245,158,11,.4);transform:translateY(-1px)}
-        .amber-btn:disabled{opacity:.6;cursor:not-allowed}
-        .step-dot{width:8px;height:8px;border-radius:50%;transition:all .3s}
-      `}</style>
-
       <div className="glow-dot w-80 h-80 bg-amber-500/15 -top-20 -right-20" />
       <div className="glow-dot w-72 h-72 bg-sky-500/10 bottom-0 -left-20" />
       <div className="absolute bottom-0 inset-x-0 h-24 mountain-wave bg-gradient-to-b from-slate-800/30 to-slate-900/50 pointer-events-none" />
@@ -413,24 +304,7 @@ export default function OnboardingPage() {
                 </div>
               )}
 
-              {/* Auto-fill */}
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-body text-sm text-slate-200">Use current location</p>
-                    <p className="font-body text-xs text-slate-500">Browser will ask permission and we&apos;ll auto-fill.</p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={autofillFromBrowserLocation}
-                    disabled={locating}
-                    className="px-3 py-2 rounded-lg bg-amber-500/90 hover:bg-amber-400 text-slate-900 text-xs font-body font-semibold transition-colors disabled:opacity-50 shrink-0"
-                  >
-                    {locating ? "Detecting…" : "Enable"}
-                  </button>
-                </div>
-                {locationNote && <p className="font-body text-xs text-slate-400 mt-2">{locationNote}</p>}
-              </div>
+
 
               {/* Province */}
               <div className="grid gap-2">

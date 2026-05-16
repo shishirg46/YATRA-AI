@@ -7,6 +7,8 @@
 
 import { useEffect } from "react";
 import { Bell, X, MapPin, Clock } from "lucide-react";
+import { OverlayPortal } from "@/components/overlay-portal";
+import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 import { HazardNotif, HAZARD_CONFIG } from "./types";
 import { TimeAgo } from "./ui";
 
@@ -18,20 +20,30 @@ export function NotificationPanel({ open, onClose, notifications, onMarkRead, on
   onMarkAllRead: () => void;
 }) {
   useEffect(() => {
+    if (!open) return;
     function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, open]);
 
   const unread = notifications.filter((n) => !n.read).length;
+  useBodyScrollLock(open);
+
+  if (!open) return null;
 
   return (
-    <>
+    <OverlayPortal>
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-200 ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
+        aria-hidden
       />
-      <div className={`fixed top-16 right-4 z-50 w-full max-w-sm notif-panel transition-all duration-300 ${open ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-3 pointer-events-none"}`}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Hazard alerts"
+        className="fixed top-16 right-4 left-4 sm:left-auto z-[110] sm:w-full max-w-sm notif-panel"
+      >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <Bell size={15} className="text-amber-400" />
@@ -103,6 +115,6 @@ export function NotificationPanel({ open, onClose, notifications, onMarkRead, on
           )}
         </div>
       </div>
-    </>
+    </OverlayPortal>
   );
 }

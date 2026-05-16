@@ -315,6 +315,20 @@ export type FloatFilter<$PrismaModel = never> = {
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
 }
 
+export type EnumDestinationCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationCategory | Prisma.EnumDestinationCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel> | $Enums.DestinationCategory
+}
+
+export type EnumDestinationSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationSource | Prisma.EnumDestinationSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel> | $Enums.DestinationSource
+}
+
 export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -329,6 +343,43 @@ export type FloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type EnumDestinationCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationCategory | Prisma.EnumDestinationCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationCategoryWithAggregatesFilter<$PrismaModel> | $Enums.DestinationCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel>
+}
+
+export type EnumDestinationSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationSource | Prisma.EnumDestinationSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationSourceWithAggregatesFilter<$PrismaModel> | $Enums.DestinationSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel>
+}
+
+export type EnumPlaceTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PlaceType | Prisma.EnumPlaceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel> | $Enums.PlaceType
+}
+
+export type EnumPlaceTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PlaceType | Prisma.EnumPlaceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPlaceTypeWithAggregatesFilter<$PrismaModel> | $Enums.PlaceType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
 }
 
 export type IntFilter<$PrismaModel = never> = {
@@ -753,6 +804,20 @@ export type NestedFloatFilter<$PrismaModel = never> = {
   not?: Prisma.NestedFloatFilter<$PrismaModel> | number
 }
 
+export type NestedEnumDestinationCategoryFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationCategory | Prisma.EnumDestinationCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel> | $Enums.DestinationCategory
+}
+
+export type NestedEnumDestinationSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationSource | Prisma.EnumDestinationSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel> | $Enums.DestinationSource
+}
+
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -767,6 +832,43 @@ export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedFloatFilter<$PrismaModel>
   _min?: Prisma.NestedFloatFilter<$PrismaModel>
   _max?: Prisma.NestedFloatFilter<$PrismaModel>
+}
+
+export type NestedEnumDestinationCategoryWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationCategory | Prisma.EnumDestinationCategoryFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationCategory[] | Prisma.ListEnumDestinationCategoryFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationCategoryWithAggregatesFilter<$PrismaModel> | $Enums.DestinationCategory
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDestinationCategoryFilter<$PrismaModel>
+}
+
+export type NestedEnumDestinationSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DestinationSource | Prisma.EnumDestinationSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DestinationSource[] | Prisma.ListEnumDestinationSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDestinationSourceWithAggregatesFilter<$PrismaModel> | $Enums.DestinationSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDestinationSourceFilter<$PrismaModel>
+}
+
+export type NestedEnumPlaceTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PlaceType | Prisma.EnumPlaceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel> | $Enums.PlaceType
+}
+
+export type NestedEnumPlaceTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PlaceType | Prisma.EnumPlaceTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PlaceType[] | Prisma.ListEnumPlaceTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPlaceTypeWithAggregatesFilter<$PrismaModel> | $Enums.PlaceType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

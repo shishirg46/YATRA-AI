@@ -82,6 +82,11 @@ export type Account = Prisma.AccountModel
  */
 export type Verification = Prisma.VerificationModel
 /**
+ * Model Destination
+ * 
+ */
+export type Destination = Prisma.DestinationModel
+/**
  * Model Province
  * 
  */
@@ -96,6 +101,26 @@ export type District = Prisma.DistrictModel
  * 
  */
 export type Location = Prisma.LocationModel
+/**
+ * Model Place
+ * 
+ */
+export type Place = Prisma.PlaceModel
+/**
+ * Model RouteNode
+ * 
+ */
+export type RouteNode = Prisma.RouteNodeModel
+/**
+ * Model RouteEdge
+ * 
+ */
+export type RouteEdge = Prisma.RouteEdgeModel
+/**
+ * Model UserSavedLocation
+ * 
+ */
+export type UserSavedLocation = Prisma.UserSavedLocationModel
 /**
  * Model RouteTemplate
  * 

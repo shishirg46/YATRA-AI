@@ -171,7 +171,7 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {destinations.map((d) => (
-              <div key={d.name} className="dest-card h-72 bg-slate-800">
+              <div key={d.name} className="showcase-card h-72 bg-slate-800">
                 <img
                   src={`/images/${d.name.toLowerCase()}.png`}
                   alt={d.name}

@@ -17,6 +17,7 @@
 import { useState, useEffect, use } from "react";
 import Link                          from "next/link";
 import { useRouter }                 from "next/navigation";
+import RouteMapLoader                from "@/components/route-map-loader";
 import {
   Mountain, ArrowLeft, MapPin, Calendar, Users, User,
   Shield, AlertTriangle, Zap, XCircle, CheckCircle2,
@@ -403,6 +404,25 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           )}
         </div>
+
+        {/* ── Route map ──────────────────────────────────────────────────── */}
+        {plan.stops.length >= 1 && plan.stops[0].location && (
+          <div className="trip-card rounded-2xl p-6 anim">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin size={15} className="text-amber-400" />
+              <span className="font-display font-bold text-white text-sm">Route Map</span>
+            </div>
+            <RouteMapLoader
+              startLat={28.2296} // Kathmandu default
+              startLon={85.3240}
+              endLat={plan.stops[plan.stops.length - 1].location?.id === plan.stops[0].location?.id ? 27.9 : 27.7}
+              endLon={plan.stops[plan.stops.length - 1].location?.id === plan.stops[0].location?.id ? 85.9 : 85.3}
+              originName={plan.stops[0].location.name}
+              destinationName={plan.stops[plan.stops.length - 1].location.name}
+              riskLevel={risk?.overallGroupLevel || "MEDIUM"}
+            />
+          </div>
+        )}
 
         {/* ── Route stops with per-stop analysis ────────────────────────── */}
         <Section title={`Route (${plan.stops.length} stops)`} icon={MapPin}>

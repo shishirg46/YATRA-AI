@@ -73,3 +73,54 @@ export const MemberStatus = {
 } as const
 
 export type MemberStatus = (typeof MemberStatus)[keyof typeof MemberStatus]
+
+
+export const PlaceType = {
+  PROVINCE: 'PROVINCE',
+  DISTRICT: 'DISTRICT',
+  MUNICIPALITY: 'MUNICIPALITY',
+  RURAL_MUNICIPALITY: 'RURAL_MUNICIPALITY',
+  WARD: 'WARD',
+  ROUTE_NODE: 'ROUTE_NODE',
+  CHOWK: 'CHOWK',
+  HIGHWAY: 'HIGHWAY',
+  BUS_PARK: 'BUS_PARK',
+  JUNCTION: 'JUNCTION',
+  TOWN: 'TOWN'
+} as const
+
+export type PlaceType = (typeof PlaceType)[keyof typeof PlaceType]
+
+
+export const DestinationCategory = {
+  VIEWPOINT: 'VIEWPOINT',
+  TREKKING_VILLAGE: 'TREKKING_VILLAGE',
+  LAKE: 'LAKE',
+  HILL: 'HILL',
+  MOUNTAIN: 'MOUNTAIN',
+  TOURIST_ATTRACTION: 'TOURIST_ATTRACTION',
+  MUNICIPALITY: 'MUNICIPALITY',
+  CHOWK: 'CHOWK',
+  TEMPLE: 'TEMPLE',
+  RIVERSIDE: 'RIVERSIDE',
+  FOREST: 'FOREST',
+  WATERFALL: 'WATERFALL',
+  CAMP: 'CAMP',
+  MOUNTAIN_SETTLEMENT: 'MOUNTAIN_SETTLEMENT',
+  OTHER: 'OTHER'
+} as const
+
+export type DestinationCategory = (typeof DestinationCategory)[keyof typeof DestinationCategory]
+
+
+export const DestinationSource = {
+  OPENSTREETMAP: 'OPENSTREETMAP',
+  NOMINATIM: 'NOMINATIM',
+  OVERPASS: 'OVERPASS',
+  GEONAMES: 'GEONAMES',
+  MANUAL: 'MANUAL',
+  LOCAL_KNOWLEDGE: 'LOCAL_KNOWLEDGE',
+  HISTORICAL: 'HISTORICAL'
+} as const
+
+export type DestinationSource = (typeof DestinationSource)[keyof typeof DestinationSource]

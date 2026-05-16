@@ -24,7 +24,7 @@ import Image                    from "next/image";
 import {
   Mountain, XCircle, RefreshCw,
   Search, X, User, Bell, Users, MapPin,
-  ChevronLeft, ChevronRight,
+  ChevronLeft, ChevronRight, Navigation, Loader2
 } from "lucide-react";
 import { Button }          from "@/components/ui/button";
 import { authClient }      from "@/lib/auth-client";
@@ -35,6 +35,9 @@ import { NotificationPanel } from "./_components/NotificationPanel";
 import { FriendsSidebar }    from "./_components/FriendsSidebar";
 import { DestinationCard }   from "./_components/DestinationCard";
 import { ProfileDrawer }     from "./_components/ProfileDrawer";
+import { LocationPicker }    from "./_components/LocationPicker";
+import { AppShell }            from "@/components/app-shell";
+import { useResolvedOrigin } from "@/lib/hooks/use-resolved-origin";
 
 const PAGE_SIZE = 12;
 
@@ -86,8 +89,6 @@ function Pagination({ current, total, onChange }: {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const USER_LOCATION_CACHE_KEY = "yatraai:last-origin";
-
   const [data, setData]               = useState<DashboardData | null>(null);
 
   // Real-time SSE updates
@@ -105,10 +106,23 @@ export default function DashboardPage() {
   const [userData, setUserData]       = useState<UserProfile | null>(null);
   const [page, setPage]               = useState(1);
   const [assessStatus, setAssessStatus] = useState<{ hoursAgo: number | null; isStale: boolean } | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [visibleRouteCards, setVisibleRouteCards] = useState(5);
+  const [pickingLocation, setPickingLocation] = useState(false);
+  const {
+    origin: resolvedOrigin,
+    resolving: resolvingOrigin,
+    error: originResolveError,
+    resolveFromGps,
+    resolveFromManual,
+    loadSavedHome,
+  } = useResolvedOrigin();
+
+  const userLocation = resolvedOrigin
+    ? { lat: resolvedOrigin.lat, lon: resolvedOrigin.lon }
+    : null;
+  const manualLocationName = resolvedOrigin?.name ?? null;
 
   function requestUserLocation() {
     if (!navigator.geolocation) {
@@ -119,48 +133,50 @@ export default function DashboardPage() {
     const executeGeoRequest = () => {
       setLocating(true);
       setLocationError(null);
-      let finished = false;
-      const forceTimeout = setTimeout(() => {
-        if (finished) return;
-        finished = true;
-        setLocating(false);
-        setLocationError("Location request timed out. Check browser location settings for this site and try again.");
-      }, 10000);
+      
+      let bestPos: GeolocationPosition | null = null;
+      let watchId: number | null = null;
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          if (finished) return;
-          finished = true;
-          clearTimeout(forceTimeout);
-          const nextLoc = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-          setUserLocation(nextLoc);
-          try {
-            localStorage.setItem(USER_LOCATION_CACHE_KEY, JSON.stringify(nextLoc));
-          } catch {
-            // ignore storage failures
+      const stopWatching = () => {
+        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        setLocating(false);
+      };
+
+      const timeoutId = setTimeout(() => {
+        stopWatching();
+        if (bestPos) {
+          const { latitude, longitude, accuracy } = bestPos.coords;
+          if (accuracy > 300) {
+             setLocationError(`Could not get accurate location (best: ${Math.round(accuracy)}m). Using approximate coordinates.`);
           }
-          setLocating(false);
+          void resolveFromGps(latitude, longitude, accuracy);
+        } else {
+          setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
+        }
+      }, 12000);
+
+      watchId = navigator.geolocation.watchPosition(
+        (pos) => {
+          if (!bestPos || pos.coords.accuracy < bestPos.coords.accuracy) {
+            bestPos = pos;
+          }
+          // If accuracy is good enough (< 40m), stop early
+          if (pos.coords.accuracy < 40) {
+            clearTimeout(timeoutId);
+            stopWatching();
+            void resolveFromGps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+          }
         },
         (err) => {
-          if (finished) return;
-          finished = true;
-          clearTimeout(forceTimeout);
-          setLocating(false);
-          if (err.code === 1) {
-            setLocationError("Location permission denied. Open browser site settings for localhost:3000, allow Location, then tap Enable again.");
-            return;
+          // If we already have a best position, we ignore errors and wait for timeout
+          if (!bestPos) {
+            clearTimeout(timeoutId);
+            stopWatching();
+            if (err.code === 1) setLocationError("Permission denied.");
+            else setLocationError("Location unavailable.");
           }
-          if (err.code === 2) {
-            setLocationError("Location unavailable right now. Please try again.");
-            return;
-          }
-          setLocationError("Could not fetch location. Please try again.");
         },
-        {
-          enableHighAccuracy: false,
-          timeout: 8000,
-          maximumAge: 60000,
-        }
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
       );
     };
 
@@ -182,20 +198,6 @@ export default function DashboardPage() {
   }
 
   // Do not auto-request on mount; request only from explicit user action.
-
-  // Reuse cached location to avoid repeated permission prompts on page reload.
-  useEffect(() => {
-    try {
-      const cached = localStorage.getItem(USER_LOCATION_CACHE_KEY);
-      if (!cached) return;
-      const parsed = JSON.parse(cached) as { lat?: number; lon?: number };
-      if (Number.isFinite(parsed?.lat) && Number.isFinite(parsed?.lon)) {
-        setUserLocation({ lat: parsed.lat as number, lon: parsed.lon as number });
-      }
-    } catch {
-      // ignore cache parse failures
-    }
-  }, []);
 
   // Watch permission changes; auto-refresh once location access becomes granted.
   useEffect(() => {
@@ -234,6 +236,9 @@ export default function DashboardPage() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => { fetchDashboard(); checkAndRefreshData(); }, []);
+  useEffect(() => {
+    void loadSavedHome();
+  }, [loadSavedHome]);
   useEffect(() => {
     fetchNotifications();
     const iv = setInterval(fetchNotifications, 30_000);
@@ -429,7 +434,7 @@ export default function DashboardPage() {
   // ── Loading / Error ──────────────────────────────────────────────────────────
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0f1e" }}>
+    <div className="yatra-page flex items-center justify-center min-h-screen">
       <div className="text-center">
         <Mountain className="text-amber-400 mx-auto mb-4 animate-pulse" size={40} />
         <p className="font-body text-slate-400 text-sm">Loading your dashboard…</p>
@@ -438,7 +443,7 @@ export default function DashboardPage() {
   );
 
   if (error || !data) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0f1e" }}>
+    <div className="yatra-page flex items-center justify-center min-h-screen">
       <div className="text-center max-w-sm px-4">
         <XCircle className="text-red-400 mx-auto mb-4" size={40} />
         <p className="font-body text-slate-300 mb-2 text-sm">{error}</p>
@@ -452,52 +457,58 @@ export default function DashboardPage() {
   const { user: rawUser } = data;
   const user = { ...rawUser, ...userData, image: userImage };
 
+  const navActions = (
+    <>
+      <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border shrink-0 ${connected ? "bg-emerald-400/10 border-emerald-400/20" : "bg-slate-700/30 border-slate-600/30"}`}>
+        <span className="relative flex h-2 w-2">
+          {connected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+          <span className={`relative inline-flex rounded-full h-2 w-2 ${connected ? "bg-emerald-400" : "bg-slate-500"}`} />
+        </span>
+        <span className={`text-xs font-body ${connected ? "text-emerald-400" : "text-slate-500"}`}>
+          {connected ? "Live" : realtimeStatus === "connecting" ? "Connecting…" : "Reconnecting…"}
+        </span>
+        {lastUpdate && connected && (
+          <span className="text-xs font-body text-slate-600 hidden lg:block">
+            · updated {new Date(lastUpdate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        )}
+      </div>
+      <Link href="/plan" className="hidden md:inline-flex yatra-cta">
+        <Mountain size={14} />
+        Plan a Trip
+      </Link>
+      <Link href="/trips" className="hidden md:inline-flex yatra-cta-ghost">
+        <Users size={14} />
+        Your Plans
+      </Link>
+      <button type="button" className="icon-btn" onClick={() => setFriendsOpen(true)} title="Travel network">
+        <Users size={16} className="text-slate-400" />
+      </button>
+      <button
+        type="button"
+        className="icon-btn"
+        onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
+        title="Hazard alerts"
+      >
+        <Bell size={16} className={unreadCount > 0 ? "text-amber-400" : "text-slate-400"} />
+        {unreadCount > 0 && <span className="badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
+      </button>
+      <button type="button" className="user-btn" onClick={() => { setProfileOpen(true); setNotifOpen(false); }}>
+        {userImage ? (
+          <Image src={userImage} alt={user.name} width={28} height={28} className="w-7 h-7 rounded-full object-cover border border-slate-600" unoptimized={userImage.startsWith("data:")} />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
+            <span className="text-amber-400 text-xs font-bold font-display">{user.name?.[0]?.toUpperCase()}</span>
+          </div>
+        )}
+        <span className="font-body text-sm text-slate-300 max-w-[100px] truncate hidden sm:block">{user.name}</span>
+        <User size={13} className="text-slate-500 hidden sm:block" />
+      </button>
+    </>
+  );
+
   return (
-    <div className="min-h-screen" style={{ background: "#0a0f1e" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:wght@300;400;500&display=swap');
-        .font-display{font-family:'Playfair Display',Georgia,serif}
-        .font-body{font-family:'DM Sans',system-ui,sans-serif}
-        @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-        .shimmer-text{background:linear-gradient(90deg,#f59e0b,#fde68a,#f59e0b,#fbbf24);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 4s linear infinite}
-        .glow-dot{position:fixed;border-radius:9999px;filter:blur(100px);pointer-events:none;z-index:0}
-        .nav-blur{background:rgba(10,15,30,.92);border-bottom:1px solid rgba(255,255,255,.06);backdrop-filter:blur(20px)}
-        .drawer-panel{background:rgba(10,15,30,.97);border-left:1px solid rgba(255,255,255,.08);backdrop-filter:blur(24px)}
-        .friends-panel{background:rgba(10,15,30,.97);border-right:1px solid rgba(255,255,255,.08);backdrop-filter:blur(24px)}
-        .notif-panel{background:rgba(10,15,30,.97);border:1px solid rgba(255,255,255,.08);border-radius:16px;backdrop-filter:blur(24px);box-shadow:0 24px 64px rgba(0,0,0,.7)}
-        .dest-card{background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.07);border-radius:16px;transition:border-color .2s,transform .2s,box-shadow .2s;backdrop-filter:blur(12px)}
-        .dest-card:hover{border-color:rgba(245,158,11,.25);transform:translateY(-2px);box-shadow:0 16px 40px rgba(0,0,0,.4)}
-        .stat-card{background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.06);border-radius:14px;backdrop-filter:blur(12px)}
-        .friend-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);transition:border-color .2s,background .2s}
-        .friend-card:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
-        .filter-pill{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9999px;cursor:pointer;transition:all .2s;font-family:'DM Sans',system-ui,sans-serif}
-        .filter-pill:hover{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05)}
-        .filter-pill.active{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.4);color:#f59e0b}
-        .search-input{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:white;font-family:'DM Sans',system-ui,sans-serif;transition:border-color .2s,box-shadow .2s}
-        .search-input:focus{border-color:rgba(245,158,11,.4);box-shadow:0 0 0 3px rgba(245,158,11,.08);outline:none}
-        .search-input::placeholder{color:rgba(255,255,255,.25)}
-        .icon-btn{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s;position:relative;flex-shrink:0}
-        .icon-btn:hover{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)}
-        .icon-btn .badge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:99px;background:#ef4444;color:white;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',system-ui,sans-serif;border:2px solid #0a0f1e}
-        .user-btn{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 6px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);cursor:pointer;transition:all .2s}
-        .user-btn:hover{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)}
-        .drawer-input{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:white;font-family:'DM Sans',system-ui,sans-serif;transition:border-color .2s,box-shadow .2s}
-        .drawer-input:focus{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.08);outline:none}
-        .drawer-input::placeholder{color:rgba(255,255,255,.2)}
-        .drawer-input option{background:#0f1729;color:white}
-        .toggle-track{position:relative;width:36px;height:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:10px;transition:background .2s,border-color .2s;cursor:pointer;flex-shrink:0}
-        .toggle-track.on{background:rgba(245,158,11,.25);border-color:rgba(245,158,11,.4)}
-        .toggle-knob{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.35);transition:transform .2s,background .2s}
-        .toggle-track.on .toggle-knob{transform:translateX(16px);background:#f59e0b}
-        .amber-btn{background:#f59e0b;color:#0a0f1e;font-family:'DM Sans',system-ui,sans-serif;font-weight:600;border-radius:10px;transition:background .2s,box-shadow .2s,transform .15s}
-        .amber-btn:hover:not(:disabled){background:#fbbf24;box-shadow:0 0 24px rgba(245,158,11,.35);transform:translateY(-1px)}
-        .mountain-wave{clip-path:polygon(0 40%,10% 25%,22% 38%,35% 10%,48% 30%,60% 5%,72% 22%,85% 12%,95% 28%,100% 18%,100% 100%,0 100%)}
-      `}</style>
-
-      <div className="glow-dot w-[500px] h-[400px] bg-amber-500/8 -top-32 -left-32" />
-      <div className="glow-dot w-[400px] h-[300px] bg-sky-500/6 bottom-0 right-0" />
-
+    <AppShell active="dashboard" actions={navActions}>
       {/* Overlays */}
       <FriendsSidebar open={friendsOpen} onClose={() => setFriendsOpen(false)} />
       <ProfileDrawer
@@ -514,63 +525,6 @@ export default function DashboardPage() {
         notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead}
       />
 
-      {/* Navbar */}
-      <nav className="nav-blur fixed top-0 inset-x-0 z-30 flex items-center justify-between px-4 md:px-8 h-16">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <Mountain className="text-amber-400" size={22} />
-          <span className="font-display font-bold text-lg text-white tracking-tight">YatraAI</span>
-        </Link>
-        <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border ${connected ? "bg-emerald-400/10 border-emerald-400/20" : "bg-slate-700/30 border-slate-600/30"}`}>
-          <span className="relative flex h-2 w-2">
-            {connected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
-            <span className={`relative inline-flex rounded-full h-2 w-2 ${connected ? "bg-emerald-400" : "bg-slate-500"}`} />
-          </span>
-          <span className={`text-xs font-body ${connected ? "text-emerald-400" : "text-slate-500"}`}>
-            {connected ? "Live" : realtimeStatus === "connecting" ? "Connecting…" : "Reconnecting…"}
-          </span>
-          {lastUpdate && connected && (
-            <span className="text-xs font-body text-slate-600 hidden lg:block">
-              · updated {new Date(lastUpdate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-            </span>
-          )}
-        </div>
-
-        {/* Plan a Trip — primary CTA */}
-        <Link href="/plan"
-          className="hidden md:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-900 font-body font-semibold text-sm transition-all hover:shadow-lg hover:shadow-amber-500/20">
-          <Mountain size={14} />
-          Plan a Trip
-        </Link>
-
-        {/* Your Plans */}
-        <Link href="/trips"
-          className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-600 font-body text-sm transition-all">
-          <Users size={14} />
-          Your Plans
-        </Link>
-        <div className="flex items-center gap-2">
-          <button className="icon-btn" onClick={() => setFriendsOpen(true)} title="Travel network"><Users size={16} className="text-slate-400" /></button>
-          <button className="icon-btn" onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }} title="Hazard alerts">
-            <Bell size={16} className={unreadCount > 0 ? "text-amber-400" : "text-slate-400"} />
-            {unreadCount > 0 && <span className="badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
-          </button>
-          <button className="user-btn" onClick={() => { setProfileOpen(true); setNotifOpen(false); }}>
-            {userImage ? (
-              <Image src={userImage} alt={user.name} width={28} height={28} className="w-7 h-7 rounded-full object-cover border border-slate-600" unoptimized={userImage.startsWith("data:")} />
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-                <span className="text-amber-400 text-xs font-bold font-display">{user.name?.[0]?.toUpperCase()}</span>
-              </div>
-            )}
-            <span className="font-body text-sm text-slate-300 max-w-[100px] truncate hidden sm:block">{user.name}</span>
-            <User size={13} className="text-slate-500 hidden sm:block" />
-          </button>
-        </div>
-      </nav>
-
-      {/* Main content */}
-      <div className="pt-16 max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-10">
-
         {/* Welcome */}
         <div className="mb-8" style={{ animation: "fadeUp .6s ease both" }}>
           <p className="font-body text-slate-500 text-sm mb-1">Welcome back,</p>
@@ -585,6 +539,62 @@ export default function DashboardPage() {
               <span className="font-body text-sm text-slate-400">{user.homeLocation.district}, {user.homeLocation.province} Province</span>
             </div>
           )}
+        </div>
+
+        {/* Location Status / Picker */}
+        <div className="mb-6 relative" style={{ animation: "fadeUp .6s .05s ease both" }}>
+          {pickingLocation && (
+            <LocationPicker
+              onClose={() => setPickingLocation(false)}
+              onSelect={(loc) => {
+                setPickingLocation(false);
+                setLocationError(null);
+                void resolveFromManual(`${loc.name}, ${loc.district}`, loc.latitude, loc.longitude);
+              }}
+            />
+          )}
+
+          <div className="stat-card p-3 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${userLocation ? "bg-amber-500/10" : "bg-slate-800"}`}>
+                <Navigation size={18} className={userLocation ? "text-amber-400" : "text-slate-500"} />
+              </div>
+              <div>
+                <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest font-bold">Current Origin</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-display font-bold text-white">
+                    {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
+                  </p>
+                  {(resolvingOrigin || locating) && (
+                    <span className="text-[10px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20">Resolving…</span>
+                  )}
+                  {userLocation && !resolvingOrigin && (
+                    <span className="text-[10px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-white/5">
+                      {resolvedOrigin?.routeNodeName ? `Hub: ${resolvedOrigin.routeNodeName}` : "Snapped"}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={requestUserLocation}
+                disabled={locating}
+                className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-all text-xs font-body font-medium flex items-center gap-1.5"
+              >
+                {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+                {locating ? "Locating..." : "Auto-Detect"}
+              </button>
+              <button
+                onClick={() => setPickingLocation(true)}
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all text-xs font-body font-medium flex items-center gap-1.5 border border-white/5"
+              >
+                <Search size={12} />
+                Set Manually
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats — each card filters on click */}
@@ -620,8 +630,11 @@ export default function DashboardPage() {
             <span className="font-body text-xs text-amber-400/60 animate-pulse">Updating in background…</span>
           )}
         </div>
-        {locationError && (
-          <p className="mb-4 font-body text-xs text-amber-400/90">{locationError}</p>
+        {(locationError || originResolveError) && (
+          <p className="mb-4 font-body text-xs text-amber-400/90">{locationError || originResolveError}</p>
+        )}
+        {resolvedOrigin?.note && (
+          <p className="mb-4 font-body text-xs text-sky-300/90">{resolvedOrigin.note}</p>
         )}
 
         {/* Recommended — top 3 safe/caution, shown only on "All" view */}
@@ -645,6 +658,12 @@ export default function DashboardPage() {
                   highlighted
                   userLat={userLocation?.lat}
                   userLon={userLocation?.lon}
+                  displayUserLat={resolvedOrigin?.displayLat}
+                  displayUserLon={resolvedOrigin?.displayLon}
+                  originName={manualLocationName || undefined}
+                  originRouteNodeId={resolvedOrigin?.routeNodeId ?? undefined}
+                  gpsAccuracyMeters={resolvedOrigin?.accuracyMeters}
+                  originAlreadyResolved={!!resolvedOrigin}
                   onRequestLocation={requestUserLocation}
                   requestingLocation={locating}
                   shouldFetchRoute
@@ -686,7 +705,7 @@ export default function DashboardPage() {
 
         {/* Empty states */}
         {stats.total === 0 && (
-          <div className="text-center py-20 dest-card max-w-md mx-auto">
+          <div className="text-center py-20 destination-card max-w-md mx-auto">
             <Mountain size={40} className="text-slate-700 mx-auto mb-4" />
             <h3 className="font-display text-xl text-slate-400 mb-2">No safety data yet</h3>
             <p className="font-body text-slate-500 text-sm mb-5 px-4">Run the assess job to score all 261 destinations.</p>
@@ -723,6 +742,12 @@ export default function DashboardPage() {
                   highlighted={false}
                   userLat={userLocation?.lat}
                   userLon={userLocation?.lon}
+                  displayUserLat={resolvedOrigin?.displayLat}
+                  displayUserLon={resolvedOrigin?.displayLon}
+                  originName={manualLocationName || undefined}
+                  originRouteNodeId={resolvedOrigin?.routeNodeId ?? undefined}
+                  gpsAccuracyMeters={resolvedOrigin?.accuracyMeters}
+                  originAlreadyResolved={!!resolvedOrigin}
                   onRequestLocation={requestUserLocation}
                   requestingLocation={locating}
                   shouldFetchRoute={i < visibleRouteCards}
@@ -737,9 +762,7 @@ export default function DashboardPage() {
           </>
         )}
 
-      </div>
-
-      <div className="fixed bottom-0 inset-x-0 h-20 mountain-wave bg-gradient-to-b from-slate-800/10 to-slate-900/30 pointer-events-none z-0" />
-    </div>
+      <div className="absolute bottom-0 inset-x-0 h-20 mountain-wave bg-gradient-to-b from-slate-800/10 to-slate-900/30 pointer-events-none z-0" />
+    </AppShell>
   );
 }

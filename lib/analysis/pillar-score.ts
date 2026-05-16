@@ -198,6 +198,7 @@ async function fetchForecastWeek(lat: number, lon: number, travelDate: string) {
 
 export async function computePillarModel(input: {
   destination: {
+    id?: string;
     name: string;
     district: string;
     province: string;
@@ -226,7 +227,8 @@ export async function computePillarModel(input: {
   const routeIntel = await generateRouteIntelligence(
     { lat: input.home.lat, lon: input.home.lon, name: input.home.name },
     { lat: input.destination.lat, lon: input.destination.lon, name: input.destination.name },
-    input.travelDate
+    input.travelDate,
+    { destinationId: input.destination.id }
   );
   const bestRoute = routeIntel.bestRoute ?? routeIntel.routes[0] ?? null;
   const destinationNameLc = input.destination.name.toLowerCase();

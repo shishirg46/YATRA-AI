@@ -33,6 +33,9 @@ import { assessRouteSegment }        from "@/lib/analysis/group-risk";
 import { fetchWeather }              from "@/lib/collectors/weather";
 import { fetchHazard }               from "@/lib/collectors/hazard";
 import { computePillarModel }        from "@/lib/analysis/pillar-score";
+import { resolveTravelOrigin }       from "@/lib/routing/origin-resolver";
+import { buildSegmentedRoute }       from "@/lib/routing/route-service";
+import { resolveDestination }        from "@/lib/routing/place-resolver";
 
 const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
@@ -219,38 +222,57 @@ export async function POST(req: NextRequest) {
 
   const home = leaderUser?.homeLocation;
   const hasClientOrigin = Number.isFinite(originLat) && Number.isFinite(originLon);
-  const hasPreferenceOrigin = Number.isFinite(leaderUser?.preference?.locationLat) && Number.isFinite(leaderUser?.preference?.locationLng);
+  const hasPreferenceOrigin =
+    Number.isFinite(leaderUser?.preference?.locationLat) &&
+    Number.isFinite(leaderUser?.preference?.locationLng);
 
   let effectiveHome: OriginLocation | null = null;
-  if (hasClientOrigin || hasPreferenceOrigin) {
-    const originCoordLat = hasClientOrigin ? Number(originLat) : Number(leaderUser?.preference?.locationLat);
-    const originCoordLon = hasClientOrigin ? Number(originLon) : Number(leaderUser?.preference?.locationLng);
-    const candidates = await prisma.location.findMany({
-      include: { district: { include: { province: true } } },
+  let routePlan: Awaited<ReturnType<typeof buildSegmentedRoute>> | null = null;
+  let originResolutionNote: string | undefined;
+
+  try {
+    const resolved = await resolveTravelOrigin({
+      lat: hasClientOrigin ? Number(originLat) : leaderUser?.preference?.locationLat ?? undefined,
+      lon: hasClientOrigin ? Number(originLon) : leaderUser?.preference?.locationLng ?? undefined,
+      userId: session.user.id,
+      preferSavedHome: !hasClientOrigin,
     });
-    let nearest: OriginLocation | null = null;
-    let bestDist = Number.POSITIVE_INFINITY;
-    for (const c of candidates) {
-      const dLat = c.latitude - originCoordLat;
-      const dLon = c.longitude - originCoordLon;
-      const dist = dLat * dLat + dLon * dLon;
-      if (dist < bestDist) {
-        bestDist = dist;
-        nearest = c as OriginLocation;
-      }
+
+    const destResolved = await resolveDestination({
+      destinationId: location.id,
+      destinationName: location.name,
+      destinationLat: location.latitude,
+      destinationLon: location.longitude,
+    });
+
+    routePlan = await buildSegmentedRoute({
+      originLat: resolved.place.lat,
+      originLon: resolved.place.lon,
+      originName: resolved.place.name,
+      originRouteNodeId: resolved.routeNodeId,
+      destinationLat: destResolved.place.lat,
+      destinationLon: destResolved.place.lon,
+      destinationName: destResolved.place.name,
+      destinationId: location.id,
+    });
+
+    originResolutionNote = [resolved.note, destResolved.note, routePlan.resolutionNote]
+      .filter(Boolean)
+      .join("; ");
+
+    const districtRow = home?.district ?? location.district;
+    effectiveHome = {
+      id: resolved.place.id ?? home?.id,
+      name: resolved.place.name,
+      latitude: resolved.place.lat,
+      longitude: resolved.place.lon,
+      altitude: home?.altitude ?? null,
+      district: districtRow,
+    } as OriginLocation;
+  } catch {
+    if (home) {
+      effectiveHome = home as OriginLocation;
     }
-    if (nearest) {
-      effectiveHome = {
-        ...nearest,
-        id: undefined, // this origin is user-coordinate based, not a fixed DB hub point
-        name: hasClientOrigin ? "Your current location" : "Your saved location",
-        latitude: originCoordLat,
-        longitude: originCoordLon,
-      };
-    }
-  }
-  if (!effectiveHome && home) {
-    effectiveHome = home as OriginLocation;
   }
 
   let routeRisk = null;
@@ -342,6 +364,7 @@ export async function POST(req: NextRequest) {
 
   const pillarModel = await computePillarModel({
     destination: {
+      id: location.id,
       name: location.name,
       district: location.district.name,
       province: location.district.province.name,
@@ -595,6 +618,22 @@ Respond with this exact JSON structure:
     liveWeather,
     liveHazard,
     routeRisk,
+    routePlan: routePlan
+      ? {
+          nodes: routePlan.nodes.map((n) => ({ name: n.name, lat: n.lat, lon: n.lon })),
+          segments: routePlan.segments.map((s) => ({
+            from: s.from.name,
+            to: s.to.name,
+            distanceKm: Math.round((s.distance / 1000) * 10) / 10,
+            riskLevel: s.riskLevel,
+          })),
+          distanceKm: Math.round((routePlan.distance / 1000) * 10) / 10,
+          durationHours: Math.round((routePlan.duration / 3600) * 10) / 10,
+          corridor: routePlan.nodes.map((n) => n.name).join(" → "),
+          source: routePlan.source,
+          resolutionNote: originResolutionNote,
+        }
+      : null,
     routePillar: pillarModel.route,
     destinationPillar: pillarModel.destination,
     weatherPillar: pillarModel.weather,

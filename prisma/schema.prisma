@@ -61,6 +61,20 @@ enum MemberStatus {
   DECLINED
 }
 
+enum PlaceType {
+  PROVINCE
+  DISTRICT
+  MUNICIPALITY
+  RURAL_MUNICIPALITY
+  WARD
+  ROUTE_NODE
+  CHOWK
+  HIGHWAY
+  BUS_PARK
+  JUNCTION
+  TOWN
+}
+
 /////////////////////////////////////////////////
 // USER DOMAIN
 /////////////////////////////////////////////////
@@ -88,6 +102,7 @@ model User {
   health           UserHealth?
   preference       UserPreference?
   behavior         UserBehavior?
+  savedLocation    UserSavedLocation?
   sentRequests     Friendship[]        @relation("FriendRequests")
   receivedRequests Friendship[]        @relation("FriendReceived")
 
@@ -243,6 +258,83 @@ model Verification {
 // GEOGRAPHY DOMAIN
 /////////////////////////////////////////////////
 
+enum DestinationCategory {
+  VIEWPOINT
+  TREKKING_VILLAGE
+  LAKE
+  HILL
+  MOUNTAIN
+  TOURIST_ATTRACTION
+  MUNICIPALITY
+  CHOWK
+  TEMPLE
+  RIVERSIDE
+  FOREST
+  WATERFALL
+  CAMP
+  MOUNTAIN_SETTLEMENT
+  OTHER
+}
+
+enum DestinationSource {
+  OPENSTREETMAP
+  NOMINATIM
+  OVERPASS
+  GEONAMES
+  MANUAL
+  LOCAL_KNOWLEDGE
+  HISTORICAL
+}
+
+model Destination {
+  id              String    @id @default(uuid())
+  name            String
+  normalizedName  String                           // normalized for deduplication (lowercase, no accents)
+  
+  // Location info
+  district        String
+  province        String
+  municipality    String?
+  latitude        Float
+  longitude       Float
+  altitude        Float?
+  
+  // Metadata
+  category        DestinationCategory
+  description     String?
+  image           String?
+  tags            String[]
+  
+  // Verification & tracking
+  osmId           String?                 @unique
+  source          DestinationSource
+  verified        Boolean     @default(false)
+  verifiedBy      String?                         // user ID who verified
+  verifiedAt      DateTime?
+  
+  // Routing & accessibility
+  routeAccessible Boolean     @default(true)      // can routes reach this?
+  
+  // Data quality metrics
+  coordinateAccuracy Float?                       // meters
+  dataQualityScore   Float?                       // 0-100
+  
+  // Timestamps
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  sourceLastFetch DateTime?
+  
+  // Search indexing
+  @@index([normalizedName])
+  @@index([district, province])
+  @@index([latitude, longitude])
+  @@index([category])
+  @@index([verified])
+  @@index([source])
+  @@unique([name, district, province])           // prevent exact duplicates
+  @@map("destination")
+}
+
 model Province {
   id   String @id @default(uuid())
   name String @unique
@@ -257,6 +349,7 @@ model District {
 
   province  Province   @relation(fields: [provinceId], references: [id])
   locations Location[]
+  places    Place[]
 
   @@unique([name, provinceId])
 }
@@ -280,11 +373,100 @@ model Location {
   routePoints RouteTemplatePoint[] @relation("RoutePointLocation")
   residents   User[]           @relation("HomeLocation")
   groupTrips  TravelGroup[]
+  place       Place?
 
   createdAt DateTime @default(now())
 
   @@unique([name, districtId])
   @@index([latitude, longitude])
+}
+
+/////////////////////////////////////////////////
+// NEPAL GEOGRAPHY & ROUTING GRAPH
+/////////////////////////////////////////////////
+
+model Place {
+  id        String    @id @default(uuid())
+  name      String
+  type      PlaceType
+  latitude  Float
+  longitude Float
+  parentId  String?
+  districtId String?
+
+  parent   Place?    @relation("PlaceHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Place[]   @relation("PlaceHierarchy")
+  district District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  location Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  locationId String? @unique
+  routeNodes RouteNode[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([latitude, longitude])
+  @@index([districtId])
+  @@index([parentId])
+  @@map("place")
+}
+
+model RouteNode {
+  id        String    @id @default(uuid())
+  name      String
+  type      PlaceType @default(ROUTE_NODE)
+  latitude  Float
+  longitude Float
+  placeId   String?
+  isHub     Boolean   @default(false)
+  isActive  Boolean   @default(true)
+
+  place           Place?              @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  edgesFrom       RouteEdge[]         @relation("EdgeFrom")
+  edgesTo         RouteEdge[]         @relation("EdgeTo")
+  savedLocations  UserSavedLocation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@index([isHub, isActive])
+  @@map("route_node")
+}
+
+model RouteEdge {
+  id              String  @id @default(uuid())
+  fromNodeId      String
+  toNodeId        String
+  distanceKm      Float
+  roadName        String?
+  isBidirectional Boolean @default(true)
+
+  fromNode RouteNode @relation("EdgeFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode   RouteNode @relation("EdgeTo", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([fromNodeId, toNodeId])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@map("route_edge")
+}
+
+model UserSavedLocation {
+  userId             String  @id
+  placeName          String
+  latitude           Float
+  longitude          Float
+  nearestRouteNodeId String?
+  accuracyMeters     Float?
+  source             String  @default("manual")
+
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nearestRouteNode RouteNode? @relation(fields: [nearestRouteNodeId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_saved_location")
 }
 
 /////////////////////////////////////////////////

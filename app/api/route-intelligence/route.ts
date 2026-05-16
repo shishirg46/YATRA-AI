@@ -52,8 +52,19 @@ function nearestPlaceName(lat: number, lon: number, places: PlacePoint[]): strin
     }
   }
   if (!best) return null;
-  // Keep label matching strict to avoid snapping to a far major town.
-  return minDist <= 6 ? best.name : null;
+  // Keep matching strict so we do not incorrectly snap to far urban hubs.
+  if (minDist > 4) return null;
+
+  // Avoid noisy generic hub labels unless extremely close.
+  const lower = best.name.toLowerCase();
+  const genericHub =
+    lower.includes("market") ||
+    lower.includes("bazaar") ||
+    lower.includes("junction") ||
+    lower.includes("border");
+  if (genericHub && minDist > 1.5) return null;
+
+  return best.name;
 }
 
 function simplifyBreakpointNames(names: string[], max = 8): string[] {
@@ -74,7 +85,15 @@ function simplifyBreakpointNames(names: string[], max = 8): string[] {
 
 async function enrichRoutesWithDynamicPlaceNames(formatted: any): Promise<any> {
   if (!formatted?.routes || !Array.isArray(formatted.routes)) return formatted;
-  const places = await loadPlaces();
+  const places = (await loadPlaces()).filter((p) => {
+    const lower = p.name.toLowerCase();
+    return !(
+      lower.includes("market") ||
+      lower.includes("bazaar") ||
+      lower.includes("junction") ||
+      lower.includes("border")
+    );
+  });
 
   const routes = formatted.routes.map((route: any) => {
     const breakpointNamesRaw: string[] = [];
@@ -144,7 +163,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { origin, destination, departureDate } = body;
+    const { origin, destination, departureDate, destinationId } = body;
 
     if (!origin?.lat || !origin?.lon || !destination?.lat || !destination?.lon) {
       return NextResponse.json({ message: "Missing origin or destination coordinates" }, { status: 400 });
@@ -157,7 +176,8 @@ export async function POST(req: NextRequest) {
     const result = await withTimeout(generateRouteIntelligence(
       { lat: origin.lat, lon: origin.lon, name: origin.name },
       { lat: destination.lat, lon: destination.lon, name: destination.name },
-      departureDate
+      departureDate,
+      { destinationId: typeof destinationId === "string" ? destinationId : destination.id }
     ), 25000);
 
     const formatted = formatRouteIntelligenceResponse(result);

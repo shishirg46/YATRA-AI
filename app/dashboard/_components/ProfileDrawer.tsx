@@ -14,6 +14,8 @@ import {
   CHRONIC_LIST, COMMON_ALLERGIES_LIST, PROVINCES,
 } from "./types";
 import { PhotoUpload } from "./ui";
+import { OverlayPortal } from "@/components/overlay-portal";
+import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 
 type EditField = "name" | "username" | "location" | "purposes" | "emergency" | "health";
 
@@ -199,13 +201,21 @@ export function ProfileDrawer({ user, open, onClose, onLogout, loggingOut, onAva
     );
   }
 
+  useBodyScrollLock(open);
+
   return (
-    <>
+    <OverlayPortal active={open}>
       <div
-        className={`fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
         onClick={() => { if (!editField) onClose(); }}
+        aria-hidden={!open}
       />
-      <div className={`fixed top-0 right-0 z-50 h-full w-full max-w-sm drawer-panel transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Profile"
+        className={`fixed top-0 right-0 z-[110] h-full w-full max-w-sm drawer-panel transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "translate-x-full"}`}
+      >
         <div className="flex flex-col h-full overflow-y-auto">
 
           {/* Header */}
@@ -419,6 +429,6 @@ export function ProfileDrawer({ user, open, onClose, onLogout, loggingOut, onAva
           </div>
         </div>
       </div>
-    </>
+    </OverlayPortal>
   );
 }

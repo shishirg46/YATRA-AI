@@ -20,6 +20,9 @@ import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
 import { fetchHistoricalWeather } from "@/lib/collectors/historical-weather";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
+import { buildSegmentedRoute } from "@/lib/routing/route-service";
+import { resolveDestination } from "@/lib/routing/place-resolver";
+import type { BuiltRoute, RouteNode } from "@/lib/routing/types";
 
 // ── Types ───────────────────────────────────────────────────────────────────────
 
@@ -216,28 +219,72 @@ const NEPAL_HIGHWAYS: Record<string, { waypoints: [number, number][]; name: stri
 export async function generateRouteIntelligence(
   origin: GeoPoint,
   destination: GeoPoint,
-  departureDate: string
+  departureDate: string,
+  options?: { destinationId?: string }
 ): Promise<RouteIntelligenceResult> {
 
-  // Prefer stored route corridors if available.
-  const storedRoutes = await fetchStoredRoutes(origin, destination);
-
-  // Generate routes using OSRM if no stored corridor is available.
-  const osrmRoutes = storedRoutes.length > 0 ? [] : await fetchOsrmRoutes(origin, destination);
-
-  // If OSRM fails, try OpenRouteService
-  let routes: Route[] = storedRoutes.length > 0
-    ? storedRoutes
-    : (osrmRoutes.length > 0 ? osrmRoutes : await fetchOpenRouteServiceRoutes(origin, destination));
-  
-  // If both fail, generate fallback route
-  if (routes.length === 0) {
-    routes = [generateFallbackRoute(origin, destination)];
+  let resolvedDest = destination;
+  try {
+    const resolved = await resolveDestination({
+      destinationId: options?.destinationId,
+      destinationName: destination.name,
+      destinationLat: destination.lat,
+      destinationLon: destination.lon,
+    });
+    resolvedDest = {
+      lat: resolved.place.lat,
+      lon: resolved.place.lon,
+      name: resolved.place.name,
+    };
+  } catch {
+    // Keep provided coordinates when resolution fails
   }
 
-  // Learn new route template from generated routes.
-  if (storedRoutes.length === 0 && routes.length > 0 && routes[0].waypoints.length > 2) {
-    await saveRouteTemplate(origin, destination, routes[0]).catch(() => null);
+  let routes: Route[] = [];
+
+  try {
+    const built = await buildSegmentedRoute({
+      originLat: origin.lat,
+      originLon: origin.lon,
+      originName: origin.name,
+      destinationLat: resolvedDest.lat,
+      destinationLon: resolvedDest.lon,
+      destinationName: resolvedDest.name ?? destination.name,
+      destinationId: options?.destinationId,
+    });
+    routes = [
+      builtRouteToIntelligenceRoute(
+        built,
+        { ...origin, name: origin.name ?? built.origin.name },
+        { ...resolvedDest, name: resolvedDest.name ?? built.destination.name }
+      ),
+    ];
+  } catch (err) {
+    console.warn("[route-intelligence] segmented build failed:", err);
+  }
+
+  if (routes.length === 0) {
+    const storedRoutes = await fetchStoredRoutes(origin, resolvedDest);
+    const osrmRoutes =
+      storedRoutes.length > 0 ? [] : await fetchOsrmRoutes(origin, resolvedDest);
+    routes =
+      storedRoutes.length > 0
+        ? storedRoutes
+        : osrmRoutes.length > 0
+          ? osrmRoutes
+          : await fetchOpenRouteServiceRoutes(origin, resolvedDest);
+
+    if (routes.length === 0) {
+      routes = [generateFallbackRoute(origin, resolvedDest)];
+    }
+
+    routes = await Promise.all(
+      routes.map((r) => ensureSegmentedWaypoints(r, origin, resolvedDest))
+    );
+  }
+
+  if (routes.length > 0 && routes[0].waypoints.length > 2) {
+    await saveRouteTemplate(origin, resolvedDest, routes[0]).catch(() => null);
   }
 
   // Analyze each route for hazards
@@ -1100,6 +1147,112 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
+// ── Segmented route conversion ───────────────────────────────────────────────
+
+function builtRouteToIntelligenceRoute(
+  built: BuiltRoute,
+  origin: GeoPoint,
+  destination: GeoPoint
+): Route {
+  let distAcc = 0;
+  const nodeWaypoints: RouteWaypoint[] = built.nodes.map((n, i) => {
+    if (i > 0) {
+      distAcc += haversineKm(built.nodes[i - 1].lat, built.nodes[i - 1].lon, n.lat, n.lon) * 1000;
+    }
+    return {
+      lat: n.lat,
+      lon: n.lon,
+      name: n.name,
+      distanceFromStart: Math.round(distAcc),
+    };
+  });
+
+  const polylineWaypoints: RouteWaypoint[] =
+    built.polyline.length >= 2
+      ? built.polyline.map((p, i) => ({
+          lat: p.lat,
+          lon: p.lon,
+          distanceFromStart:
+            i === 0
+              ? 0
+              : Math.round((built.distance * i) / Math.max(built.polyline.length - 1, 1)),
+        }))
+      : nodeWaypoints;
+
+  const segments: RouteSegment[] = built.segments.map((s) => ({
+    index: s.index,
+    startPoint: { lat: s.from.lat, lon: s.from.lon, name: s.from.name },
+    endPoint: { lat: s.to.lat, lon: s.to.lon, name: s.to.name },
+    distance: s.distance,
+    riskScore: 0,
+    riskLevel: (s.riskLevel ?? "MEDIUM") as RouteSegment["riskLevel"],
+    hazards: s.hazards ?? [],
+  }));
+
+  const corridorLabel =
+    built.nodes.length > 2
+      ? built.nodes.map((n) => n.name).join(" → ")
+      : null;
+  const routeName = corridorLabel ?? generateRouteName(origin, destination, nodeWaypoints);
+
+  return {
+    id: `segmented-${built.source}`,
+    name: routeName,
+    description: built.resolutionNote
+      ? `${routeName} (${built.resolutionNote})`
+      : `${routeName} via known corridor stops`,
+    waypoints: polylineWaypoints.length > nodeWaypoints.length ? polylineWaypoints : nodeWaypoints,
+    distance: built.distance,
+    duration: built.duration,
+    riskScore: 0.5,
+    riskLevel: "MEDIUM",
+    hazards: {
+      landslideZones: [],
+      floodZones: [],
+      activeAlerts: [],
+      weatherRisk: "unknown",
+      historicalRisk: 0.5,
+    },
+    segments,
+    source: built.source,
+  };
+}
+
+function countCorridorStops(route: Route): number {
+  const names = new Set<string>();
+  for (const w of route.waypoints) {
+    if (w.name) names.add(w.name);
+  }
+  for (const s of route.segments) {
+    if (s.startPoint.name) names.add(s.startPoint.name);
+    if (s.endPoint.name) names.add(s.endPoint.name);
+  }
+  return names.size;
+}
+
+async function ensureSegmentedWaypoints(
+  route: Route,
+  origin: GeoPoint,
+  destination: GeoPoint
+): Promise<Route> {
+  const hasStructure = route.segments.length >= 2 && countCorridorStops(route) >= 3;
+  if (hasStructure) return route;
+
+  try {
+    const built = await buildSegmentedRoute({
+      originLat: origin.lat,
+      originLon: origin.lon,
+      originName: origin.name,
+      destinationLat: destination.lat,
+      destinationLon: destination.lon,
+      destinationName: destination.name,
+    });
+    return builtRouteToIntelligenceRoute(built, origin, destination);
+  } catch {
+    return route;
+  }
+}
+
 // ── API Response Formatter ─────────────────────────────────────────────────
 
 export function formatRouteIntelligenceResponse(result: RouteIntelligenceResult): object {
@@ -1119,7 +1272,7 @@ export function formatRouteIntelligenceResponse(result: RouteIntelligenceResult)
       duration: route.duration,
       riskScore: route.riskScore,
       riskLevel: route.riskLevel,
-      breakpoints: sampleWaypoints(route.waypoints, 10).map((p) => ({ lat: p.lat, lon: p.lon })),
+      breakpoints: sampleWaypoints(route.waypoints, 10).map((p) => ({ lat: p.lat, lon: p.lon, name: p.name })),
       breakpointNames: buildNamedBreakpoints(
         route.waypoints,
         result.origin.name ?? "Your location",
