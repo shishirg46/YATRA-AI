@@ -1,140 +1,199 @@
-/**
- * FILE: route.ts
- * LOCATION: /app/api/destinations/[id]/live/route.ts
- * PURPOSE: Returns live weather, hazard, safety, and route risk from home.
- * GET /api/destinations/{id}/live
- */
-
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth }                      from "@/lib/auth";
-import { headers }                   from "next/headers";
-import { PrismaClient }              from "@/app/generated/prisma/client";
-import { PrismaPg }                  from "@prisma/adapter-pg";
-import { Pool }                      from "pg";
-import { fetchWeather }              from "@/lib/collectors/weather";
-import { fetchHazard }               from "@/lib/collectors/hazard";
-import { computeSafetyScore, buildHealthFlags } from "@/lib/scoring/safety";
-import { assessRouteSegment }        from "@/lib/analysis/group-risk";
+import { headers } from "next/headers";
 
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
+import { fetchWeather } from "@/lib/collectors/weather";
+import { fetchHazard } from "@/lib/collectors/hazard";
+
+import {
+  computeSafetyScore,
+  buildHealthFlags,
+} from "@/lib/scoring/safety";
+
+import { assessRouteSegment } from "@/lib/analysis/group-risk";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  try {
+    const { id } = await params;
 
-  const location = await prisma.location.findUnique({
-    where: { id },
-    include: { district: { include: { province: true } } },
-  });
+    // ================= AUTH =================
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-  if (!location) return NextResponse.json({ message: "Destination not found." }, { status: 404 });
-
-  const [user, profileNotif, userHealth] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      include: {
-        homeLocation: {
-          include: { district: { include: { province: true } } },
-        },
-      },
-    }),
-    prisma.notification.findFirst({
-      where: { userId: session.user.id, message: { contains: '"_type":"PROFILE"' } },
-    }),
-    prisma.userHealth.findUnique({
-      where: { userId: session.user.id },
-      select: {
-        fitnessLevel:      true,
-        mobilityLimited:   true,
-        chronicConditions: true,
-        allergies:         true,
-      },
-    }),
-  ]);
-
-  const profile = profileNotif ? JSON.parse(profileNotif.message) : null;
-  const travelPurposes = (profile?.travelPurposes ?? []) as string[];
-  const healthFlags = userHealth ? buildHealthFlags(userHealth) : [];
-
-  const weather = await fetchWeather(location.latitude, location.longitude);
-  const hazard  = await fetchHazard(location.district.name, location.latitude, location.longitude);
-
-  const liveWeather = weather ?? {
-    temperature: 18,
-    humidity:    60,
-    rainfall:    0,
-    windSpeed:   3,
-    pressure:    1013,
-    description: "fallback:weather",
-    source:      "fallback",
-    sourceLabel: "Nepal estimate",
-    officialSource: false,
-  };
-
-  const liveHazard = { ...hazard, heatIndex: Math.max(0, Math.min((liveWeather.temperature - 25) / 20, 1)) };
-
-  const safety = computeSafetyScore(
-    liveWeather,
-    liveHazard,
-    ["SOLO", ...travelPurposes, ...healthFlags],
-    "SOLO",
-    liveWeather.source,
-    {
-      altitude:     location.altitude,
-      districtName: location.district.name,
-      locationName: location.name,
+    if (!session?.user) {
+      return NextResponse.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
     }
-  );
 
-  let routeRisk = null;
-  const home = user?.homeLocation;
-  if (home && home.latitude !== 0 && home.longitude !== 0 && location.id !== home.id) {
-    routeRisk = await assessRouteSegment(
+    // ================= DESTINATION =================
+    const destination = await prisma.destination.findUnique({
+      where: { id },
+    });
+
+    if (!destination) {
+      return NextResponse.json(
+        { message: "Destination not found" },
+        { status: 404 }
+      );
+    }
+
+    // ================= USER DATA =================
+    const [user, profileNotif, userHealth] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: {
+          homeLocation: {
+            include: {
+              district: {
+                include: { province: true },
+              },
+            },
+          },
+        },
+      }),
+
+      prisma.notification.findFirst({
+        where: {
+          userId: session.user.id,
+          message: {
+            contains: '"_type":"PROFILE"',
+          },
+        },
+      }),
+
+      prisma.userHealth.findUnique({
+        where: { userId: session.user.id },
+      }),
+    ]);
+
+    const profile = profileNotif
+      ? JSON.parse(profileNotif.message)
+      : null;
+
+    const travelPurposes = profile?.travelPurposes ?? [];
+    const healthFlags = userHealth
+      ? buildHealthFlags(userHealth)
+      : [];
+
+    // ================= WEATHER =================
+    const weather = await fetchWeather(
+      destination.latitude,
+      destination.longitude
+    );
+
+    const liveWeather = {
+      temperature: weather?.temperature ?? 18,
+      humidity: weather?.humidity ?? 60,
+      rainfall: weather?.rainfall ?? 0,
+      windSpeed: weather?.windSpeed ?? 3,
+      pressure: weather?.pressure ?? 1013,
+
+      description: weather?.description ?? "fallback",
+      source: weather?.source ?? "fallback",
+      sourceLabel: weather?.sourceLabel ?? "Nepal estimate",
+      officialSource: weather?.officialSource ?? false,
+    };
+
+    // ================= HAZARD =================
+    const hazard = await fetchHazard(
+      destination.district,
+      destination.latitude,
+      destination.longitude
+    );
+
+    const liveHazard = {
+      ...hazard,
+      heatIndex: Math.max(
+        0,
+        Math.min((liveWeather.temperature - 25) / 20, 1)
+      ),
+    };
+
+    // ================= SAFETY =================
+    const safety = computeSafetyScore(
+      liveWeather,
+      liveHazard,
+      ["SOLO", ...travelPurposes, ...healthFlags],
+      "SOLO",
+      liveWeather.source,
       {
-        locationId:    home.id,
-        locationName:  home.name,
-        district:      home.district.name,
-        province:      home.district.province.name,
-        lat:           home.latitude,
-        lon:           home.longitude,
-        altitude:      home.altitude,
-        arrivalDate:   new Date().toISOString().split("T")[0],
-        departureDate: new Date().toISOString().split("T")[0],
-      },
-      {
-        locationId:    location.id,
-        locationName:  location.name,
-        district:      location.district.name,
-        province:      location.district.province.name,
-        lat:           location.latitude,
-        lon:           location.longitude,
-        altitude:      location.altitude,
-        arrivalDate:   new Date().toISOString().split("T")[0],
-        departureDate: new Date().toISOString().split("T")[0],
+        altitude: destination.altitude ?? null,
+        districtName: destination.district,
+        locationName: destination.name,
       }
-    ).catch(() => null);
-  }
+    );
 
-  return NextResponse.json({
-    location: {
-      id:       location.id,
-      name:     location.name,
-      district: location.district.name,
-      province: location.district.province.name,
-      altitude: location.altitude,
-    },
-    weather: liveWeather,
-    hazard: liveHazard,
-    safety,
-    routeRisk,
-    assessedAt: new Date().toISOString(),
-    isLive: true,
-  });
+    // ================= ROUTE RISK =================
+    let routeRisk = null;
+
+    const home = user?.homeLocation;
+
+    if (home && home.latitude && home.longitude) {
+      routeRisk = await assessRouteSegment(
+        {
+          locationId: home.id,
+          locationName: home.name,
+          district: home.district.name,
+          province: home.district.province.name,
+          lat: home.latitude,
+          lon: home.longitude,
+          altitude: home.altitude ?? null,
+          arrivalDate: new Date().toISOString().split("T")[0],
+          departureDate: new Date().toISOString().split("T")[0],
+        },
+        {
+          locationId: destination.id,
+          locationName: destination.name,
+          district: destination.district,
+          province: destination.province,
+          lat: destination.latitude,
+          lon: destination.longitude,
+          altitude: destination.altitude ?? null,
+          arrivalDate: new Date().toISOString().split("T")[0],
+          departureDate: new Date().toISOString().split("T")[0],
+        }
+      ).catch(() => null);
+    }
+
+    // ================= NEAREST ROUTE NODE =================
+    const nearestRouteNode = await prisma.routeNode.findFirst({
+      where: { isActive: true },
+      select: {
+        id: true,
+        name: true,
+        latitude: true,
+        longitude: true,
+        isHub: true,
+      },
+    });
+
+    // ================= RESPONSE =================
+    return NextResponse.json({
+      destination,
+      weather: liveWeather,
+      hazard: liveHazard,
+      safety,
+      routeRisk,
+      nearestRouteNode,
+      assessedAt: new Date().toISOString(),
+      isLive: true,
+    });
+  } catch (error) {
+    console.error("[DESTINATION_LIVE_ERROR]", error);
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }

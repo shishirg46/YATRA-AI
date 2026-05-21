@@ -214,8 +214,8 @@ export type TravelGroupWhereInput = {
   createdById?: Prisma.StringFilter<"TravelGroup"> | string
   createdAt?: Prisma.DateTimeFilter<"TravelGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelGroup"> | Date | string
-  destination?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  destination?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   members?: Prisma.TravelGroupMemberListRelationFilter
 }
 
@@ -229,8 +229,8 @@ export type TravelGroupOrderByWithRelationInput = {
   createdById?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  destination?: Prisma.LocationOrderByWithRelationInput
   createdBy?: Prisma.UserOrderByWithRelationInput
+  destination?: Prisma.LocationOrderByWithRelationInput
   members?: Prisma.TravelGroupMemberOrderByRelationAggregateInput
 }
 
@@ -247,8 +247,8 @@ export type TravelGroupWhereUniqueInput = Prisma.AtLeast<{
   createdById?: Prisma.StringFilter<"TravelGroup"> | string
   createdAt?: Prisma.DateTimeFilter<"TravelGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelGroup"> | Date | string
-  destination?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   createdBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  destination?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   members?: Prisma.TravelGroupMemberListRelationFilter
 }, "id">
 
@@ -290,8 +290,8 @@ export type TravelGroupCreateInput = {
   status?: $Enums.TravelStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  destination: Prisma.LocationCreateNestedOneWithoutGroupTripsInput
   createdBy: Prisma.UserCreateNestedOneWithoutCreatedGroupsInput
+  destination: Prisma.LocationCreateNestedOneWithoutGroupTripsInput
   members?: Prisma.TravelGroupMemberCreateNestedManyWithoutGroupInput
 }
 
@@ -316,8 +316,8 @@ export type TravelGroupUpdateInput = {
   status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  destination?: Prisma.LocationUpdateOneRequiredWithoutGroupTripsNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+  destination?: Prisma.LocationUpdateOneRequiredWithoutGroupTripsNestedInput
   members?: Prisma.TravelGroupMemberUpdateManyWithoutGroupNestedInput
 }
 
@@ -640,8 +640,8 @@ export type TravelGroupCreateWithoutMembersInput = {
   status?: $Enums.TravelStatus
   createdAt?: Date | string
   updatedAt?: Date | string
-  destination: Prisma.LocationCreateNestedOneWithoutGroupTripsInput
   createdBy: Prisma.UserCreateNestedOneWithoutCreatedGroupsInput
+  destination: Prisma.LocationCreateNestedOneWithoutGroupTripsInput
 }
 
 export type TravelGroupUncheckedCreateWithoutMembersInput = {
@@ -680,8 +680,8 @@ export type TravelGroupUpdateWithoutMembersInput = {
   status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  destination?: Prisma.LocationUpdateOneRequiredWithoutGroupTripsNestedInput
   createdBy?: Prisma.UserUpdateOneRequiredWithoutCreatedGroupsNestedInput
+  destination?: Prisma.LocationUpdateOneRequiredWithoutGroupTripsNestedInput
 }
 
 export type TravelGroupUncheckedUpdateWithoutMembersInput = {
@@ -829,8 +829,8 @@ export type TravelGroupSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   members?: boolean | Prisma.TravelGroup$membersArgs<ExtArgs>
   _count?: boolean | Prisma.TravelGroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelGroup"]>
@@ -845,8 +845,8 @@ export type TravelGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   createdById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelGroup"]>
 
 export type TravelGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -859,8 +859,8 @@ export type TravelGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   createdById?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelGroup"]>
 
 export type TravelGroupSelectScalar = {
@@ -877,25 +877,25 @@ export type TravelGroupSelectScalar = {
 
 export type TravelGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "destinationId" | "startDate" | "endDate" | "status" | "createdById" | "createdAt" | "updatedAt", ExtArgs["result"]["travelGroup"]>
 export type TravelGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   members?: boolean | Prisma.TravelGroup$membersArgs<ExtArgs>
   _count?: boolean | Prisma.TravelGroupCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TravelGroupIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }
 export type TravelGroupIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   createdBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  destination?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }
 
 export type $TravelGroupPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "TravelGroup"
   objects: {
-    destination: Prisma.$LocationPayload<ExtArgs>
     createdBy: Prisma.$UserPayload<ExtArgs>
+    destination: Prisma.$LocationPayload<ExtArgs>
     members: Prisma.$TravelGroupMemberPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1302,8 +1302,8 @@ readonly fields: TravelGroupFieldRefs;
  */
 export interface Prisma__TravelGroupClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  destination<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   createdBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  destination<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   members<T extends Prisma.TravelGroup$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelGroup$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelGroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.

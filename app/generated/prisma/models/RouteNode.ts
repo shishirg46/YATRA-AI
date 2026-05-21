@@ -260,9 +260,9 @@ export type RouteNodeWhereInput = {
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
-  place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
   edgesTo?: Prisma.RouteEdgeListRelationFilter
+  place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   savedLocations?: Prisma.UserSavedLocationListRelationFilter
 }
 
@@ -277,9 +277,9 @@ export type RouteNodeOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  place?: Prisma.PlaceOrderByWithRelationInput
   edgesFrom?: Prisma.RouteEdgeOrderByRelationAggregateInput
   edgesTo?: Prisma.RouteEdgeOrderByRelationAggregateInput
+  place?: Prisma.PlaceOrderByWithRelationInput
   savedLocations?: Prisma.UserSavedLocationOrderByRelationAggregateInput
 }
 
@@ -297,9 +297,9 @@ export type RouteNodeWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
-  place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
   edgesTo?: Prisma.RouteEdgeListRelationFilter
+  place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   savedLocations?: Prisma.UserSavedLocationListRelationFilter
 }, "id">
 
@@ -347,9 +347,9 @@ export type RouteNodeCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -379,9 +379,9 @@ export type RouteNodeUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -676,8 +676,8 @@ export type RouteNodeCreateWithoutEdgesFromInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -711,8 +711,8 @@ export type RouteNodeCreateWithoutEdgesToInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -757,8 +757,8 @@ export type RouteNodeUpdateWithoutEdgesFromInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -798,8 +798,8 @@ export type RouteNodeUpdateWithoutEdgesToInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -828,9 +828,9 @@ export type RouteNodeCreateWithoutSavedLocationsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
 }
 
 export type RouteNodeUncheckedCreateWithoutSavedLocationsInput = {
@@ -874,9 +874,9 @@ export type RouteNodeUpdateWithoutSavedLocationsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
 }
 
 export type RouteNodeUncheckedUpdateWithoutSavedLocationsInput = {
@@ -1008,9 +1008,9 @@ export type RouteNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
+  place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   savedLocations?: boolean | Prisma.RouteNode$savedLocationsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteNodeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeNode"]>
@@ -1058,9 +1058,9 @@ export type RouteNodeSelectScalar = {
 
 export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
 export type RouteNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
+  place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   savedLocations?: boolean | Prisma.RouteNode$savedLocationsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteNodeCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1074,9 +1074,9 @@ export type RouteNodeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type $RouteNodePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "RouteNode"
   objects: {
-    place: Prisma.$PlacePayload<ExtArgs> | null
     edgesFrom: Prisma.$RouteEdgePayload<ExtArgs>[]
     edgesTo: Prisma.$RouteEdgePayload<ExtArgs>[]
+    place: Prisma.$PlacePayload<ExtArgs> | null
     savedLocations: Prisma.$UserSavedLocationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1484,9 +1484,9 @@ readonly fields: RouteNodeFieldRefs;
  */
 export interface Prisma__RouteNodeClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  place<T extends Prisma.RouteNode$placeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$placeArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   edgesFrom<T extends Prisma.RouteNode$edgesFromArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgesFromArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   edgesTo<T extends Prisma.RouteNode$edgesToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgesToArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  place<T extends Prisma.RouteNode$placeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$placeArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   savedLocations<T extends Prisma.RouteNode$savedLocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$savedLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserSavedLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1928,25 +1928,6 @@ export type RouteNodeDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
- * RouteNode.place
- */
-export type RouteNode$placeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Place
-   */
-  select?: Prisma.PlaceSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Place
-   */
-  omit?: Prisma.PlaceOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.PlaceInclude<ExtArgs> | null
-  where?: Prisma.PlaceWhereInput
-}
-
-/**
  * RouteNode.edgesFrom
  */
 export type RouteNode$edgesFromArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1992,6 +1973,25 @@ export type RouteNode$edgesToArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.RouteEdgeScalarFieldEnum | Prisma.RouteEdgeScalarFieldEnum[]
+}
+
+/**
+ * RouteNode.place
+ */
+export type RouteNode$placeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Place
+   */
+  select?: Prisma.PlaceSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Place
+   */
+  omit?: Prisma.PlaceOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PlaceInclude<ExtArgs> | null
+  where?: Prisma.PlaceWhereInput
 }
 
 /**

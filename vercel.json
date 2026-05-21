@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/ingest-disasters?mode=realtime&hours=24",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

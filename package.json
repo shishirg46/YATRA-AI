@@ -10,20 +10,16 @@
     "ingest:disasters:realtime": "npx tsx scripts/ingest-disasters.ts realtime 24",
     "ingest:disasters:historical": "npx tsx scripts/ingest-disasters.ts historical 2020 2026",
     "ingest:disasters:full": "npx tsx scripts/ingest-disasters.ts full 2020 2026 24",
-    "validate:destinations": "npx tsx scripts/validate-destinations.ts",
     "check:weather": "npx tsx scripts/check-weather-avail.ts",
-    "reassess:destinations": "npx tsx scripts/reassess-destinations.ts",
     "seed:route-baseline": "npx tsx scripts/seed-route-baseline.ts",
     "seed:route-templates": "npx tsx scripts/build-route-templates.ts",
     "sync:route-templates": "npx tsx scripts/sync-route-templates-from-json.ts",
     "seed:nepal-routing": "npx tsx scripts/seed-nepal-routing.ts",
-    "seed:destinations": "npx tsx scripts/seed-destinations-v2.ts",
-    "enrich:osm": "npx tsx scripts/enrich-from-osm.ts",
-    "admin:destinations": "npx tsx scripts/admin-destination-verify.ts",
+    "seed:wikipedia-osm": "npx tsx scripts/seed-wikipedia-osm.ts",
     "db:start": "podman start yatra-postgres",
-  "db:stop": "podman stop yatra-postgres",
-  "db:logs": "podman logs -f yatra-postgres",
-  "db:reset": "podman rm -f yatra-postgres && podman run --name yatra-postgres -e POSTGRES_USER=yatra -e POSTGRES_PASSWORD=yatra123 -e POSTGRES_DB=yatraai -p 5433:5432 -d docker.io/library/postgres:16"
+    "db:stop": "podman stop yatra-postgres",
+    "db:logs": "podman logs -f yatra-postgres",
+    "db:reset": "podman rm -f yatra-postgres && podman run --name yatra-postgres -e POSTGRES_USER=yatra -e POSTGRES_PASSWORD=yatra123 -e POSTGRES_DB=yatraai -p 5433:5432 -d docker.io/postgis/postgis:16-3.4"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -45,7 +41,8 @@
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
     "sonner": "^2.0.7",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

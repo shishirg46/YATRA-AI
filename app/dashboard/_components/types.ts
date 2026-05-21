@@ -11,6 +11,7 @@ export interface Destination {
   name:        string;
   district:    string;
   province:    string;
+  category:    string;
   altitude:    number | null;
   latitude?:   number | null;
   longitude?:  number | null;
@@ -37,6 +38,9 @@ export interface Destination {
     source?:        string;
   } | null;
   assessedAt:  string;
+  verified?:   boolean;
+  routeAccessible?: boolean;
+  dataQualityScore?: number | null;
   isLive?:      boolean;
 }
 
@@ -46,6 +50,7 @@ export interface UserProfile {
   email:    string;
   image:    string | null;
   username: string | null;
+  role:     "USER" | "ADMIN" | "ANALYST";
   homeLocation:     { name: string; district: string; province: string } | null;
   travelPurposes:   string[];
   emergencyContact: { name: string; phone: string; relation: string | null } | null;
@@ -61,6 +66,13 @@ export interface UserProfile {
   behavior: {
     metrics: Record<string, any>;
   } | null;
+  health: {
+    bloodType:         string | null;
+    fitnessLevel:      string;
+    mobilityLimited:   boolean;
+    chronicConditions: string[];
+    allergies:         string[];
+  } | null;
 }
 
 export interface HealthData {
@@ -71,10 +83,45 @@ export interface HealthData {
   allergies:         string[];
 }
 
+export interface DestinationSummary {
+  total: number;
+  verified: number;
+  unverifiedCount: number;
+  routeAccessible: number;
+  topCategories: string[];
+  topDestinations: Array<{
+    id: string;
+    name: string;
+    district: string;
+    province: string;
+    latitude: number;
+    longitude: number;
+    altitude: number | null;
+    category: string;
+    dataQualityScore: number | null;
+    verified: boolean;
+    routeAccessible: boolean;
+  }>;
+  topUnverified: Array<{
+    id: string;
+    name: string;
+    district: string;
+    province: string;
+    latitude: number;
+    longitude: number;
+    altitude: number | null;
+    category: string;
+    dataQualityScore: number | null;
+    verified: boolean;
+    routeAccessible: boolean;
+  }>;
+}
+
 export interface DashboardData {
   user:         UserProfile;
   destinations: Destination[];
   stats:        { total: number; safe: number; caution: number; highRisk: number; extreme: number };
+  destinationSummary?: DestinationSummary;
 }
 
 export interface HazardNotif {

@@ -313,6 +313,12 @@ async function fetchOpenAQ(lat: number, lon: number): Promise<number | null> {
     // Average the readings
     const avgPm25 = readings.reduce((a, b) => a + b, 0) / readings.length;
 
+    // Sanity check: if OpenAQ reports hazardous but we'd expect clean air
+    // (rural Terai/hill district), log the raw readings for debugging
+    if (avgPm25 >= 100 && readings.length <= 2) {
+      console.warn(`[hazard] OpenAQ anomalous high PM2.5 avg=${avgPm25.toFixed(1)} readings=[${readings.map(r => r.toFixed(1)).join(",")}] at ${lat.toFixed(3)},${lon.toFixed(3)} — possible faulty sensor`);
+    }
+
     // Convert PM2.5 (μg/m³) to 0–1 index using WHO + Nepal standards
     // WHO guideline: 15 μg/m³ annual, 25 μg/m³ 24h
     // Nepal: Kathmandu often 60–200+ μg/m³

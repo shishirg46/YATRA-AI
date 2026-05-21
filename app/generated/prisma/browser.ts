@@ -157,3 +157,8 @@ export type Notification = Prisma.NotificationModel
  * 
  */
 export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model yatra_disaster_events
+ * 
+ */
+export type yatra_disaster_events = Prisma.yatra_disaster_eventsModel

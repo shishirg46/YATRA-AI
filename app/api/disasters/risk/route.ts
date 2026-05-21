@@ -3,8 +3,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import {
   calculateSegmentOwnedRouteRisk,
+  fetchDHMWeather as fetchOpenMeteoWeather,
   fetchHistoricalDisastersNearRoute,
-  fetchOpenMeteoWeather,
   fetchRealtimeDisastersNearRoute,
 } from "@/lib/disaster-pipeline";
 

@@ -261,8 +261,8 @@ export type TravelPlanWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  stops?: Prisma.TravelStopListRelationFilter
   members?: Prisma.TravelPlanMemberListRelationFilter
+  stops?: Prisma.TravelStopListRelationFilter
 }
 
 export type TravelPlanOrderByWithRelationInput = {
@@ -278,8 +278,8 @@ export type TravelPlanOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   leader?: Prisma.UserOrderByWithRelationInput
-  stops?: Prisma.TravelStopOrderByRelationAggregateInput
   members?: Prisma.TravelPlanMemberOrderByRelationAggregateInput
+  stops?: Prisma.TravelStopOrderByRelationAggregateInput
 }
 
 export type TravelPlanWhereUniqueInput = Prisma.AtLeast<{
@@ -298,8 +298,8 @@ export type TravelPlanWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  stops?: Prisma.TravelStopListRelationFilter
   members?: Prisma.TravelPlanMemberListRelationFilter
+  stops?: Prisma.TravelStopListRelationFilter
 }, "id">
 
 export type TravelPlanOrderByWithAggregationInput = {
@@ -350,8 +350,8 @@ export type TravelPlanCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
-  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
 }
 
 export type TravelPlanUncheckedCreateInput = {
@@ -366,8 +366,8 @@ export type TravelPlanUncheckedCreateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
 }
 
 export type TravelPlanUpdateInput = {
@@ -382,8 +382,8 @@ export type TravelPlanUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
-  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
 }
 
 export type TravelPlanUncheckedUpdateInput = {
@@ -398,8 +398,8 @@ export type TravelPlanUncheckedUpdateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
 }
 
 export type TravelPlanCreateManyInput = {
@@ -591,8 +591,8 @@ export type TravelPlanCreateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
 }
 
 export type TravelPlanUncheckedCreateWithoutLeaderInput = {
@@ -606,8 +606,8 @@ export type TravelPlanUncheckedCreateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
-  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
 }
 
 export type TravelPlanCreateOrConnectWithoutLeaderInput = {
@@ -829,8 +829,8 @@ export type TravelPlanUpdateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
 }
 
 export type TravelPlanUncheckedUpdateWithoutLeaderInput = {
@@ -844,8 +844,8 @@ export type TravelPlanUncheckedUpdateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
 }
 
 export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
@@ -867,13 +867,13 @@ export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
  */
 
 export type TravelPlanCountOutputType = {
-  stops: number
   members: number
+  stops: number
 }
 
 export type TravelPlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  stops?: boolean | TravelPlanCountOutputTypeCountStopsArgs
   members?: boolean | TravelPlanCountOutputTypeCountMembersArgs
+  stops?: boolean | TravelPlanCountOutputTypeCountStopsArgs
 }
 
 /**
@@ -889,15 +889,15 @@ export type TravelPlanCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
 /**
  * TravelPlanCountOutputType without action
  */
-export type TravelPlanCountOutputTypeCountStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.TravelStopWhereInput
+export type TravelPlanCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TravelPlanMemberWhereInput
 }
 
 /**
  * TravelPlanCountOutputType without action
  */
-export type TravelPlanCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.TravelPlanMemberWhereInput
+export type TravelPlanCountOutputTypeCountStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TravelStopWhereInput
 }
 
 
@@ -914,8 +914,8 @@ export type TravelPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
   members?: boolean | Prisma.TravelPlan$membersArgs<ExtArgs>
+  stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
   _count?: boolean | Prisma.TravelPlanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelPlan"]>
 
@@ -966,8 +966,8 @@ export type TravelPlanSelectScalar = {
 export type TravelPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "leaderId" | "tripType" | "status" | "startDate" | "endDate" | "budgetNPR" | "groupRiskResult" | "createdAt" | "updatedAt", ExtArgs["result"]["travelPlan"]>
 export type TravelPlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
   members?: boolean | Prisma.TravelPlan$membersArgs<ExtArgs>
+  stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
   _count?: boolean | Prisma.TravelPlanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TravelPlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -981,8 +981,8 @@ export type $TravelPlanPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "TravelPlan"
   objects: {
     leader: Prisma.$UserPayload<ExtArgs>
-    stops: Prisma.$TravelStopPayload<ExtArgs>[]
     members: Prisma.$TravelPlanMemberPayload<ExtArgs>[]
+    stops: Prisma.$TravelStopPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1391,8 +1391,8 @@ readonly fields: TravelPlanFieldRefs;
 export interface Prisma__TravelPlanClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   leader<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  stops<T extends Prisma.TravelPlan$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   members<T extends Prisma.TravelPlan$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelPlanMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  stops<T extends Prisma.TravelPlan$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1834,30 +1834,6 @@ export type TravelPlanDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * TravelPlan.stops
- */
-export type TravelPlan$stopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the TravelStop
-   */
-  select?: Prisma.TravelStopSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the TravelStop
-   */
-  omit?: Prisma.TravelStopOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.TravelStopInclude<ExtArgs> | null
-  where?: Prisma.TravelStopWhereInput
-  orderBy?: Prisma.TravelStopOrderByWithRelationInput | Prisma.TravelStopOrderByWithRelationInput[]
-  cursor?: Prisma.TravelStopWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.TravelStopScalarFieldEnum | Prisma.TravelStopScalarFieldEnum[]
-}
-
-/**
  * TravelPlan.members
  */
 export type TravelPlan$membersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1879,6 +1855,30 @@ export type TravelPlan$membersArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.TravelPlanMemberScalarFieldEnum | Prisma.TravelPlanMemberScalarFieldEnum[]
+}
+
+/**
+ * TravelPlan.stops
+ */
+export type TravelPlan$stopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TravelStop
+   */
+  select?: Prisma.TravelStopSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TravelStop
+   */
+  omit?: Prisma.TravelStopOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TravelStopInclude<ExtArgs> | null
+  where?: Prisma.TravelStopWhereInput
+  orderBy?: Prisma.TravelStopOrderByWithRelationInput | Prisma.TravelStopOrderByWithRelationInput[]
+  cursor?: Prisma.TravelStopWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TravelStopScalarFieldEnum | Prisma.TravelStopScalarFieldEnum[]
 }
 
 /**

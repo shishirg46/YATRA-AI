@@ -14,6 +14,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { generateRouteIntelligence, formatRouteIntelligenceResponse } from "@/lib/route-intelligence";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
+import { routeIntelligenceRequestSchema, validateBody } from "@/lib/validation";
 
 type PlacePoint = { name: string; lat: number; lon: number };
 
@@ -155,29 +157,26 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
-export async function POST(req: NextRequest) {
+async function routeIntelligenceHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const body = await req.json();
-    const { origin, destination, departureDate, destinationId } = body;
-
-    if (!origin?.lat || !origin?.lon || !destination?.lat || !destination?.lon) {
-      return NextResponse.json({ message: "Missing origin or destination coordinates" }, { status: 400 });
+    const rawBody = await req.json();
+    const parsed = validateBody(routeIntelligenceRequestSchema, rawBody);
+    if (!parsed.success) {
+      return NextResponse.json({ message: parsed.error }, { status: parsed.status });
     }
 
-    if (!departureDate) {
-      return NextResponse.json({ message: "Missing departure date" }, { status: 400 });
-    }
+    const { origin, destination, departureDate, destinationId, vehicle } = parsed.data;
 
     const result = await withTimeout(generateRouteIntelligence(
       { lat: origin.lat, lon: origin.lon, name: origin.name },
       { lat: destination.lat, lon: destination.lon, name: destination.name },
       departureDate,
-      { destinationId: typeof destinationId === "string" ? destinationId : destination.id }
+      { destinationId, vehicle }
     ), 25000);
 
     const formatted = formatRouteIntelligenceResponse(result);
@@ -192,6 +191,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message, error: String(err) }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(routeIntelligenceHandler, { max: 15, windowSeconds: 60 });
 
 /**
  * GET /api/route-intelligence

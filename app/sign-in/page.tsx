@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mountain, ArrowRight, Eye, EyeOff, AtSign, Mail } from "lucide-react";
@@ -20,6 +20,11 @@ export default function SignInPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [showPassword, setShowPassword]   = useState(false);
   const [error, setError]                 = useState<string | null>(null);
+
+  useEffect(() => {
+    // Clear registration cookie when showing the sign in page
+    document.cookie = "is_signing_up=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

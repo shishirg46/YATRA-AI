@@ -3,7 +3,7 @@
  * Data validation and normalization for destinations
  */
 
-import { DestinationCategory } from "@prisma/client";
+import { DestinationCategory } from "@/app/generated/prisma/client";
 
 /**
  * Normalize a place name for comparison

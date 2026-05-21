@@ -56,6 +56,9 @@ export default function RegisterPage() {
 
     setLoading(true);
 
+    // Set temporary sign up cookie
+    document.cookie = "is_signing_up=true; path=/; max-age=1800; SameSite=Lax";
+
     // Step 1: Create account
     const { error: signUpError } = await authClient.signUp.email({
       name,
@@ -90,6 +93,8 @@ export default function RegisterPage() {
 
   async function handleGoogle() {
     setGoogleLoading(true);
+    // Set temporary sign up cookie
+    document.cookie = "is_signing_up=true; path=/; max-age=1800; SameSite=Lax";
     await authClient.signIn.social({
       provider:    "google",
       callbackURL: "/api/user/post-oauth-redirect",

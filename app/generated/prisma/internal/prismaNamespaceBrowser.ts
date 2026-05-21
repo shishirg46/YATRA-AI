@@ -78,7 +78,8 @@ export const ModelName = {
   TravelGroup: 'TravelGroup',
   TravelGroupMember: 'TravelGroupMember',
   Notification: 'Notification',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  yatra_disaster_events: 'yatra_disaster_events'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -238,6 +239,12 @@ export const DestinationScalarFieldEnum = {
   routeAccessible: 'routeAccessible',
   coordinateAccuracy: 'coordinateAccuracy',
   dataQualityScore: 'dataQualityScore',
+  popularityScore: 'popularityScore',
+  confidenceScore: 'confidenceScore',
+  accessibilityScore: 'accessibilityScore',
+  tourismSupportScore: 'tourismSupportScore',
+  destinationTier: 'destinationTier',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   sourceLastFetch: 'sourceLastFetch'
@@ -502,6 +509,22 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const Yatra_disaster_eventsScalarFieldEnum = {
+  id: 'id',
+  external_id: 'external_id',
+  type: 'type',
+  lat: 'lat',
+  lon: 'lon',
+  date: 'date',
+  severity: 'severity',
+  source: 'source',
+  metadata: 'metadata',
+  created_at: 'created_at'
+} as const
+
+export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
 
 
 export const SortOrder = {

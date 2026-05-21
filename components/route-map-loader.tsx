@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import SegmentDetails from "@/components/segment-details";
 import RouteDirections from "@/components/route-directions";
 import { isInNepalBounds, NEPAL_CENTER, type RouteSegmentInfo } from "@/lib/map-utils";
-import type { RouteInstruction } from "@/lib/routing/types";
+import type { RouteInstruction, PerSegmentRoute } from "@/lib/routing/types";
 
 const RouteMap = dynamic(() => import("@/components/route-map"), {
   ssr: false,
@@ -32,6 +32,8 @@ interface RouteMapLoaderProps {
   originAlreadyResolved?: boolean;
   riskLevel?: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
   height?: string;
+  perSegmentRouting?: boolean;
+  dynamicOsmRouting?: boolean;
 }
 
 export default function RouteMapLoader({
@@ -49,6 +51,8 @@ export default function RouteMapLoader({
   originAlreadyResolved = false,
   riskLevel = "MEDIUM",
   height,
+  perSegmentRouting = true,
+  dynamicOsmRouting = true,
 }: RouteMapLoaderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,6 +65,7 @@ export default function RouteMapLoader({
   const [selectedSegment, setSelectedSegment] = useState<RouteSegmentInfo | null>(null);
   const [instructions, setInstructions] = useState<RouteInstruction[]>([]);
   const [userMarker, setUserMarker] = useState<{ lat: number; lon: number } | null>(null);
+  const [segmentRoutes, setSegmentRoutes] = useState<PerSegmentRoute[]>([]);
 
   useEffect(() => {
     const fetchRoute = async () => {
@@ -83,6 +88,8 @@ export default function RouteMapLoader({
             originAlreadyResolved,
             displayStartLat,
             displayStartLon,
+            perSegmentRouting,
+            dynamicOsmRouting,
           }),
         });
 
@@ -110,7 +117,7 @@ export default function RouteMapLoader({
         const safePolyline =
           roadPolyline.length >= 2
             ? roadPolyline
-            : nodeWaypoints.filter((p) => isInNepalBounds(p.lat, p.lon));
+            : nodeWaypoints.filter((p: { lat: number; lon: number }) => isInNepalBounds(p.lat, p.lon));
 
         if (nodeWaypoints.length > 0 && displayStartLat != null && displayStartLon != null) {
           nodeWaypoints[0] = {
@@ -127,6 +134,7 @@ export default function RouteMapLoader({
         setDistance(data.distance);
         setDuration(data.duration);
         setInstructions(data.instructions || []);
+        setSegmentRoutes(data.segmentRoutes || []);
         setResolutionNote(data.resolutionNote ?? data.originNote ?? null);
         setError(null);
 
@@ -215,6 +223,7 @@ export default function RouteMapLoader({
         riskLevel={riskLevel}
         height={height}
         userLocation={userMarker}
+        segmentRoutes={segmentRoutes}
         onSegmentClick={(segment) => setSelectedSegment(segment)}
       />
 

@@ -248,9 +248,9 @@ export type RouteTemplateWhereInput = {
   isActive?: Prisma.BoolFilter<"RouteTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
-  points?: Prisma.RouteTemplatePointListRelationFilter
-  originLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   destinationLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  originLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  points?: Prisma.RouteTemplatePointListRelationFilter
 }
 
 export type RouteTemplateOrderByWithRelationInput = {
@@ -263,9 +263,9 @@ export type RouteTemplateOrderByWithRelationInput = {
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  points?: Prisma.RouteTemplatePointOrderByRelationAggregateInput
-  originLocation?: Prisma.LocationOrderByWithRelationInput
   destinationLocation?: Prisma.LocationOrderByWithRelationInput
+  originLocation?: Prisma.LocationOrderByWithRelationInput
+  points?: Prisma.RouteTemplatePointOrderByRelationAggregateInput
 }
 
 export type RouteTemplateWhereUniqueInput = Prisma.AtLeast<{
@@ -282,9 +282,9 @@ export type RouteTemplateWhereUniqueInput = Prisma.AtLeast<{
   isActive?: Prisma.BoolFilter<"RouteTemplate"> | boolean
   createdAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
-  points?: Prisma.RouteTemplatePointListRelationFilter
-  originLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
   destinationLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  originLocation?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  points?: Prisma.RouteTemplatePointListRelationFilter
 }, "id" | "originLocationId_destinationLocationId_name">
 
 export type RouteTemplateOrderByWithAggregationInput = {
@@ -327,9 +327,9 @@ export type RouteTemplateCreateInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
-  originLocation: Prisma.LocationCreateNestedOneWithoutRouteOriginsInput
   destinationLocation: Prisma.LocationCreateNestedOneWithoutRouteDestinationsInput
+  originLocation: Prisma.LocationCreateNestedOneWithoutRouteOriginsInput
+  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
 }
 
 export type RouteTemplateUncheckedCreateInput = {
@@ -353,9 +353,9 @@ export type RouteTemplateUpdateInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
-  originLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteOriginsNestedInput
   destinationLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput
+  originLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteOriginsNestedInput
+  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
 }
 
 export type RouteTemplateUncheckedUpdateInput = {
@@ -470,13 +470,6 @@ export type RouteTemplateScalarRelationFilter = {
   isNot?: Prisma.RouteTemplateWhereInput
 }
 
-export type RouteTemplateCreateNestedManyWithoutOriginLocationInput = {
-  create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput> | Prisma.RouteTemplateCreateWithoutOriginLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput[]
-  connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput[]
-  createMany?: Prisma.RouteTemplateCreateManyOriginLocationInputEnvelope
-  connect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
-}
-
 export type RouteTemplateCreateNestedManyWithoutDestinationLocationInput = {
   create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutDestinationLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutDestinationLocationInput> | Prisma.RouteTemplateCreateWithoutDestinationLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutDestinationLocationInput[]
   connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutDestinationLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutDestinationLocationInput[]
@@ -484,7 +477,7 @@ export type RouteTemplateCreateNestedManyWithoutDestinationLocationInput = {
   connect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
 }
 
-export type RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput = {
+export type RouteTemplateCreateNestedManyWithoutOriginLocationInput = {
   create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput> | Prisma.RouteTemplateCreateWithoutOriginLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput[]
   connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput[]
   createMany?: Prisma.RouteTemplateCreateManyOriginLocationInputEnvelope
@@ -498,18 +491,11 @@ export type RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInpu
   connect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
 }
 
-export type RouteTemplateUpdateManyWithoutOriginLocationNestedInput = {
+export type RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput = {
   create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput> | Prisma.RouteTemplateCreateWithoutOriginLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput[]
   connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput[]
-  upsert?: Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput | Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput[]
   createMany?: Prisma.RouteTemplateCreateManyOriginLocationInputEnvelope
-  set?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
-  disconnect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
-  delete?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
   connect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
-  update?: Prisma.RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput | Prisma.RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput[]
-  updateMany?: Prisma.RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput | Prisma.RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput[]
-  deleteMany?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
 }
 
 export type RouteTemplateUpdateManyWithoutDestinationLocationNestedInput = {
@@ -526,7 +512,7 @@ export type RouteTemplateUpdateManyWithoutDestinationLocationNestedInput = {
   deleteMany?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
 }
 
-export type RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput = {
+export type RouteTemplateUpdateManyWithoutOriginLocationNestedInput = {
   create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput> | Prisma.RouteTemplateCreateWithoutOriginLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput[]
   connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput[]
   upsert?: Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput | Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput[]
@@ -554,6 +540,20 @@ export type RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInpu
   deleteMany?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
 }
 
+export type RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput = {
+  create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput> | Prisma.RouteTemplateCreateWithoutOriginLocationInput[] | Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput[]
+  connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput | Prisma.RouteTemplateCreateOrConnectWithoutOriginLocationInput[]
+  upsert?: Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput | Prisma.RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput[]
+  createMany?: Prisma.RouteTemplateCreateManyOriginLocationInputEnvelope
+  set?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
+  disconnect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
+  delete?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
+  connect?: Prisma.RouteTemplateWhereUniqueInput | Prisma.RouteTemplateWhereUniqueInput[]
+  update?: Prisma.RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput | Prisma.RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput[]
+  updateMany?: Prisma.RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput | Prisma.RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput[]
+  deleteMany?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
+}
+
 export type RouteTemplateCreateNestedOneWithoutPointsInput = {
   create?: Prisma.XOR<Prisma.RouteTemplateCreateWithoutPointsInput, Prisma.RouteTemplateUncheckedCreateWithoutPointsInput>
   connectOrCreate?: Prisma.RouteTemplateCreateOrConnectWithoutPointsInput
@@ -568,40 +568,6 @@ export type RouteTemplateUpdateOneRequiredWithoutPointsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RouteTemplateUpdateToOneWithWhereWithoutPointsInput, Prisma.RouteTemplateUpdateWithoutPointsInput>, Prisma.RouteTemplateUncheckedUpdateWithoutPointsInput>
 }
 
-export type RouteTemplateCreateWithoutOriginLocationInput = {
-  id?: string
-  name: string
-  distanceKm?: number | null
-  source?: string | null
-  isActive?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
-  destinationLocation: Prisma.LocationCreateNestedOneWithoutRouteDestinationsInput
-}
-
-export type RouteTemplateUncheckedCreateWithoutOriginLocationInput = {
-  id?: string
-  destinationLocationId: string
-  name: string
-  distanceKm?: number | null
-  source?: string | null
-  isActive?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  points?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutRouteTemplateInput
-}
-
-export type RouteTemplateCreateOrConnectWithoutOriginLocationInput = {
-  where: Prisma.RouteTemplateWhereUniqueInput
-  create: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput>
-}
-
-export type RouteTemplateCreateManyOriginLocationInputEnvelope = {
-  data: Prisma.RouteTemplateCreateManyOriginLocationInput | Prisma.RouteTemplateCreateManyOriginLocationInput[]
-  skipDuplicates?: boolean
-}
-
 export type RouteTemplateCreateWithoutDestinationLocationInput = {
   id?: string
   name: string
@@ -610,8 +576,8 @@ export type RouteTemplateCreateWithoutDestinationLocationInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
   originLocation: Prisma.LocationCreateNestedOneWithoutRouteOriginsInput
+  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
 }
 
 export type RouteTemplateUncheckedCreateWithoutDestinationLocationInput = {
@@ -636,35 +602,38 @@ export type RouteTemplateCreateManyDestinationLocationInputEnvelope = {
   skipDuplicates?: boolean
 }
 
-export type RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput = {
+export type RouteTemplateCreateWithoutOriginLocationInput = {
+  id?: string
+  name: string
+  distanceKm?: number | null
+  source?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  destinationLocation: Prisma.LocationCreateNestedOneWithoutRouteDestinationsInput
+  points?: Prisma.RouteTemplatePointCreateNestedManyWithoutRouteTemplateInput
+}
+
+export type RouteTemplateUncheckedCreateWithoutOriginLocationInput = {
+  id?: string
+  destinationLocationId: string
+  name: string
+  distanceKm?: number | null
+  source?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  points?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutRouteTemplateInput
+}
+
+export type RouteTemplateCreateOrConnectWithoutOriginLocationInput = {
   where: Prisma.RouteTemplateWhereUniqueInput
-  update: Prisma.XOR<Prisma.RouteTemplateUpdateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedUpdateWithoutOriginLocationInput>
   create: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput>
 }
 
-export type RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput = {
-  where: Prisma.RouteTemplateWhereUniqueInput
-  data: Prisma.XOR<Prisma.RouteTemplateUpdateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedUpdateWithoutOriginLocationInput>
-}
-
-export type RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput = {
-  where: Prisma.RouteTemplateScalarWhereInput
-  data: Prisma.XOR<Prisma.RouteTemplateUpdateManyMutationInput, Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationInput>
-}
-
-export type RouteTemplateScalarWhereInput = {
-  AND?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
-  OR?: Prisma.RouteTemplateScalarWhereInput[]
-  NOT?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
-  id?: Prisma.StringFilter<"RouteTemplate"> | string
-  originLocationId?: Prisma.StringFilter<"RouteTemplate"> | string
-  destinationLocationId?: Prisma.StringFilter<"RouteTemplate"> | string
-  name?: Prisma.StringFilter<"RouteTemplate"> | string
-  distanceKm?: Prisma.FloatNullableFilter<"RouteTemplate"> | number | null
-  source?: Prisma.StringNullableFilter<"RouteTemplate"> | string | null
-  isActive?: Prisma.BoolFilter<"RouteTemplate"> | boolean
-  createdAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
+export type RouteTemplateCreateManyOriginLocationInputEnvelope = {
+  data: Prisma.RouteTemplateCreateManyOriginLocationInput | Prisma.RouteTemplateCreateManyOriginLocationInput[]
+  skipDuplicates?: boolean
 }
 
 export type RouteTemplateUpsertWithWhereUniqueWithoutDestinationLocationInput = {
@@ -683,6 +652,37 @@ export type RouteTemplateUpdateManyWithWhereWithoutDestinationLocationInput = {
   data: Prisma.XOR<Prisma.RouteTemplateUpdateManyMutationInput, Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationInput>
 }
 
+export type RouteTemplateScalarWhereInput = {
+  AND?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
+  OR?: Prisma.RouteTemplateScalarWhereInput[]
+  NOT?: Prisma.RouteTemplateScalarWhereInput | Prisma.RouteTemplateScalarWhereInput[]
+  id?: Prisma.StringFilter<"RouteTemplate"> | string
+  originLocationId?: Prisma.StringFilter<"RouteTemplate"> | string
+  destinationLocationId?: Prisma.StringFilter<"RouteTemplate"> | string
+  name?: Prisma.StringFilter<"RouteTemplate"> | string
+  distanceKm?: Prisma.FloatNullableFilter<"RouteTemplate"> | number | null
+  source?: Prisma.StringNullableFilter<"RouteTemplate"> | string | null
+  isActive?: Prisma.BoolFilter<"RouteTemplate"> | boolean
+  createdAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"RouteTemplate"> | Date | string
+}
+
+export type RouteTemplateUpsertWithWhereUniqueWithoutOriginLocationInput = {
+  where: Prisma.RouteTemplateWhereUniqueInput
+  update: Prisma.XOR<Prisma.RouteTemplateUpdateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedUpdateWithoutOriginLocationInput>
+  create: Prisma.XOR<Prisma.RouteTemplateCreateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedCreateWithoutOriginLocationInput>
+}
+
+export type RouteTemplateUpdateWithWhereUniqueWithoutOriginLocationInput = {
+  where: Prisma.RouteTemplateWhereUniqueInput
+  data: Prisma.XOR<Prisma.RouteTemplateUpdateWithoutOriginLocationInput, Prisma.RouteTemplateUncheckedUpdateWithoutOriginLocationInput>
+}
+
+export type RouteTemplateUpdateManyWithWhereWithoutOriginLocationInput = {
+  where: Prisma.RouteTemplateScalarWhereInput
+  data: Prisma.XOR<Prisma.RouteTemplateUpdateManyMutationInput, Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationInput>
+}
+
 export type RouteTemplateCreateWithoutPointsInput = {
   id?: string
   name: string
@@ -691,8 +691,8 @@ export type RouteTemplateCreateWithoutPointsInput = {
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
-  originLocation: Prisma.LocationCreateNestedOneWithoutRouteOriginsInput
   destinationLocation: Prisma.LocationCreateNestedOneWithoutRouteDestinationsInput
+  originLocation: Prisma.LocationCreateNestedOneWithoutRouteOriginsInput
 }
 
 export type RouteTemplateUncheckedCreateWithoutPointsInput = {
@@ -731,8 +731,8 @@ export type RouteTemplateUpdateWithoutPointsInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  originLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteOriginsNestedInput
   destinationLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput
+  originLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteOriginsNestedInput
 }
 
 export type RouteTemplateUncheckedUpdateWithoutPointsInput = {
@@ -747,17 +747,6 @@ export type RouteTemplateUncheckedUpdateWithoutPointsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type RouteTemplateCreateManyOriginLocationInput = {
-  id?: string
-  destinationLocationId: string
-  name: string
-  distanceKm?: number | null
-  source?: string | null
-  isActive?: boolean
-  createdAt?: Date | string
-  updatedAt?: Date | string
-}
-
 export type RouteTemplateCreateManyDestinationLocationInput = {
   id?: string
   originLocationId: string
@@ -769,39 +758,15 @@ export type RouteTemplateCreateManyDestinationLocationInput = {
   updatedAt?: Date | string
 }
 
-export type RouteTemplateUpdateWithoutOriginLocationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
-  destinationLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput
-}
-
-export type RouteTemplateUncheckedUpdateWithoutOriginLocationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  destinationLocationId?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  points?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutRouteTemplateNestedInput
-}
-
-export type RouteTemplateUncheckedUpdateManyWithoutOriginLocationInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  destinationLocationId?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
-  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+export type RouteTemplateCreateManyOriginLocationInput = {
+  id?: string
+  destinationLocationId: string
+  name: string
+  distanceKm?: number | null
+  source?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type RouteTemplateUpdateWithoutDestinationLocationInput = {
@@ -812,8 +777,8 @@ export type RouteTemplateUpdateWithoutDestinationLocationInput = {
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
   originLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteOriginsNestedInput
+  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
 }
 
 export type RouteTemplateUncheckedUpdateWithoutDestinationLocationInput = {
@@ -831,6 +796,41 @@ export type RouteTemplateUncheckedUpdateWithoutDestinationLocationInput = {
 export type RouteTemplateUncheckedUpdateManyWithoutDestinationLocationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   originLocationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RouteTemplateUpdateWithoutOriginLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  destinationLocation?: Prisma.LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput
+  points?: Prisma.RouteTemplatePointUpdateManyWithoutRouteTemplateNestedInput
+}
+
+export type RouteTemplateUncheckedUpdateWithoutOriginLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLocationId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  points?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutRouteTemplateNestedInput
+}
+
+export type RouteTemplateUncheckedUpdateManyWithoutOriginLocationInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  destinationLocationId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   source?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -880,9 +880,9 @@ export type RouteTemplateSelect<ExtArgs extends runtime.Types.Extensions.Interna
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  points?: boolean | Prisma.RouteTemplate$pointsArgs<ExtArgs>
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  points?: boolean | Prisma.RouteTemplate$pointsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplate"]>
 
@@ -896,8 +896,8 @@ export type RouteTemplateSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplate"]>
 
 export type RouteTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -910,8 +910,8 @@ export type RouteTemplateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplate"]>
 
 export type RouteTemplateSelectScalar = {
@@ -928,26 +928,26 @@ export type RouteTemplateSelectScalar = {
 
 export type RouteTemplateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "originLocationId" | "destinationLocationId" | "name" | "distanceKm" | "source" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeTemplate"]>
 export type RouteTemplateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  points?: boolean | Prisma.RouteTemplate$pointsArgs<ExtArgs>
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  points?: boolean | Prisma.RouteTemplate$pointsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteTemplateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RouteTemplateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }
 export type RouteTemplateIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
   destinationLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  originLocation?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
 }
 
 export type $RouteTemplatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "RouteTemplate"
   objects: {
-    points: Prisma.$RouteTemplatePointPayload<ExtArgs>[]
-    originLocation: Prisma.$LocationPayload<ExtArgs>
     destinationLocation: Prisma.$LocationPayload<ExtArgs>
+    originLocation: Prisma.$LocationPayload<ExtArgs>
+    points: Prisma.$RouteTemplatePointPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1353,9 +1353,9 @@ readonly fields: RouteTemplateFieldRefs;
  */
 export interface Prisma__RouteTemplateClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  points<T extends Prisma.RouteTemplate$pointsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteTemplate$pointsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  originLocation<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   destinationLocation<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  originLocation<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  points<T extends Prisma.RouteTemplate$pointsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteTemplate$pointsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

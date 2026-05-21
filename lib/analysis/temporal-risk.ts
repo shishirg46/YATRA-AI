@@ -10,6 +10,8 @@
  *   With: overall score, level, every risk factor explained, and recommendations.
  */
 
+import { callAI } from "@/lib/ai/client";
+
 import { fetchHistoricalWeather, HistoricalWeatherStats } from "@/lib/collectors/historical-weather";
 import { fetchHistoricalHazard, HistoricalHazardStats }   from "@/lib/collectors/historical-hazard";
 
@@ -418,26 +420,12 @@ async function generateSeasonalContext(params: {
 
 Be specific to this exact destination — mention its altitude, what the weather is like there in ${monthName}, any specific risks or benefits of visiting at this time, and one practical note for travellers. Do not use generic Nepal-wide statements. Do not mention other destinations like Everest or Annapurna unless this IS one of those. Keep it factual and under 60 words.`;
 
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model:      "claude-sonnet-4-20250514",
-        max_tokens: 150,
-        system:     "You are a Nepal travel expert. Write factual, destination-specific travel context. Plain text only, no bullet points, no markdown.",
-        messages:   [{ role: "user", content: prompt }],
-      }),
-    });
+  const text = await callAI(prompt, {
+    system: "You are a Nepal travel expert. Write factual, destination-specific travel context. Plain text only, no bullet points, no markdown.",
+    maxTokens: 150,
+  });
 
-    if (!res.ok) return fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
-
-    const data = await res.json() as { content?: { type: string; text: string }[] };
-    const text = data.content?.find((b) => b.type === "text")?.text?.trim();
-    return text || fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
-  } catch {
-    return fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
-  }
+  return text?.trim() || fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
 }
 
 // Fallback if Claude is unavailable

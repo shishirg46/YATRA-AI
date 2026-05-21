@@ -411,7 +411,8 @@ export const ModelName = {
   TravelGroup: 'TravelGroup',
   TravelGroupMember: 'TravelGroupMember',
   Notification: 'Notification',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  yatra_disaster_events: 'yatra_disaster_events'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userHealth" | "userPreference" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "routeTemplate" | "routeTemplatePoint" | "weatherData" | "hazardData" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog"
+    modelProps: "user" | "userHealth" | "userPreference" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "routeTemplate" | "routeTemplatePoint" | "weatherData" | "hazardData" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog" | "yatra_disaster_events"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2503,6 +2504,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    yatra_disaster_events: {
+      payload: Prisma.$yatra_disaster_eventsPayload<ExtArgs>
+      fields: Prisma.yatra_disaster_eventsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.yatra_disaster_eventsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.yatra_disaster_eventsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        findFirst: {
+          args: Prisma.yatra_disaster_eventsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.yatra_disaster_eventsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        findMany: {
+          args: Prisma.yatra_disaster_eventsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>[]
+        }
+        create: {
+          args: Prisma.yatra_disaster_eventsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        createMany: {
+          args: Prisma.yatra_disaster_eventsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.yatra_disaster_eventsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>[]
+        }
+        delete: {
+          args: Prisma.yatra_disaster_eventsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        update: {
+          args: Prisma.yatra_disaster_eventsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        deleteMany: {
+          args: Prisma.yatra_disaster_eventsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.yatra_disaster_eventsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.yatra_disaster_eventsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>[]
+        }
+        upsert: {
+          args: Prisma.yatra_disaster_eventsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$yatra_disaster_eventsPayload>
+        }
+        aggregate: {
+          args: Prisma.Yatra_disaster_eventsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateYatra_disaster_events>
+        }
+        groupBy: {
+          args: Prisma.yatra_disaster_eventsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Yatra_disaster_eventsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.yatra_disaster_eventsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.Yatra_disaster_eventsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2683,6 +2758,12 @@ export const DestinationScalarFieldEnum = {
   routeAccessible: 'routeAccessible',
   coordinateAccuracy: 'coordinateAccuracy',
   dataQualityScore: 'dataQualityScore',
+  popularityScore: 'popularityScore',
+  confidenceScore: 'confidenceScore',
+  accessibilityScore: 'accessibilityScore',
+  tourismSupportScore: 'tourismSupportScore',
+  destinationTier: 'destinationTier',
+  metadata: 'metadata',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   sourceLastFetch: 'sourceLastFetch'
@@ -2947,6 +3028,22 @@ export const AuditLogScalarFieldEnum = {
 } as const
 
 export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const Yatra_disaster_eventsScalarFieldEnum = {
+  id: 'id',
+  external_id: 'external_id',
+  type: 'type',
+  lat: 'lat',
+  lon: 'lon',
+  date: 'date',
+  severity: 'severity',
+  source: 'source',
+  metadata: 'metadata',
+  created_at: 'created_at'
+} as const
+
+export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3219,6 +3316,20 @@ export type EnumMemberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 export type ListEnumMemberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MemberStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -3342,6 +3453,7 @@ export type GlobalOmitConfig = {
   travelGroupMember?: Prisma.TravelGroupMemberOmit
   notification?: Prisma.NotificationOmit
   auditLog?: Prisma.AuditLogOmit
+  yatra_disaster_events?: Prisma.yatra_disaster_eventsOmit
 }
 
 /* Types for Logging */

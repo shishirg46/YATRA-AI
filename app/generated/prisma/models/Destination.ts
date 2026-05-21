@@ -32,6 +32,11 @@ export type DestinationAvgAggregateOutputType = {
   altitude: number | null
   coordinateAccuracy: number | null
   dataQualityScore: number | null
+  popularityScore: number | null
+  confidenceScore: number | null
+  accessibilityScore: number | null
+  tourismSupportScore: number | null
+  destinationTier: number | null
 }
 
 export type DestinationSumAggregateOutputType = {
@@ -40,6 +45,11 @@ export type DestinationSumAggregateOutputType = {
   altitude: number | null
   coordinateAccuracy: number | null
   dataQualityScore: number | null
+  popularityScore: number | null
+  confidenceScore: number | null
+  accessibilityScore: number | null
+  tourismSupportScore: number | null
+  destinationTier: number | null
 }
 
 export type DestinationMinAggregateOutputType = {
@@ -63,6 +73,11 @@ export type DestinationMinAggregateOutputType = {
   routeAccessible: boolean | null
   coordinateAccuracy: number | null
   dataQualityScore: number | null
+  popularityScore: number | null
+  confidenceScore: number | null
+  accessibilityScore: number | null
+  tourismSupportScore: number | null
+  destinationTier: number | null
   createdAt: Date | null
   updatedAt: Date | null
   sourceLastFetch: Date | null
@@ -89,6 +104,11 @@ export type DestinationMaxAggregateOutputType = {
   routeAccessible: boolean | null
   coordinateAccuracy: number | null
   dataQualityScore: number | null
+  popularityScore: number | null
+  confidenceScore: number | null
+  accessibilityScore: number | null
+  tourismSupportScore: number | null
+  destinationTier: number | null
   createdAt: Date | null
   updatedAt: Date | null
   sourceLastFetch: Date | null
@@ -116,6 +136,12 @@ export type DestinationCountAggregateOutputType = {
   routeAccessible: number
   coordinateAccuracy: number
   dataQualityScore: number
+  popularityScore: number
+  confidenceScore: number
+  accessibilityScore: number
+  tourismSupportScore: number
+  destinationTier: number
+  metadata: number
   createdAt: number
   updatedAt: number
   sourceLastFetch: number
@@ -129,6 +155,11 @@ export type DestinationAvgAggregateInputType = {
   altitude?: true
   coordinateAccuracy?: true
   dataQualityScore?: true
+  popularityScore?: true
+  confidenceScore?: true
+  accessibilityScore?: true
+  tourismSupportScore?: true
+  destinationTier?: true
 }
 
 export type DestinationSumAggregateInputType = {
@@ -137,6 +168,11 @@ export type DestinationSumAggregateInputType = {
   altitude?: true
   coordinateAccuracy?: true
   dataQualityScore?: true
+  popularityScore?: true
+  confidenceScore?: true
+  accessibilityScore?: true
+  tourismSupportScore?: true
+  destinationTier?: true
 }
 
 export type DestinationMinAggregateInputType = {
@@ -160,6 +196,11 @@ export type DestinationMinAggregateInputType = {
   routeAccessible?: true
   coordinateAccuracy?: true
   dataQualityScore?: true
+  popularityScore?: true
+  confidenceScore?: true
+  accessibilityScore?: true
+  tourismSupportScore?: true
+  destinationTier?: true
   createdAt?: true
   updatedAt?: true
   sourceLastFetch?: true
@@ -186,6 +227,11 @@ export type DestinationMaxAggregateInputType = {
   routeAccessible?: true
   coordinateAccuracy?: true
   dataQualityScore?: true
+  popularityScore?: true
+  confidenceScore?: true
+  accessibilityScore?: true
+  tourismSupportScore?: true
+  destinationTier?: true
   createdAt?: true
   updatedAt?: true
   sourceLastFetch?: true
@@ -213,6 +259,12 @@ export type DestinationCountAggregateInputType = {
   routeAccessible?: true
   coordinateAccuracy?: true
   dataQualityScore?: true
+  popularityScore?: true
+  confidenceScore?: true
+  accessibilityScore?: true
+  tourismSupportScore?: true
+  destinationTier?: true
+  metadata?: true
   createdAt?: true
   updatedAt?: true
   sourceLastFetch?: true
@@ -327,6 +379,12 @@ export type DestinationGroupByOutputType = {
   routeAccessible: boolean
   coordinateAccuracy: number | null
   dataQualityScore: number | null
+  popularityScore: number | null
+  confidenceScore: number | null
+  accessibilityScore: number | null
+  tourismSupportScore: number | null
+  destinationTier: number | null
+  metadata: runtime.JsonValue | null
   createdAt: Date
   updatedAt: Date
   sourceLastFetch: Date | null
@@ -377,6 +435,12 @@ export type DestinationWhereInput = {
   routeAccessible?: Prisma.BoolFilter<"Destination"> | boolean
   coordinateAccuracy?: Prisma.FloatNullableFilter<"Destination"> | number | null
   dataQualityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  popularityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  confidenceScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  accessibilityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  tourismSupportScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  destinationTier?: Prisma.IntNullableFilter<"Destination"> | number | null
+  metadata?: Prisma.JsonNullableFilter<"Destination">
   createdAt?: Prisma.DateTimeFilter<"Destination"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Destination"> | Date | string
   sourceLastFetch?: Prisma.DateTimeNullableFilter<"Destination"> | Date | string | null
@@ -404,6 +468,12 @@ export type DestinationOrderByWithRelationInput = {
   routeAccessible?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrderInput | Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  popularityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  destinationTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourceLastFetch?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -435,6 +505,12 @@ export type DestinationWhereUniqueInput = Prisma.AtLeast<{
   routeAccessible?: Prisma.BoolFilter<"Destination"> | boolean
   coordinateAccuracy?: Prisma.FloatNullableFilter<"Destination"> | number | null
   dataQualityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  popularityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  confidenceScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  accessibilityScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  tourismSupportScore?: Prisma.FloatNullableFilter<"Destination"> | number | null
+  destinationTier?: Prisma.IntNullableFilter<"Destination"> | number | null
+  metadata?: Prisma.JsonNullableFilter<"Destination">
   createdAt?: Prisma.DateTimeFilter<"Destination"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Destination"> | Date | string
   sourceLastFetch?: Prisma.DateTimeNullableFilter<"Destination"> | Date | string | null
@@ -462,6 +538,12 @@ export type DestinationOrderByWithAggregationInput = {
   routeAccessible?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrderInput | Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  popularityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  destinationTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourceLastFetch?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -497,6 +579,12 @@ export type DestinationScalarWhereWithAggregatesInput = {
   routeAccessible?: Prisma.BoolWithAggregatesFilter<"Destination"> | boolean
   coordinateAccuracy?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
   dataQualityScore?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
+  popularityScore?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
+  confidenceScore?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
+  accessibilityScore?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
+  tourismSupportScore?: Prisma.FloatNullableWithAggregatesFilter<"Destination"> | number | null
+  destinationTier?: Prisma.IntNullableWithAggregatesFilter<"Destination"> | number | null
+  metadata?: Prisma.JsonNullableWithAggregatesFilter<"Destination">
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Destination"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Destination"> | Date | string
   sourceLastFetch?: Prisma.DateTimeNullableWithAggregatesFilter<"Destination"> | Date | string | null
@@ -524,6 +612,12 @@ export type DestinationCreateInput = {
   routeAccessible?: boolean
   coordinateAccuracy?: number | null
   dataQualityScore?: number | null
+  popularityScore?: number | null
+  confidenceScore?: number | null
+  accessibilityScore?: number | null
+  tourismSupportScore?: number | null
+  destinationTier?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
@@ -551,6 +645,12 @@ export type DestinationUncheckedCreateInput = {
   routeAccessible?: boolean
   coordinateAccuracy?: number | null
   dataQualityScore?: number | null
+  popularityScore?: number | null
+  confidenceScore?: number | null
+  accessibilityScore?: number | null
+  tourismSupportScore?: number | null
+  destinationTier?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
@@ -578,6 +678,12 @@ export type DestinationUpdateInput = {
   routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -605,6 +711,12 @@ export type DestinationUncheckedUpdateInput = {
   routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -632,6 +744,12 @@ export type DestinationCreateManyInput = {
   routeAccessible?: boolean
   coordinateAccuracy?: number | null
   dataQualityScore?: number | null
+  popularityScore?: number | null
+  confidenceScore?: number | null
+  accessibilityScore?: number | null
+  tourismSupportScore?: number | null
+  destinationTier?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
@@ -659,6 +777,12 @@ export type DestinationUpdateManyMutationInput = {
   routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -686,6 +810,12 @@ export type DestinationUncheckedUpdateManyInput = {
   routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
   coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -719,6 +849,12 @@ export type DestinationCountOrderByAggregateInput = {
   routeAccessible?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrder
+  popularityScore?: Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrder
+  destinationTier?: Prisma.SortOrder
+  metadata?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourceLastFetch?: Prisma.SortOrder
@@ -730,6 +866,11 @@ export type DestinationAvgOrderByAggregateInput = {
   altitude?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrder
+  popularityScore?: Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrder
+  destinationTier?: Prisma.SortOrder
 }
 
 export type DestinationMaxOrderByAggregateInput = {
@@ -753,6 +894,11 @@ export type DestinationMaxOrderByAggregateInput = {
   routeAccessible?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrder
+  popularityScore?: Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrder
+  destinationTier?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourceLastFetch?: Prisma.SortOrder
@@ -779,6 +925,11 @@ export type DestinationMinOrderByAggregateInput = {
   routeAccessible?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrder
+  popularityScore?: Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrder
+  destinationTier?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   sourceLastFetch?: Prisma.SortOrder
@@ -790,6 +941,11 @@ export type DestinationSumOrderByAggregateInput = {
   altitude?: Prisma.SortOrder
   coordinateAccuracy?: Prisma.SortOrder
   dataQualityScore?: Prisma.SortOrder
+  popularityScore?: Prisma.SortOrder
+  confidenceScore?: Prisma.SortOrder
+  accessibilityScore?: Prisma.SortOrder
+  tourismSupportScore?: Prisma.SortOrder
+  destinationTier?: Prisma.SortOrder
 }
 
 export type DestinationCreatetagsInput = {
@@ -841,6 +997,12 @@ export type DestinationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   routeAccessible?: boolean
   coordinateAccuracy?: boolean
   dataQualityScore?: boolean
+  popularityScore?: boolean
+  confidenceScore?: boolean
+  accessibilityScore?: boolean
+  tourismSupportScore?: boolean
+  destinationTier?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   sourceLastFetch?: boolean
@@ -868,6 +1030,12 @@ export type DestinationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   routeAccessible?: boolean
   coordinateAccuracy?: boolean
   dataQualityScore?: boolean
+  popularityScore?: boolean
+  confidenceScore?: boolean
+  accessibilityScore?: boolean
+  tourismSupportScore?: boolean
+  destinationTier?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   sourceLastFetch?: boolean
@@ -895,6 +1063,12 @@ export type DestinationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   routeAccessible?: boolean
   coordinateAccuracy?: boolean
   dataQualityScore?: boolean
+  popularityScore?: boolean
+  confidenceScore?: boolean
+  accessibilityScore?: boolean
+  tourismSupportScore?: boolean
+  destinationTier?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   sourceLastFetch?: boolean
@@ -922,12 +1096,18 @@ export type DestinationSelectScalar = {
   routeAccessible?: boolean
   coordinateAccuracy?: boolean
   dataQualityScore?: boolean
+  popularityScore?: boolean
+  confidenceScore?: boolean
+  accessibilityScore?: boolean
+  tourismSupportScore?: boolean
+  destinationTier?: boolean
+  metadata?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   sourceLastFetch?: boolean
 }
 
-export type DestinationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "normalizedName" | "district" | "province" | "municipality" | "latitude" | "longitude" | "altitude" | "category" | "description" | "image" | "tags" | "osmId" | "source" | "verified" | "verifiedBy" | "verifiedAt" | "routeAccessible" | "coordinateAccuracy" | "dataQualityScore" | "createdAt" | "updatedAt" | "sourceLastFetch", ExtArgs["result"]["destination"]>
+export type DestinationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "normalizedName" | "district" | "province" | "municipality" | "latitude" | "longitude" | "altitude" | "category" | "description" | "image" | "tags" | "osmId" | "source" | "verified" | "verifiedBy" | "verifiedAt" | "routeAccessible" | "coordinateAccuracy" | "dataQualityScore" | "popularityScore" | "confidenceScore" | "accessibilityScore" | "tourismSupportScore" | "destinationTier" | "metadata" | "createdAt" | "updatedAt" | "sourceLastFetch", ExtArgs["result"]["destination"]>
 
 export type $DestinationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Destination"
@@ -954,6 +1134,12 @@ export type $DestinationPayload<ExtArgs extends runtime.Types.Extensions.Interna
     routeAccessible: boolean
     coordinateAccuracy: number | null
     dataQualityScore: number | null
+    popularityScore: number | null
+    confidenceScore: number | null
+    accessibilityScore: number | null
+    tourismSupportScore: number | null
+    destinationTier: number | null
+    metadata: runtime.JsonValue | null
     createdAt: Date
     updatedAt: Date
     sourceLastFetch: Date | null
@@ -1401,6 +1587,12 @@ export interface DestinationFieldRefs {
   readonly routeAccessible: Prisma.FieldRef<"Destination", 'Boolean'>
   readonly coordinateAccuracy: Prisma.FieldRef<"Destination", 'Float'>
   readonly dataQualityScore: Prisma.FieldRef<"Destination", 'Float'>
+  readonly popularityScore: Prisma.FieldRef<"Destination", 'Float'>
+  readonly confidenceScore: Prisma.FieldRef<"Destination", 'Float'>
+  readonly accessibilityScore: Prisma.FieldRef<"Destination", 'Float'>
+  readonly tourismSupportScore: Prisma.FieldRef<"Destination", 'Float'>
+  readonly destinationTier: Prisma.FieldRef<"Destination", 'Int'>
+  readonly metadata: Prisma.FieldRef<"Destination", 'Json'>
   readonly createdAt: Prisma.FieldRef<"Destination", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Destination", 'DateTime'>
   readonly sourceLastFetch: Prisma.FieldRef<"Destination", 'DateTime'>

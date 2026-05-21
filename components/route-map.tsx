@@ -13,10 +13,10 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import L, { LatLngBounds } from "leaflet";
 import { MapContainer, TileLayer, Popup, Marker, useMap, Polyline } from "react-leaflet";
-import { AlertCircle, MapPin, Zap, Cloud, Droplets } from "lucide-react";
+import { MapPin, Zap, Cloud } from "lucide-react";
 import {
   toLatLng,
   getRiskColor,
@@ -64,8 +64,19 @@ interface RouteMapProps {
   selectedRouteIndex?: number;
   onRouteSelect?: (index: number) => void;
   height?: string;
-  /** Actual GPS/home pin when different from routed origin hub */
   userLocation?: { lat: number; lon: number } | null;
+  segmentRoutes?: Array<{
+    from: { lat: number; lon: number; name?: string };
+    to: { lat: number; lon: number; name?: string };
+    polyline: Array<{ lat: number; lon: number }>;
+    distance: number;
+    duration: number;
+    alternatives: Array<{
+      polyline: Array<{ lat: number; lon: number }>;
+      distance: number;
+      duration: number;
+    }>;
+  }>;
 }
 
 function MapController({ bounds }: { bounds: LatLngBounds | null }) {
@@ -93,6 +104,7 @@ export default function RouteMap({
   onRouteSelect,
   height = "h-96",
   userLocation = null,
+  segmentRoutes = [],
 }: RouteMapProps) {
   const pathPoints = useMemo(() => {
     const raw = polyline && polyline.length >= 2 ? polyline : waypoints;
@@ -245,6 +257,24 @@ export default function RouteMap({
           />
         ))}
 
+        {/* Per-segment alternatives (thin dashed lines) */}
+        {segmentRoutes.map((sr, segIdx) =>
+          sr.alternatives.map((alt, altIdx) => (
+            <Polyline
+              key={`seg-${segIdx}-alt-${altIdx}`}
+              positions={alt.polyline
+                .filter((p) => isInNepalBounds(p.lat, p.lon))
+                .map((p) => toLatLng(p.lat, p.lon))}
+              color="#64748b"
+              weight={2}
+              opacity={0.35}
+              dashArray="6, 4"
+              smoothFactor={1}
+              interactive={false}
+            />
+          ))
+        )}
+
         {/* Waypoints */}
         {renderWaypoints()}
 
@@ -366,7 +396,7 @@ function SegmentPolyline({
   );
 }
 
-function createWaypointIcon(type: "origin" | "destination" | "waypoint" | "user"): L.Icon {
+function createWaypointIcon(type: "origin" | "destination" | "waypoint" | "user"): L.DivIcon {
   const fill =
     type === "origin"
       ? "#10b981"

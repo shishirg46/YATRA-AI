@@ -1,29 +1,38 @@
 import { haversineKm, isPointInNepal } from "@/lib/routing/geo";
 import { prepareMapPolyline } from "@/lib/routing/polyline-simplify";
-import type { RouteInstruction } from "@/lib/routing/types";
-import { fetchOsrmRouteThroughNodes } from "@/lib/routing/osrm-client";
+import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
+import { createRouteBuffer } from "@/lib/routing/route-buffer";
+import { findPlacesAlongRoute } from "@/lib/routing/places-along-route";
+import { rankPlacesForRoute } from "@/lib/routing/route-ranking";
+import { routeCache, routeGeometryCache, makeRouteCacheKey } from "@/lib/routing/route-cache";
+import { isRouteSafeForVehicle, getVehicleProfile } from "@/lib/routing/nepal-profiles";
+import { findNearestRouteNode } from "@/lib/routing/node-graph";
 import {
   getAllKnownPlaces,
   resolveDestination,
   resolveOrigin,
 } from "@/lib/routing/place-resolver";
-import { findNearestRouteNode } from "@/lib/routing/node-graph";
 import {
   assembleNodeChain,
   buildIntermediateNodes,
   loadTemplateNodes,
 } from "@/lib/routing/waypoint-builder";
 
-async function findNearestRouteNodeFromCoords(lat: number, lon: number) {
-  return findNearestRouteNode(lat, lon, 50);
-}
 import type {
   BuildRouteInput,
   BuiltRoute,
   BuiltRouteSegment,
+  PerSegmentRoute,
   ResolvedPlace,
   RouteNode,
+  RouteInstruction,
+  VehicleProfile,
+  GeoPoint,
 } from "@/lib/routing/types";
+
+async function findNearestRouteNodeFromCoords(lat: number, lon: number) {
+  return findNearestRouteNode(lat, lon, 50);
+}
 
 function buildSegmentsFromNodes(
   nodes: RouteNode[],
@@ -51,9 +60,57 @@ function fallbackPolyline(nodes: RouteNode[]): Array<{ lat: number; lon: number 
   return nodes.map((n) => ({ lat: n.lat, lon: n.lon }));
 }
 
+async function getRoadRouteBetween(
+  origin: ResolvedPlace,
+  destination: ResolvedPlace,
+  vehicle: VehicleProfile = "car"
+): Promise<{
+  polyline: Array<{ lat: number; lon: number }>;
+  distance: number;
+  duration: number;
+  instructions?: RouteInstruction[];
+  source: string;
+}> {
+  const cacheKey = makeRouteCacheKey(
+    origin.lat, origin.lon,
+    destination.lat, destination.lon,
+    vehicle
+  );
+
+  const tags = [`dest:${destination.id ?? "unknown"}`];
+
+  return routeGeometryCache.getOrFetch(
+    cacheKey,
+    async () => {
+      const start: GeoPoint = { lat: origin.lat, lon: origin.lon, name: origin.name };
+      const end: GeoPoint = { lat: destination.lat, lon: destination.lon, name: destination.name };
+
+      const route = await fetchRouteGeometry(start, end, vehicle);
+
+      const instructions: RouteInstruction[] = [];
+      for (const leg of route.legs) {
+        for (const step of leg.steps) {
+          instructions.push(step);
+        }
+      }
+
+      return {
+        polyline: route.coordinates,
+        distance: route.distance,
+        duration: route.duration,
+        instructions,
+        source: `openrouteservice:${vehicle}`,
+      };
+    },
+    15 * 60 * 1000,
+    tags,
+  );
+}
+
 async function applyOsrmToChain(
   chain: RouteNode[],
-  nodeSource: string
+  nodeSource: string,
+  vehicle: VehicleProfile = "car"
 ): Promise<{
   polyline: Array<{ lat: number; lon: number }>;
   distance: number;
@@ -67,41 +124,141 @@ async function applyOsrmToChain(
     instructions: RouteInstruction[];
   }>;
 }> {
-  const osrmResults = await fetchOsrmRouteThroughNodes(chain, false);
-  if (osrmResults && osrmResults.length > 0) {
-    const primary = osrmResults[0];
-    const alternatives = osrmResults.slice(1).map((alt) => ({
+  if (chain.length < 2) {
+    return {
+      polyline: [],
+      distance: 0,
+      duration: 0,
+      source: "empty-chain",
+    };
+  }
+
+  try {
+    const start: GeoPoint = { lat: chain[0].lat, lon: chain[0].lon, name: chain[0].name };
+    const end: GeoPoint = { lat: chain[chain.length - 1].lat, lon: chain[chain.length - 1].lon, name: chain[chain.length - 1].name };
+
+    const waypoints = chain.slice(1, -1).map((n) => ({
+      lat: n.lat,
+      lon: n.lon,
+      name: n.name,
+    }));
+
+    const routes = await fetchRoadRoute(start, end, vehicle, {
+      alternatives: true,
+      waypoints: waypoints.length > 0 ? waypoints : undefined,
+    });
+
+    if (routes.length === 0) {
+      throw new Error("No routes returned");
+    }
+
+    const primary = routes[0];
+    const alternatives = routes.slice(1).map((alt) => ({
       polyline: alt.coordinates,
       distance: alt.distance,
       duration: alt.duration,
-      instructions: alt.instructions || [],
+      instructions: alt.legs.flatMap((l) => l.steps),
     }));
 
     return {
       polyline: primary.coordinates,
       distance: primary.distance,
       duration: primary.duration,
-      source: `osrm:${nodeSource}`,
-      instructions: primary.instructions,
+      source: `openrouteservice:${vehicle}:${nodeSource}`,
+      instructions: primary.legs.flatMap((l) => l.steps),
       alternatives,
     };
+  } catch {
+    let distance = 0;
+    for (let i = 1; i < chain.length; i++) {
+      distance += Math.round(
+        haversineKm(chain[i - 1].lat, chain[i - 1].lon, chain[i].lat, chain[i].lon) * 1000
+      );
+    }
+    return {
+      polyline: fallbackPolyline(chain),
+      distance,
+      duration: Math.max(1800, Math.round((distance / 1000 / 35) * 3600)),
+      source: `estimated:${nodeSource}`,
+    };
+  }
+}
+
+async function applyPerSegmentRouting(
+  chain: RouteNode[],
+  vehicle: VehicleProfile = "car"
+): Promise<{
+  segmentRoutes: PerSegmentRoute[];
+  polyline: Array<{ lat: number; lon: number }>;
+  distance: number;
+  duration: number;
+  instructions?: RouteInstruction[];
+}> {
+  const segmentRoutes: PerSegmentRoute[] = [];
+  let totalDistance = 0;
+  let totalDuration = 0;
+  const fullPolyline: Array<{ lat: number; lon: number }> = [];
+  const allInstructions: RouteInstruction[] = [];
+
+  for (let i = 0; i < chain.length - 1; i++) {
+    const from = chain[i];
+    const to = chain[i + 1];
+
+    try {
+      const start: GeoPoint = { lat: from.lat, lon: from.lon, name: from.name };
+      const end: GeoPoint = { lat: to.lat, lon: to.lon, name: to.name };
+      const routes = await fetchRoadRoute(start, end, vehicle, { alternatives: true });
+
+      const primary = routes[0];
+      const alternatives = routes.slice(1).map((alt) => ({
+        polyline: alt.coordinates,
+        distance: alt.distance,
+        duration: alt.duration,
+        instructions: alt.legs.flatMap((l) => l.steps),
+      }));
+
+      if (primary) {
+        totalDistance += primary.distance;
+        totalDuration += primary.duration;
+        fullPolyline.push(...primary.coordinates);
+        if (primary.legs) {
+          for (const leg of primary.legs) {
+            allInstructions.push(...leg.steps);
+          }
+        }
+      }
+
+      segmentRoutes.push({
+        from,
+        to,
+        polyline: primary?.coordinates || fallbackPolyline([from, to]),
+        distance: primary?.distance || Math.round(haversineKm(from.lat, from.lon, to.lat, to.lon) * 1000),
+        duration: primary?.duration || 0,
+        instructions: primary?.legs.flatMap((l) => l.steps),
+        alternatives,
+      });
+    } catch {
+      const legDist = Math.round(haversineKm(from.lat, from.lon, to.lat, to.lon) * 1000);
+      segmentRoutes.push({
+        from,
+        to,
+        polyline: fallbackPolyline([from, to]),
+        distance: legDist,
+        duration: Math.round((legDist / 1000 / 35) * 3600),
+        alternatives: [],
+      });
+    }
   }
 
-  let distance = 0;
-  for (let i = 1; i < chain.length; i++) {
-    distance += Math.round(
-      haversineKm(chain[i - 1].lat, chain[i - 1].lon, chain[i].lat, chain[i].lon) * 1000
-    );
-  }
   return {
-    polyline: fallbackPolyline(chain),
-    distance,
-    duration: Math.max(1800, Math.round((distance / 1000 / 35) * 3600)),
-    source: `estimated:${nodeSource}`,
+    segmentRoutes,
+    polyline: fullPolyline,
+    distance: totalDistance,
+    duration: totalDuration,
+    instructions: allInstructions.length > 0 ? allInstructions : undefined,
   };
 }
 
-/** Ensure long routes pass through at least one known intermediate place. */
 async function ensureMultiStopChain(
   origin: ResolvedPlace,
   destination: ResolvedPlace,
@@ -166,6 +323,8 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     throw new Error("Destination is outside Nepal. This service is only available for locations within Nepal.");
   }
 
+  const vehicle: VehicleProfile = input.vehicle ?? "car";
+
   const { place: originResolved, note: originNote, routeNodeId: originNodeId } = await resolveOrigin(
     input.originLat,
     input.originLon,
@@ -192,12 +351,64 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     displayLon: input.destinationDisplayLon ?? destinationResolved.lon,
   };
 
+  if (input.waypoints && input.waypoints.length > 0) {
+    const chain = assembleNodeChain(origin, input.waypoints, destination);
+    const source = "user-waypoints";
+
+    let segmentRoutes: PerSegmentRoute[] | undefined;
+    let polyline: Array<{ lat: number; lon: number }>;
+    let distance: number;
+    let duration: number;
+    let instructions: RouteInstruction[] | undefined;
+    let alternatives: BuiltRoute["alternatives"];
+
+    if (input.perSegmentRouting) {
+      const perSeg = await applyPerSegmentRouting(chain, vehicle);
+      segmentRoutes = perSeg.segmentRoutes;
+      polyline = perSeg.polyline;
+      distance = perSeg.distance;
+      duration = perSeg.duration;
+      instructions = perSeg.instructions;
+      alternatives = undefined;
+    } else {
+      const osrm = await applyOsrmToChain(chain, source, vehicle);
+      polyline = osrm.polyline;
+      distance = osrm.distance;
+      duration = osrm.duration;
+      instructions = osrm.instructions;
+      alternatives = osrm.alternatives;
+    }
+
+    const segments = buildSegmentsFromNodes(chain);
+
+    const displayWaypoints = chain.map((n, order) => ({
+      lat: n.lat, lon: n.lon, name: n.name, order,
+    }));
+    if (displayWaypoints.length > 0) {
+      displayWaypoints[0] = { ...displayWaypoints[0], lat: origin.displayLat ?? origin.lat, lon: origin.displayLon ?? origin.lon, name: origin.name };
+      const last = displayWaypoints.length - 1;
+      displayWaypoints[last] = { ...displayWaypoints[last], lat: destination.displayLat ?? destination.lat, lon: destination.displayLon ?? destination.lon, name: destination.name };
+    }
+
+    return {
+      origin, destination,
+      nodes: chain,
+      waypoints: displayWaypoints,
+      segments, polyline, distance, duration,
+      instructions, alternatives,
+      segmentRoutes,
+      source,
+      resolutionNote: [originNote, destNote].filter(Boolean).join("; "),
+    };
+  }
+
   const destHub = await findNearestRouteNodeFromCoords(destination.lat, destination.lon);
   const { nodes: intermediates, source: nodeSource } = await buildIntermediateNodes(
     origin,
     destination,
     originNodeId ?? input.originRouteNodeId,
-    input.destinationRouteNodeId ?? destHub?.id
+    input.destinationRouteNodeId ?? destHub?.id,
+    input.dynamicOsmRouting
   );
 
   let chain = assembleNodeChain(origin, intermediates, destination);
@@ -207,10 +418,29 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
   chain = expanded.chain;
   source = expanded.source;
 
-  const { polyline, distance, duration, source: routingSource, instructions, alternatives } = await applyOsrmToChain(
-    chain,
-    source
-  );
+  let segmentRoutes: PerSegmentRoute[] | undefined;
+  let polyline: Array<{ lat: number; lon: number }>;
+  let distance: number;
+  let duration: number;
+  let instructions: RouteInstruction[] | undefined;
+  let alternatives: BuiltRoute["alternatives"];
+
+  if (input.perSegmentRouting) {
+    const perSeg = await applyPerSegmentRouting(chain, vehicle);
+    segmentRoutes = perSeg.segmentRoutes;
+    polyline = perSeg.polyline;
+    distance = perSeg.distance;
+    duration = perSeg.duration;
+    instructions = perSeg.instructions;
+    alternatives = undefined;
+  } else {
+    const osrm = await applyOsrmToChain(chain, source, vehicle);
+    polyline = osrm.polyline;
+    distance = osrm.distance;
+    duration = osrm.duration;
+    instructions = osrm.instructions;
+    alternatives = osrm.alternatives;
+  }
 
   const segments = buildSegmentsFromNodes(chain);
 
@@ -247,12 +477,12 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     duration,
     instructions,
     alternatives,
-    source: routingSource,
+    segmentRoutes,
+    source: source,
     resolutionNote: [originNote, destNote].filter(Boolean).join("; "),
   };
 }
 
-/** Map intelligence segments onto built route nodes when available. */
 export function mergeSegmentRisk(
   built: BuiltRoute,
   intelligenceSegments?: Array<{
@@ -282,7 +512,6 @@ export function mergeSegmentRisk(
   return { ...built, segments: merged };
 }
 
-/** Filter polyline to Nepal bbox — prevents world-map glitches from bad coordinates. */
 function filterNepalPolyline(
   points: Array<{ lat: number; lon: number }>
 ): Array<{ lat: number; lon: number }> {
@@ -348,7 +577,51 @@ export function toMapPayload(built: BuiltRoute) {
       polyline: prepareMapPolyline(filterNepalPolyline(alt.polyline), { maxPoints: 60 }),
       instructions: capInstructions(alt.instructions) ?? [],
     })),
+    segmentRoutes: built.segmentRoutes?.map((sr) => ({
+      from: sr.from,
+      to: sr.to,
+      polyline: prepareMapPolyline(filterNepalPolyline(sr.polyline), { maxPoints: 60 }),
+      distance: sr.distance,
+      duration: sr.duration,
+      instructions: capInstructions(sr.instructions),
+      alternatives: sr.alternatives.map((alt) => ({
+        ...alt,
+        polyline: prepareMapPolyline(filterNepalPolyline(alt.polyline), { maxPoints: 60 }),
+        instructions: capInstructions(alt.instructions) ?? [],
+      })),
+    })),
     source: built.source,
     resolutionNote: built.resolutionNote,
+  };
+}
+
+export async function getRouteIntelligence(
+  start: GeoPoint,
+  end: GeoPoint,
+  vehicle: VehicleProfile = "car"
+) {
+  const safety = isRouteSafeForVehicle(start.lat, end.lat, vehicle);
+
+  const route = await fetchRouteGeometry(start, end, vehicle);
+
+  const buffer = await createRouteBuffer(route.coordinates, vehicle);
+
+  const placesAlongRoute = await findPlacesAlongRoute({
+    bufferWkt: buffer.normal.wkt,
+    radiusMeters: buffer.normal.radiusMeters,
+    mainRoute: route.coordinates,
+    vehicle,
+  });
+
+  const { stops, bestStop } = rankPlacesForRoute(placesAlongRoute, route.coordinates);
+
+  return {
+    route,
+    buffer,
+    placesAlongRoute,
+    rankedStops: stops,
+    bestStop,
+    vehicleProfile: vehicle,
+    safety,
   };
 }

@@ -6,15 +6,50 @@ import { headers } from "next/headers";
 import { isPointInNepal } from "@/lib/routing/geo";
 import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
 import { buildSegmentedRoute, toMapPayload } from "@/lib/routing/route-service";
+import { fetchRouteGeometry } from "@/lib/routing/openroute-service";
+import type { RouteInstruction, VehicleProfile } from "@/lib/routing/types";
 
 function isValidLatLon(lat: number, lon: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
-/**
- * POST /api/routes/geometry
- * Returns segmented route geometry through known places for map display.
- */
+async function openRouteServiceFallback(
+  originLat: number,
+  originLon: number,
+  endLat: number,
+  endLon: number,
+  originName?: string,
+  destinationName?: string,
+  vehicle: VehicleProfile = "car"
+) {
+  const route = await fetchRouteGeometry(
+    { lat: originLat, lon: originLon, name: originName },
+    { lat: endLat, lon: endLon, name: destinationName },
+    vehicle
+  );
+
+  const instructions: RouteInstruction[] = [];
+  for (const leg of route.legs) {
+    for (const step of leg.steps) {
+      instructions.push(step);
+    }
+  }
+
+  return {
+    waypoints: [
+      { lat: originLat, lon: originLon, name: originName ?? "Origin" },
+      { lat: endLat, lon: endLon, name: destinationName ?? "Destination" },
+    ],
+    polyline: route.coordinates,
+    segments: [],
+    distance: route.distance,
+    duration: route.duration,
+    instructions,
+    segmentRoutes: [],
+    encodedPolyline: route.encodedPolyline,
+  };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -33,6 +68,10 @@ export async function POST(req: NextRequest) {
       originAlreadyResolved = false,
       displayStartLat,
       displayStartLon,
+      waypoints,
+      perSegmentRouting,
+      dynamicOsmRouting,
+      vehicle = "car",
     } = body;
 
     if (!isValidLatLon(startLat, startLon) || !isValidLatLon(endLat, endLon)) {
@@ -51,10 +90,8 @@ export async function POST(req: NextRequest) {
       if (!isPointInNepal(startLat, startLon)) {
         return NextResponse.json({ message: "Origin is outside Nepal" }, { status: 400 });
       }
-      originDisplayLat =
-        typeof displayStartLat === "number" ? displayStartLat : startLat;
-      originDisplayLon =
-        typeof displayStartLon === "number" ? displayStartLon : startLon;
+      originDisplayLat = typeof displayStartLat === "number" ? displayStartLat : startLat;
+      originDisplayLon = typeof displayStartLon === "number" ? displayStartLon : startLon;
     } else if (useResolvedOrigin !== false) {
       const resolved = await resolveTravelOrigin({
         lat: startLat,
@@ -74,25 +111,48 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Origin is outside Nepal" }, { status: 400 });
     }
 
-    const built = await buildSegmentedRoute({
-      originLat,
-      originLon,
-      originDisplayLat,
-      originDisplayLon,
-      originName: resolvedOriginName,
-      originRouteNodeId: resolvedNodeId,
-      destinationLat: endLat,
-      destinationLon: endLon,
-      destinationId: typeof destinationId === "string" ? destinationId : undefined,
-      destinationName: typeof destinationName === "string" ? destinationName : undefined,
-    });
+    let payload;
+    let resolutionNote: string | undefined;
 
-    const payload = toMapPayload(built);
+    try {
+      const built = await buildSegmentedRoute({
+        originLat,
+        originLon,
+        originDisplayLat,
+        originDisplayLon,
+        originName: resolvedOriginName,
+        originRouteNodeId: resolvedNodeId,
+        destinationLat: endLat,
+        destinationLon: endLon,
+        destinationId: typeof destinationId === "string" ? destinationId : undefined,
+        destinationName: typeof destinationName === "string" ? destinationName : undefined,
+        waypoints: Array.isArray(waypoints) ? waypoints : undefined,
+        perSegmentRouting: perSegmentRouting === true,
+        dynamicOsmRouting: dynamicOsmRouting === true,
+        vehicle: vehicle as VehicleProfile,
+      });
+      payload = toMapPayload(built);
+      resolutionNote = built.resolutionNote;
+    } catch {
+      console.warn("[api/routes/geometry] segmented build failed, falling back to OpenRouteService");
+      try {
+        payload = await openRouteServiceFallback(
+          originLat, originLon, endLat, endLon,
+          resolvedOriginName,
+          typeof destinationName === "string" ? destinationName : undefined,
+          vehicle as VehicleProfile
+        );
+        resolutionNote = "Routed via OpenRouteService";
+      } catch (orsErr) {
+        console.error("[api/routes/geometry] ORS fallback also failed:", orsErr);
+        throw orsErr;
+      }
+    }
 
     return NextResponse.json({
       ...payload,
       geometry: null,
-      originNote: [originNote, built.resolutionNote].filter(Boolean).join("; ") || built.resolutionNote,
+      originNote: [originNote, resolutionNote].filter(Boolean).join("; "),
     });
   } catch (error) {
     console.error("[api/routes/geometry] error:", error);

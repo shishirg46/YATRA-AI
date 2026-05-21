@@ -256,8 +256,8 @@ export type UserSavedLocationWhereInput = {
   source?: Prisma.StringFilter<"UserSavedLocation"> | string
   createdAt?: Prisma.DateTimeFilter<"UserSavedLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserSavedLocation"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   nearestRouteNode?: Prisma.XOR<Prisma.RouteNodeNullableScalarRelationFilter, Prisma.RouteNodeWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
 
 export type UserSavedLocationOrderByWithRelationInput = {
@@ -270,8 +270,8 @@ export type UserSavedLocationOrderByWithRelationInput = {
   source?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  user?: Prisma.UserOrderByWithRelationInput
   nearestRouteNode?: Prisma.RouteNodeOrderByWithRelationInput
+  user?: Prisma.UserOrderByWithRelationInput
 }
 
 export type UserSavedLocationWhereUniqueInput = Prisma.AtLeast<{
@@ -287,8 +287,8 @@ export type UserSavedLocationWhereUniqueInput = Prisma.AtLeast<{
   source?: Prisma.StringFilter<"UserSavedLocation"> | string
   createdAt?: Prisma.DateTimeFilter<"UserSavedLocation"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"UserSavedLocation"> | Date | string
-  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   nearestRouteNode?: Prisma.XOR<Prisma.RouteNodeNullableScalarRelationFilter, Prisma.RouteNodeWhereInput> | null
+  user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "userId">
 
 export type UserSavedLocationOrderByWithAggregationInput = {
@@ -331,8 +331,8 @@ export type UserSavedLocationCreateInput = {
   source?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  user: Prisma.UserCreateNestedOneWithoutSavedLocationInput
   nearestRouteNode?: Prisma.RouteNodeCreateNestedOneWithoutSavedLocationsInput
+  user: Prisma.UserCreateNestedOneWithoutSavedLocationInput
 }
 
 export type UserSavedLocationUncheckedCreateInput = {
@@ -355,8 +355,8 @@ export type UserSavedLocationUpdateInput = {
   source?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutSavedLocationNestedInput
   nearestRouteNode?: Prisma.RouteNodeUpdateOneWithoutSavedLocationsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutSavedLocationNestedInput
 }
 
 export type UserSavedLocationUncheckedUpdateInput = {
@@ -721,8 +721,8 @@ export type UserSavedLocationSelect<ExtArgs extends runtime.Types.Extensions.Int
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userSavedLocation"]>
 
 export type UserSavedLocationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -735,8 +735,8 @@ export type UserSavedLocationSelectCreateManyAndReturn<ExtArgs extends runtime.T
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userSavedLocation"]>
 
 export type UserSavedLocationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -749,8 +749,8 @@ export type UserSavedLocationSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   source?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["userSavedLocation"]>
 
 export type UserSavedLocationSelectScalar = {
@@ -767,23 +767,23 @@ export type UserSavedLocationSelectScalar = {
 
 export type UserSavedLocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"userId" | "placeName" | "latitude" | "longitude" | "nearestRouteNodeId" | "accuracyMeters" | "source" | "createdAt" | "updatedAt", ExtArgs["result"]["userSavedLocation"]>
 export type UserSavedLocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type UserSavedLocationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type UserSavedLocationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   nearestRouteNode?: boolean | Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>
+  user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $UserSavedLocationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "UserSavedLocation"
   objects: {
-    user: Prisma.$UserPayload<ExtArgs>
     nearestRouteNode: Prisma.$RouteNodePayload<ExtArgs> | null
+    user: Prisma.$UserPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     userId: string
@@ -1189,8 +1189,8 @@ readonly fields: UserSavedLocationFieldRefs;
  */
 export interface Prisma__UserSavedLocationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   nearestRouteNode<T extends Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserSavedLocation$nearestRouteNodeArgs<ExtArgs>>): Prisma.Prisma__RouteNodeClient<runtime.Types.Result.GetResult<Prisma.$RouteNodePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

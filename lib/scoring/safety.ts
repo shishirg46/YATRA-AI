@@ -280,7 +280,8 @@ export function computeSafetyScore(
 
   // ── F. COMPUTE FINAL SCORE ────────────────────────────────────────────────
 
-  const totalPenalty = Object.values(penalties).reduce((s, p) => s + p, 0);
+  let totalPenalty = Object.values(penalties).reduce((s, p) => s + p, 0);
+  totalPenalty = Math.min(totalPenalty, 100);
   const safetyScore  = Math.max(0, Math.round(100 - totalPenalty));
   const safetyLevel  = scoreToLevel(safetyScore);
 
@@ -298,8 +299,8 @@ export function computeSafetyScore(
   }
 
   const isStaticFallback = dataSource.startsWith("fallback");
-  const isEstimatedLive = dataSource.startsWith("dhm-forecast") || dataSource.startsWith("open-meteo-nearby");
-  const confidence = isStaticFallback ? 0.55 : isEstimatedLive ? 0.72 : 0.85;
+  const isEstimatedLive = dataSource.startsWith("dhm-") || dataSource.startsWith("dhm-mfd-api");
+  const confidence = isStaticFallback ? 0.55 : isEstimatedLive ? 0.85 : 0.85;
 
   return {
     safetyScore,

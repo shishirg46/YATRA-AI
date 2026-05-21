@@ -4,26 +4,24 @@
  * PURPOSE: Returns all data needed for the dashboard page
  *
  * DESTINATIONS:
- *   Only returns locations that have at least one RiskAssessment row.
- *   Re-scores each using the user's travel purposes + health flags
- *   so the score shown is personalised to this specific user.
- *   Sorted safest first.
+ *   Returns all destination records from the database.
+ *   Unverified destinations are included and mapped into dashboard card fields.
+ *   Sorted to surface verified, route-accessible, and higher-quality destinations.
  *
  * FIRST RUN:
- *   destinations: [] until POST /api/assess runs successfully.
+ *   destinations: all database records are returned immediately.
  *   curl -X POST http://localhost:3000/api/assess \
  *        -H "Authorization: Bearer $ASSESS_SECRET"
  */
 
 export const dynamic = "force-dynamic";
 
-import { NextResponse }  from "next/server";
+import { NextRequest, NextResponse }  from "next/server";
 import { auth }          from "@/lib/auth";
-import { headers }       from "next/headers";
-import { PrismaClient }  from "@/app/generated/prisma/client";
-import { PrismaPg }      from "@prisma/adapter-pg";
-import { Pool }          from "pg";
+import { headers, cookies }       from "next/headers";
+import { prisma }        from "@/lib/prisma";
 import { computeSafetyScore, buildHealthFlags, WeatherInput, HazardInput, LocationContext } from "@/lib/scoring/safety";
+import type { DestinationCategory } from "@/app/generated/prisma/client";
 
 // Prisma stores JSON columns as JsonValue — we cast through unknown to our types
 type JsonRecord = Record<string, unknown>;
@@ -39,12 +37,12 @@ function getWeatherMeta(snapshot: unknown) {
   };
 }
 
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+const UNRELIABLE_CATEGORIES: DestinationCategory[] = ["CHOWK", "MUNICIPALITY", "OTHER"];
 
-export async function GET() {
+export async function GET(request?: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
+    const showAll = request?.nextUrl.searchParams.get("categories") === "all";
     if (!session?.user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -73,7 +71,16 @@ export async function GET() {
       }),
     ]);
 
-    if (!user || !user.preference) {
+    const cookieStore = await cookies();
+    const isSigningUp = cookieStore.get("is_signing_up")?.value === "true";
+
+    const isAdminOrAnalyst = user?.role === "ADMIN" || user?.role === "ANALYST";
+    
+    // New user check: has the signing up cookie OR account created in the last 15 minutes
+    const isRecent = user?.createdAt ? (Date.now() - new Date(user.createdAt).getTime() < 15 * 60 * 1000) : false;
+    const isNewUser = isSigningUp || isRecent;
+
+    if (!user || (!user.preference && !isAdminOrAnalyst && isNewUser)) {
       return NextResponse.json({ message: "Profile incomplete", needsOnboarding: true }, { status: 403 });
     }
 
@@ -81,113 +88,66 @@ export async function GET() {
     const healthFlags     = userHealth ? buildHealthFlags(userHealth) : [];
     const scoringPurposes = healthFlags; // Removed travelPurposes from health flag mix since it's now in preference
 
-    // Fetch only assessed locations (those with at least one RiskAssessment)
-    const locations = await prisma.location.findMany({
-      where: { riskReports: { some: {} } },
-      include: {
-        district: { include: { province: true } },
-        riskReports: {
-          orderBy: { createdAt: "desc" },
-          take:    1,
-          select: {
-            safetyScore:     true,
-            safetyLevel:     true,
-            confidence:      true,
-            decisionTrace:   true,
-            weatherSnapshot: true,
-            hazardSnapshot:  true,
-            createdAt:       true,
-          },
-        },
+    // Fetch destination records from the database
+    // By default exclude unreliable categories (CHOWK, MUNICIPALITY, OTHER)
+    const destinations = await prisma.destination.findMany({
+      where: showAll ? {} : {
+        category: { notIn: UNRELIABLE_CATEGORIES },
       },
+      orderBy: [
+        { verified: "desc" },
+        { dataQualityScore: "desc" },
+        { name: "asc" },
+      ],
     });
 
-    // Build destination cards with personalised scores
-    const destinations = locations.map((loc) => {
-      const latest   = loc.riskReports[0];
-      let score      = latest.safetyScore;
-      let level      = latest.safetyLevel;
-
-      const trace   = latest.decisionTrace as unknown as JsonRecord;
-      let reasoning = (Array.isArray(trace?.reasoning) ? trace.reasoning : []) as string[];
-
-      const weatherSnap = latest.weatherSnapshot as unknown as WeatherInput | null;
-      const hazardRaw   = latest.hazardSnapshot  as unknown as (HazardInput & { earthquakeIndex?: number }) | null;
-      // Ensure earthquakeIndex exists — older snapshots may not have it
-      const hazardSnap  = hazardRaw ? { ...hazardRaw, earthquakeIndex: hazardRaw.earthquakeIndex ?? 0 } : null;
-
-      // Always re-score using user's health + location context
-      // Even users with no travel purposes get personalised scores
-      // (health flags alone change altitude/air quality penalties significantly)
-      if (weatherSnap && hazardSnap) {
-        try {
-          const result = computeSafetyScore(
-            weatherSnap,
-            hazardSnap,
-            scoringPurposes, // may be empty — health flags still apply
-            "SOLO",
-            "cached",
-            {
-              altitude:     loc.altitude,
-              districtName: loc.district.name,
-              locationName: loc.name,
-            }
-          );
-          score     = result.safetyScore;
-          level     = result.safetyLevel;
-          reasoning = result.decisionTrace.reasoning;
-        } catch { /* keep stored score on error */ }
-      }
-
-      const w = weatherSnap;
-      const weatherMeta = getWeatherMeta(weatherSnap);
-      const weatherRecord = weatherSnap as unknown as JsonRecord | null;
-      const hazard = hazardSnap ? {
-        floodIndex:     hazardSnap.floodIndex,
-        landslideIndex: hazardSnap.landslideIndex,
-        earthquakeIndex: hazardSnap.earthquakeIndex,
-        airQuality:     hazardSnap.airQuality,
-      } : null;
+    const mappedDestinations = destinations.map((dest) => {
+      const qualityScore = dest.dataQualityScore ?? 50;
+      const isVerified = dest.verified ?? false;
+      const routeAccessible = dest.routeAccessible ?? false;
+      const safetyLevel = isVerified ? "SAFE" : routeAccessible ? "CAUTION" : "HIGH_RISK";
+      const safetyScore = Math.max(0, Math.min(100, qualityScore));
+      const reasoning = [
+        dest.description ?? "Destination loaded from source data.",
+        isVerified ? "Verified destination" : "Verification pending",
+        routeAccessible ? "Route accessible" : "Route accessibility not confirmed",
+      ];
 
       return {
-        id:          loc.id,
-        name:        loc.name,
-        district:    loc.district.name,
-        province:    loc.district.province.name,
-        latitude:    loc.latitude,
-        longitude:   loc.longitude,
-        altitude:    loc.altitude ?? null,
-        safetyScore: score,
-        safetyLevel: level,
-        confidence:  latest.confidence,
+        id:          dest.id,
+        name:        dest.name,
+        district:    dest.district,
+        province:    dest.province,
+        category:    dest.category,
+        latitude:    dest.latitude,
+        longitude:   dest.longitude,
+        altitude:    dest.altitude ?? null,
+        safetyScore,
+        safetyLevel: safetyLevel as "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME",
+        confidence:  null,
         reasoning,
-        weather: w ? {
-          temperature: w.temperature,
-          rainfall:    w.rainfall,
-          windSpeed:   w.windSpeed,
-          description: typeof weatherRecord?.description === "string"
-            ? String(weatherRecord.description)
-            : undefined,
-          source: weatherMeta.source,
-          sourceLabel: weatherMeta.sourceLabel,
-          officialSource: weatherMeta.officialSource,
-          stationName: weatherMeta.stationName,
-          stationDistanceKm: weatherMeta.stationDistanceKm,
-        } : null,
-        hazard,
-        assessedAt: latest.createdAt,
+        weather:     null,
+        hazard:      null,
+        assessedAt:  dest.sourceLastFetch?.toISOString() ?? dest.updatedAt.toISOString(),
+        verified:    dest.verified,
+        routeAccessible: dest.routeAccessible,
+        dataQualityScore: dest.dataQualityScore,
       };
     });
 
-    // Safest destinations first
-    destinations.sort((a, b) => b.safetyScore - a.safetyScore);
+    // Sort destinations so verified, accessible, and higher quality appear first
+    mappedDestinations.sort((a, b) => {
+      if ((a.verified ? 1 : 0) !== (b.verified ? 1 : 0)) return (b.verified ? 1 : 0) - (a.verified ? 1 : 0);
+      if ((a.routeAccessible ? 1 : 0) !== (b.routeAccessible ? 1 : 0)) return (b.routeAccessible ? 1 : 0) - (a.routeAccessible ? 1 : 0);
+      return (b.safetyScore ?? 0) - (a.safetyScore ?? 0);
+    });
 
     const stats = {
-      total:    destinations.length,
-      safe:     destinations.filter((d) => d.safetyLevel === "SAFE").length,
-      caution:  destinations.filter((d) => d.safetyLevel === "CAUTION").length,
-      highRisk: destinations.filter((d) => d.safetyLevel === "HIGH_RISK").length,
-      extreme:  destinations.filter((d) => d.safetyLevel === "EXTREME").length,
+      total:    mappedDestinations.length,
+      safe:     mappedDestinations.filter((d) => d.safetyLevel === "SAFE").length,
+      caution:  mappedDestinations.filter((d) => d.safetyLevel === "CAUTION").length,
+      highRisk: mappedDestinations.filter((d) => d.safetyLevel === "HIGH_RISK").length,
+      extreme:  mappedDestinations.filter((d) => d.safetyLevel === "EXTREME").length,
     };
 
     return NextResponse.json({
@@ -197,6 +157,7 @@ export async function GET() {
         email:    user?.email,
         image:    user?.image,
         username: user?.username ?? null,
+        role:     user?.role ?? "USER",
         homeLocation: user?.homeLocation ? {
           name:     user.homeLocation.name,
           district: user.homeLocation.district.name,
@@ -204,8 +165,9 @@ export async function GET() {
         } : null,
         preference: user?.preference ?? null,
         behavior: user?.behavior ?? null,
+        health: userHealth ?? null,
       },
-      destinations,
+      destinations: mappedDestinations,
       stats,
     });
 

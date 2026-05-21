@@ -2,13 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { headers, cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -21,7 +16,7 @@ export async function GET() {
     const [user, userPref] = await Promise.all([
       prisma.user.findUnique({
         where:  { id: session.user.id },
-        select: { username: true },
+        select: { username: true, role: true, createdAt: true },
       }),
       prisma.userPreference.findUnique({
         where: { userId: session.user.id },
@@ -29,8 +24,17 @@ export async function GET() {
       }),
     ]);
 
-    const hasProfile    = !!userPref;
-    const needsUsername = !user?.username;
+    const cookieStore = await cookies();
+    const isSigningUp = cookieStore.get("is_signing_up")?.value === "true";
+
+    const isAdminOrAnalyst = user?.role === "ADMIN" || user?.role === "ANALYST";
+    
+    // New user check: has the signing up cookie OR account created in the last 15 minutes
+    const isRecent = user?.createdAt ? (Date.now() - new Date(user.createdAt).getTime() < 15 * 60 * 1000) : false;
+    const isNewUser = isSigningUp || isRecent;
+
+    const hasProfile    = !!userPref || isAdminOrAnalyst || !isNewUser;
+    const needsUsername = !user?.username && !isAdminOrAnalyst && isNewUser;
     return NextResponse.json({ authenticated: true, hasProfile, needsUsername });
   } catch (err) {
     console.error("[profile-status]", err);

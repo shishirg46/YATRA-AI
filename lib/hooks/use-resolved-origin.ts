@@ -17,10 +17,39 @@ export type ResolvedOriginState = {
   accuracyMeters?: number;
 };
 
+const STORAGE_KEY = "yatra_resolved_origin";
+
+function saveToStorage(origin: ResolvedOriginState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(origin));
+  } catch {}
+}
+
+function loadFromStorage(): ResolvedOriginState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as ResolvedOriginState;
+  } catch {
+    return null;
+  }
+}
+
+function clearStorage() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {}
+}
+
 export function useResolvedOrigin() {
-  const [origin, setOrigin] = useState<ResolvedOriginState | null>(null);
+  const [origin, setOrigin] = useState<ResolvedOriginState | null>(() => loadFromStorage());
   const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const saveOrigin = useCallback((resolved: ResolvedOriginState) => {
+    setOrigin(resolved);
+    saveToStorage(resolved);
+  }, []);
 
   const resolveFromGps = useCallback(
     async (lat: number, lon: number, accuracy?: number, name?: string) => {
@@ -50,7 +79,8 @@ export function useResolvedOrigin() {
           rawLon: data.rawLon,
           accuracyMeters: data.accuracyMeters,
         };
-        setOrigin(resolved);
+
+        saveOrigin(resolved);
         return resolved;
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Location resolution failed";
@@ -60,7 +90,7 @@ export function useResolvedOrigin() {
         setResolving(false);
       }
     },
-    []
+    [saveOrigin]
   );
 
   const resolveFromManual = useCallback(
@@ -92,7 +122,11 @@ export function useResolvedOrigin() {
       const res = await fetch("/api/user/location", { credentials: "include" });
       if (!res.ok) return null;
       const data = await res.json();
-      if (!data.saved) return null;
+      if (!data.saved) {
+        clearStorage();
+        setOrigin(null);
+        return null;
+      }
 
       const resolved: ResolvedOriginState = {
         lat: data.saved.snappedLat ?? data.saved.lat,
@@ -104,20 +138,20 @@ export function useResolvedOrigin() {
         routeNodeName: data.saved.routeNodeName,
         source: "saved-home",
       };
-      setOrigin(resolved);
+      saveOrigin(resolved);
       return resolved;
     } catch {
       return null;
     } finally {
       setResolving(false);
     }
-  }, []);
+  }, [saveOrigin]);
 
   return {
     origin,
     resolving,
     error,
-    setOrigin,
+    setOrigin: saveOrigin,
     resolveFromGps,
     resolveFromManual,
     loadSavedHome,

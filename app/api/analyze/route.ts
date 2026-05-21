@@ -26,36 +26,24 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
-import { PrismaClient }              from "@/app/generated/prisma/client";
-import { PrismaPg }                  from "@prisma/adapter-pg";
-import { Pool }                      from "pg";
+import { prisma }                    from "@/lib/prisma";
 import { analyzeTemporalRisk }       from "@/lib/analysis/temporal-risk";
+import { withRateLimit }             from "@/lib/rate-limit";
+import { analyzeRequestSchema, validateBody } from "@/lib/validation";
 
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
-
-export async function POST(req: NextRequest) {
+async function analyzeHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json() as {
-    destinationId: string;
-    travelDate:    string;
-    tripType:      "SOLO" | "GROUP";
-  };
-
-  const { destinationId, travelDate, tripType } = body;
-
-  if (!destinationId || !travelDate) {
-    return NextResponse.json({ message: "destinationId and travelDate are required." }, { status: 400 });
+  const rawBody = await req.json();
+  const parsed = validateBody(analyzeRequestSchema, rawBody);
+  if (!parsed.success) {
+    return NextResponse.json({ message: parsed.error }, { status: parsed.status });
   }
 
-  // Validate date format
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(travelDate)) {
-    return NextResponse.json({ message: "travelDate must be YYYY-MM-DD format." }, { status: 400 });
-  }
+  const { destinationId, travelDate, tripType } = parsed.data;
 
   try {
     // Fetch destination details
@@ -122,3 +110,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Analysis failed." }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(analyzeHandler, { max: 20, windowSeconds: 60 });

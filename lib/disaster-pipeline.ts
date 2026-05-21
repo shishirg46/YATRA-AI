@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { haversineKm } from "@/lib/routing/geo";
 
 export type DisasterType = "flood" | "landslide" | "earthquake";
 
@@ -436,21 +437,23 @@ export async function getDisasterImpactSummary(
 
 export async function fetchRealtimeDisastersNearRoute(
   routePoints: { lat: number; lon: number }[],
-  radiusKm = 10,
+  radiusKm = 8,
   days = 7
 ): Promise<Array<{ type: DisasterType; lat: number; lon: number }>> {
   if (!routePoints.length) return [];
   await ensureDisasterEventTable();
-  const latMin = Math.min(...routePoints.map((p) => p.lat)) - 0.5;
-  const latMax = Math.max(...routePoints.map((p) => p.lat)) + 0.5;
-  const lonMin = Math.min(...routePoints.map((p) => p.lon)) - 0.5;
-  const lonMax = Math.max(...routePoints.map((p) => p.lon)) + 0.5;
+  const deg = radiusKm / 111;
+  const latMin = Math.min(...routePoints.map((p) => p.lat)) - deg;
+  const latMax = Math.max(...routePoints.map((p) => p.lat)) + deg;
+  const lonMin = Math.min(...routePoints.map((p) => p.lon)) - deg;
+  const lonMax = Math.max(...routePoints.map((p) => p.lon)) + deg;
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
   const rows = await prisma.$queryRawUnsafe<Array<{ type: DisasterType; lat: number; lon: number }>>(
     `SELECT type, lat, lon
      FROM yatra_disaster_events
      WHERE date >= $1
+       AND severity != 'low'
        AND lat BETWEEN $2 AND $3
        AND lon BETWEEN $4 AND $5;`,
     since, latMin, latMax, lonMin, lonMax
@@ -459,15 +462,25 @@ export async function fetchRealtimeDisastersNearRoute(
   return deduped.filter((d) => isNearRoute(d, routePoints, radiusKm));
 }
 
-export async function fetchOpenMeteoWeather(lat: number, lon: number): Promise<{ rain_mm_per_hr: number; wind_kph: number }> {
-  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=precipitation,wind_speed_10m`;
-  const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
-  if (!res.ok) return { rain_mm_per_hr: 0, wind_kph: 0 };
-  const data = await res.json() as any;
-  return {
-    rain_mm_per_hr: Number(data?.current?.precipitation ?? 0),
-    wind_kph: Number(data?.current?.wind_speed_10m ?? 0),
-  };
+export async function fetchDHMWeather(lat: number, lon: number): Promise<{ rain_mm_per_hr: number; wind_kph: number }> {
+  // Using DHM API instead of Open-Meteo
+  try {
+    const url = `https://dhm.gov.np/mfd/api/forecast?lat=${lat}&lng=${lon}`;
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return { rain_mm_per_hr: 0, wind_kph: 0 };
+    
+    const data = await res.json() as any;
+    // DHM provides wind_speed in m/s, convert to kph (1 m/s = 3.6 kph)
+    const windMps = Number(data?.hourly_forecast?.[0]?.wind_speed ?? 0);
+    const windKph = windMps * 3.6;
+    
+    return {
+      rain_mm_per_hr: Number(data?.hourly_forecast?.[0]?.hourly_precipitation ?? 0),
+      wind_kph: windKph,
+    };
+  } catch {
+    return { rain_mm_per_hr: 0, wind_kph: 0 };
+  }
 }
 
 export function calculateRisk(
@@ -1036,11 +1049,4 @@ function clusterHistoricalDisasters(
   return clusters.filter((c) => c.nearestDistanceKm <= 10);
 }
 
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
+

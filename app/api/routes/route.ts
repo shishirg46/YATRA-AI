@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       destinationId,
       destinationName,
       originName,
+      vehicle = "car",
     } = body ?? {};
 
     if (
@@ -71,6 +72,7 @@ export async function POST(req: NextRequest) {
       destinationLon: endLon,
       destinationId: typeof destinationId === "string" ? destinationId : undefined,
       destinationName: typeof destinationName === "string" ? destinationName : undefined,
+      vehicle: vehicle as any,
     });
 
     const points = built.polyline.map((p) => ({ lat: p.lat, lon: p.lon }));

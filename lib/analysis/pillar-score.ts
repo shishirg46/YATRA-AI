@@ -9,6 +9,7 @@ import {
 } from "@/lib/disaster-pipeline";
 import { generateRouteIntelligence } from "@/lib/route-intelligence";
 import { prisma } from "@/lib/prisma";
+import { haversineKm } from "@/lib/routing/geo";
 
 type Level = "LOW" | "MEDIUM" | "HIGH";
 
@@ -77,15 +78,6 @@ export interface PillarModelResult {
 
 function clamp(n: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, n));
-}
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }
 
 function toLevelByRatio(score: number, max: number): Level {
@@ -159,41 +151,48 @@ async function fetchForecastWeek(lat: number, lon: number, travelDate: string) {
     windMax: number;
     isTravelDate: boolean;
   };
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-  url.searchParams.set("latitude", String(lat));
-  url.searchParams.set("longitude", String(lon));
-  url.searchParams.set("daily", "weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max");
-  url.searchParams.set("timezone", "Asia/Kathmandu");
-  const res = await fetch(url.toString(), { cache: "no-store", signal: AbortSignal.timeout(10000) });
-  if (!res.ok) return [];
-  const data = await res.json() as any;
-  const daily = data?.daily;
-  if (!daily?.time) return [];
-  const all: ForecastDay[] = daily.time.map((d: string, i: number) => ({
-    date: d,
-    weatherCode: Number(daily.weathercode?.[i] ?? 0),
-    tempMax: Number(daily.temperature_2m_max?.[i] ?? 0),
-    tempMin: Number(daily.temperature_2m_min?.[i] ?? 0),
-    rainProb: Number(daily.precipitation_probability_max?.[i] ?? 0),
-    windMax: Number(daily.windspeed_10m_max?.[i] ?? 0),
-    isTravelDate: d === travelDate,
-  }));
-  const travelTs = Date.parse(`${travelDate}T00:00:00Z`);
-  const startTs = travelTs - 2 * 24 * 60 * 60 * 1000;
-  const endTs = travelTs + 4 * 24 * 60 * 60 * 1000;
-  const centered = all.filter((d: ForecastDay) => {
-    const ts = Date.parse(`${d.date}T00:00:00Z`);
-    return ts >= startTs && ts <= endTs;
-  });
-  if (centered.length >= 5) return centered;
+  
+  // Using DHM API instead of Open-Meteo
+  try {
+    const url = `https://dhm.gov.np/mfd/api/forecast?lat=${lat}&lng=${lon}`;
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return [];
+    
+    const data = await res.json() as any;
+    const daily = data?.daily_forecast;
+    if (!Array.isArray(daily) || daily.length === 0) return [];
+    
+    const all: ForecastDay[] = daily.map((d: any) => ({
+      date: d.datetime,
+      weatherCode: 0, // DHM doesn't use WMO codes, use 0 as placeholder
+      tempMax: Number(d.max_temperature ?? 0),
+      tempMin: Number(d.min_temperature ?? 0),
+      rainProb: Number(d.precipitation_probability ?? 0),
+      windMax: Number(d.wind_speed ?? 0),
+      isTravelDate: d.datetime === travelDate,
+    }));
+    
+    const travelTs = Date.parse(`${travelDate}T00:00:00Z`);
+    const startTs = travelTs - 2 * 24 * 60 * 60 * 1000;
+    const endTs = travelTs + 4 * 24 * 60 * 60 * 1000;
+    const centered = all.filter((d: ForecastDay) => {
+      const ts = Date.parse(`${d.date}T00:00:00Z`);
+      return ts >= startTs && ts <= endTs;
+    });
+    
+    if (centered.length >= 5) return centered;
 
-  // Fallback: nearest 7 available days around travel date
-  const travelIdx = all.findIndex((d: ForecastDay) => d.date === travelDate);
-  if (travelIdx >= 0) {
-    const from = Math.max(0, travelIdx - 2);
-    return all.slice(from, Math.min(all.length, from + 7));
+    // Fallback: nearest days around travel date
+    const travelIdx = all.findIndex((d: ForecastDay) => d.date === travelDate);
+    if (travelIdx >= 0) {
+      const from = Math.max(0, travelIdx - 2);
+      return all.slice(from, Math.min(all.length, from + 7));
+    }
+    return all.slice(0, 7);
+  } catch {
+    console.warn("[forecast] DHM API failed for weather forecast");
+    return [];
   }
-  return all.slice(0, 7);
 }
 
 export async function computePillarModel(input: {
@@ -240,8 +239,8 @@ export async function computePillarModel(input: {
 
   const [routeHistorical, routeRealtime, impactSummary, destinationHistorical, destinationWeather, homeWeather, destinationLiveHazard, destinationLiveWeather, forecastWeek, places] =
     await Promise.all([
-      routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 15).catch(() => []) : Promise.resolve([]),
-      routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 15, 7).catch(() => []) : Promise.resolve([]),
+      routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 8).catch(() => []) : Promise.resolve([]),
+      routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 8, 7).catch(() => []) : Promise.resolve([]),
       routePoints.length ? getDisasterImpactSummary(routePoints, 12).catch(() => ({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 })) : Promise.resolve({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 }),
       fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
       fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
@@ -416,11 +415,11 @@ export async function computePillarModel(input: {
     },
     {
       id: "route_realtime",
-      title: "Route Safety - Realtime",
+      title: "Route Safety - Recent Incidents",
       maxPoints: 15,
       score: routeRealtimeScore,
       level: toLevelByRatio(routeRealtimeScore, 15),
-      summary: `${routeRealtime.length} recent incidents near corridor, active status checked across route segments.`,
+      summary: `${routeRealtime.length} recent BIPAD records within ${8}km of corridor — filtered by severity.`,
     },
     {
       id: "destination_safety",
@@ -483,7 +482,7 @@ export async function computePillarModel(input: {
     },
     destination: {
       historicProfile: `In ${extractMonthsHint(travelMonth)}, ${input.destination.district} has averaged ${destinationHistorical?.floodIncidents ?? 0} flood and ${destinationHistorical?.landslideIncidents ?? 0} landslide incidents over ${destinationHistorical?.yearsAnalysed ?? 5} years.`,
-      realtimeSnapshot: `Live hazard indices - Flood ${Math.round(liveFlood * 100)}%, Landslide ${Math.round(liveLand * 100)}%, Quake ${Math.round(liveEq * 100)}%.`,
+      realtimeSnapshot: `BIPAD hazard indices - Flood ${Math.round(liveFlood * 100)}%, Landslide ${Math.round(liveLand * 100)}%, Quake ${Math.round(liveEq * 100)}%.`,
       notableEvents: destinationHistorical?.notableEvents ?? [],
     },
     weather: {

@@ -1,3 +1,8 @@
+/**
+ * Checks if DHM API can provide weather data for destinations
+ * DHM API: https://dhm.gov.np/mfd/api/forecast
+ */
+
 import { readFile } from "fs/promises";
 import path from "path";
 
@@ -17,65 +22,20 @@ interface CheckResult {
   lng: number;
   valid: boolean;
   reason: string;
-  fallback?: {
-    lat: number;
-    lon: number;
-    distanceKm: number;
-  };
   weatherAvailable: boolean;
 }
 
-function deg2rad(deg: number) {
-  return (deg * Math.PI) / 180;
-}
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371;
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 async function fetchWeatherAvailable(lat: number, lon: number): Promise<boolean> {
-  const url = new URL("https://api.open-meteo.com/v1/forecast");
-  url.searchParams.set("latitude", String(lat));
-  url.searchParams.set("longitude", String(lon));
-  url.searchParams.set("current_weather", "true");
-  url.searchParams.set("timezone", "UTC");
+  const url = `https://dhm.gov.np/mfd/api/forecast?lat=${lat}&lng=${lon}`;
 
   try {
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
     if (!res.ok) return false;
     const data = await res.json();
-    return Boolean(data?.current_weather);
+    return Boolean(data?.hourly_forecast && data.hourly_forecast.length > 0);
   } catch {
     return false;
   }
-}
-
-async function findNearbyWeatherPoint(lat: number, lon: number): Promise<{ lat: number; lon: number; distanceKm: number } | null> {
-  const offsets = [0.05, 0.1, 0.2, 0.4];
-  for (const d of offsets) {
-    for (const latSign of [1, -1]) {
-      for (const lonSign of [1, -1]) {
-        const candidateLat = lat + latSign * d;
-        const candidateLon = lon + lonSign * d;
-        const available = await fetchWeatherAvailable(candidateLat, candidateLon);
-        if (available) {
-          return {
-            lat: candidateLat,
-            lon: candidateLon,
-            distanceKm: haversineKm(lat, lon, candidateLat, candidateLon),
-          };
-        }
-      }
-    }
-  }
-  return null;
 }
 
 async function main() {
@@ -97,7 +57,7 @@ async function main() {
     )
   ).flat();
 
-  console.log(`Checking ${destinations.length} destination coordinates for weather availability...\n`);
+  console.log(`Checking ${destinations.length} destination coordinates for DHM weather availability...\n`);
 
   const results: CheckResult[] = [];
 
@@ -122,21 +82,16 @@ async function main() {
     if (dest.lat < 24 || dest.lat > 31 || dest.lng < 80 || dest.lng > 89) {
       result.valid = false;
       result.reason = "Coordinates appear outside Nepal bounds";
+      results.push(result);
+      continue;
     }
 
     const available = await fetchWeatherAvailable(dest.lat, dest.lng);
     result.weatherAvailable = available;
 
     if (!available) {
-      const fallback = await findNearbyWeatherPoint(dest.lat, dest.lng);
-      if (fallback) {
-        result.valid = false;
-        result.reason = "Original coordinate had no accessible weather data; fallback found nearby";
-        result.fallback = fallback;
-      } else {
-        result.valid = false;
-        result.reason = "No accessible nearby weather data found";
-      }
+      result.valid = false;
+      result.reason = "DHM API not returning data for this coordinate";
     }
 
     results.push(result);
@@ -145,19 +100,16 @@ async function main() {
   const bad = results.filter((r) => !r.valid);
   const good = results.filter((r) => r.valid && r.weatherAvailable);
 
-  console.log(`Completed check. ${good.length} locations have weather data at the given coordinate.`);
-  console.log(`${bad.length} locations need review or fallback coordinates.`);
+  console.log(`Completed check. ${good.length} locations have DHM weather data.`);
+  console.log(`${bad.length} locations need review.`);
 
   for (const item of bad) {
     console.log(`\n- ${item.destination} (${item.district})`);
-    console.log(`  JSON coord: ${item.lat.toFixed(6)}, ${item.lng.toFixed(6)}`);
+    console.log(`  Coordinates: ${item.lat.toFixed(6)}, ${item.lng.toFixed(6)}`);
     console.log(`  Reason: ${item.reason}`);
-    if (item.fallback) {
-      console.log(`  Fallback coord: ${item.fallback.lat.toFixed(6)}, ${item.fallback.lon.toFixed(6)} (≈ ${item.fallback.distanceKm.toFixed(2)} km away)`);
-    }
   }
 
-  process.exit(bad.length > 0 ? 0 : 0);
+  process.exit(bad.length > 0 ? 1 : 0);
 }
 
 main().catch((err) => {

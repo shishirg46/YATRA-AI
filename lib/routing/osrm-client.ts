@@ -80,3 +80,30 @@ export async function fetchOsrmLeg(
 ): Promise<OsrmRouteResult[] | null> {
   return fetchOsrmRouteThroughNodes([from, to]);
 }
+
+export async function fetchOsrmRoutePerLeg(
+  nodes: RouteNode[]
+): Promise<
+  Array<{
+    from: RouteNode;
+    to: RouteNode;
+    routes: OsrmRouteResult[] | null;
+  }>
+> {
+  if (nodes.length < 2) return [];
+
+  const results: Array<{
+    from: RouteNode;
+    to: RouteNode;
+    routes: OsrmRouteResult[] | null;
+  }> = [];
+
+  for (let i = 0; i < nodes.length - 1; i++) {
+    const from = nodes[i];
+    const to = nodes[i + 1];
+    const routes = await fetchOsrmRouteThroughNodes([from, to], true);
+    results.push({ from, to, routes });
+  }
+
+  return results;
+}

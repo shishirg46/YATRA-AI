@@ -1,19 +1,3 @@
-/**
- * FILE: route-intelligence.ts
- * LOCATION: /lib/route-intelligence.ts
- * PURPOSE: Smart route generation with disaster + weather awareness for Nepal
- * 
- * FEATURES:
- * 1. Generate routes using OSRM/OpenRouteService
- * 2. Multiple route options (fastest, alternative, safer)
- * 3. Nepal-specific route naming
- * 4. Disaster data integration along routes
- * 5. Historical + real-time hazard mapping
- * 6. Route hazard scoring
- * 7. Weather integration for routes
- * 8. Route segmentation analysis
- */
-
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
 import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
@@ -22,21 +6,33 @@ import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
 import { resolveDestination } from "@/lib/routing/place-resolver";
-import type { BuiltRoute, RouteNode } from "@/lib/routing/types";
+import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
+import { createRouteBuffer } from "@/lib/routing/route-buffer";
+import { findPlacesAlongRoute } from "@/lib/routing/places-along-route";
+import { rankPlacesForRoute } from "@/lib/routing/route-ranking";
+import { routeCache, makeRouteCacheKey } from "@/lib/routing/route-cache";
+import {
+  findNearestLocation,
+  findNearestLocationsBatch,
+} from "@/lib/routing/spatial";
+import type {
+  BuiltRoute,
+  VehicleProfile,
+  GeoPoint,
+  RouteCoordinate,
+  RouteInstruction,
+  DetourInfo,
+  RouteStop,
+} from "@/lib/routing/types";
+import { haversineKm } from "@/lib/routing/geo";
 
-// ── Types ───────────────────────────────────────────────────────────────────────
-
-export interface GeoPoint {
-  lat: number;
-  lon: number;
-  name?: string;
-}
+export type { GeoPoint } from "@/lib/routing/types";
 
 export interface RouteWaypoint {
   lat: number;
   lon: number;
   name?: string;
-  distanceFromStart: number; // meters
+  distanceFromStart: number;
 }
 
 export interface Route {
@@ -44,13 +40,17 @@ export interface Route {
   name: string;
   description: string;
   waypoints: RouteWaypoint[];
-  distance: number; // meters
-  duration: number; // seconds
-  riskScore: number; // 0-1
+  distance: number;
+  duration: number;
+  riskScore: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
   hazards: RouteHazards;
   segments: RouteSegment[];
-  source: string; // OSRM, OpenRouteService, etc.
+  source: string;
+  encodedPolyline?: string;
+  placesAlongRoute?: DetourInfo[];
+  rankedStops?: RouteStop[];
+  turnByTurn?: RouteInstruction[];
 }
 
 export interface RouteHazards {
@@ -131,18 +131,287 @@ export interface RouteIntelligenceResult {
   generatedAt: string;
 }
 
-const BREAKPOINT_ANCHORS: [number, number, string][] = [
-  [26.6667, 87.6333, "Ratuwamai"],
-  [26.6667, 87.6167, "Urlabari"],
-  [26.6667, 87.7000, "Damak"],
-  [26.6333, 87.8500, "Surunga"],
-  [26.6500, 87.9833, "Birtamode"],
-  [26.7500, 88.0167, "Charali"],
-  [26.8500, 88.0333, "Budhabare"],
-  [26.9167, 88.0500, "Kanyam"],
-  [26.9500, 88.0667, "Antu Dada"],
-  [26.9167, 87.9333, "Ilam"],
-];
+export async function generateRouteIntelligence(
+  origin: GeoPoint,
+  destination: GeoPoint,
+  departureDate: string,
+  options?: { destinationId?: string; vehicle?: VehicleProfile }
+): Promise<RouteIntelligenceResult> {
+  const vehicle = options?.vehicle ?? "car";
+
+  let resolvedDest = destination;
+  try {
+    const resolved = await resolveDestination({
+      destinationId: options?.destinationId,
+      destinationName: destination.name,
+      destinationLat: destination.lat,
+      destinationLon: destination.lon,
+    });
+    resolvedDest = {
+      lat: resolved.place.lat,
+      lon: resolved.place.lon,
+      name: resolved.place.name,
+    };
+  } catch {
+    // Keep provided coordinates when resolution fails
+  }
+
+  let routes: Route[] = [];
+
+  try {
+    const built = await buildSegmentedRoute({
+      originLat: origin.lat,
+      originLon: origin.lon,
+      originName: origin.name,
+      destinationLat: resolvedDest.lat,
+      destinationLon: resolvedDest.lon,
+      destinationName: resolvedDest.name ?? destination.name,
+      destinationId: options?.destinationId,
+      vehicle,
+    });
+
+    const roadRoute = await fetchRouteGeometry(
+      { lat: origin.lat, lon: origin.lon, name: origin.name },
+      { lat: resolvedDest.lat, lon: resolvedDest.lon, name: resolvedDest.name },
+      vehicle
+    );
+
+    const buffer = await createRouteBuffer(roadRoute.coordinates, vehicle).catch(() => null);
+
+    let placesAlongRoute: DetourInfo[] = [];
+    let rankedStops: RouteStop[] = [];
+    if (buffer) {
+      placesAlongRoute = await findPlacesAlongRoute({
+        bufferWkt: buffer.normal.wkt,
+        radiusMeters: buffer.normal.radiusMeters,
+        mainRoute: roadRoute.coordinates,
+        vehicle,
+      });
+      const ranked = rankPlacesForRoute(placesAlongRoute, roadRoute.coordinates);
+      rankedStops = ranked.stops;
+    }
+
+    routes = [
+      builtRouteToIntelligenceRoute(
+        built,
+        { ...origin, name: origin.name ?? built.origin.name },
+        { ...resolvedDest, name: resolvedDest.name ?? built.destination.name },
+        roadRoute,
+        placesAlongRoute,
+        rankedStops
+      ),
+    ];
+  } catch (err) {
+    console.warn("[route-intelligence] segmented build failed:", err);
+  }
+
+  if (routes.length === 0) {
+    const storedRoutes = await fetchStoredRoutes(origin, resolvedDest);
+    const roadRoutes = storedRoutes.length > 0 ? [] : await fetchRoadRoutesFallback(origin, resolvedDest, vehicle);
+    routes = storedRoutes.length > 0 ? storedRoutes : roadRoutes;
+
+    if (routes.length === 0) {
+      routes = [generateFallbackRoute(origin, resolvedDest)];
+    }
+
+    routes = await Promise.all(
+      routes.map((r) => ensureSegmentedWaypoints(r, origin, resolvedDest))
+    );
+  }
+
+  if (routes.length > 0 && routes[0].waypoints.length > 2) {
+    await saveRouteTemplate(origin, resolvedDest, routes[0]).catch(() => null);
+  }
+
+  const analyzedRoutes = await Promise.all(
+    routes.map(async (route) => await analyzeRouteHazards(route, departureDate))
+  );
+
+  const bestRoute = analyzedRoutes
+    .filter(r => r.riskLevel !== "EXTREME")
+    .sort((a, b) => a.riskScore - b.riskScore)[0] ?? null;
+
+  return {
+    origin,
+    destination,
+    departureDate,
+    routes: analyzedRoutes,
+    bestRoute,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+async function fetchRoadRoutesFallback(origin: GeoPoint, destination: GeoPoint, vehicle: VehicleProfile): Promise<Route[]> {
+  try {
+    const routes = await fetchRoadRoute(origin, destination, vehicle, { alternatives: true });
+
+    return routes.map((r, idx) => {
+      const waypoints: RouteWaypoint[] = r.coordinates.map((coord, i) => ({
+        lat: coord.lat,
+        lon: coord.lon,
+        distanceFromStart: i === 0 ? 0 : Math.round(r.distance * i / r.coordinates.length),
+      }));
+
+      const routeName = generateRouteName(origin, destination, waypoints);
+
+      return {
+        id: `ors-${idx}`,
+        name: routeName,
+        description: `${routeName} via OpenRouteService (${vehicle})`,
+        waypoints,
+        distance: r.distance,
+        duration: r.duration,
+        riskScore: 0.5,
+        riskLevel: "MEDIUM",
+        hazards: {
+          landslideZones: [],
+          floodZones: [],
+          activeAlerts: [],
+          weatherRisk: "unknown",
+          historicalRisk: 0.5,
+        },
+        segments: [],
+        source: `OpenRouteService:${vehicle}`,
+        encodedPolyline: r.encodedPolyline,
+        turnByTurn: r.legs.flatMap((l) => l.steps),
+      };
+    });
+  } catch (err) {
+    console.warn("[route] OpenRouteService error:", err);
+    return [];
+  }
+}
+
+async function fetchStoredRoutes(origin: GeoPoint, destination: GeoPoint): Promise<Route[]> {
+  const [originLoc, destinationLoc] = await Promise.all([
+    findNearestLocationWithDistance(origin.lat, origin.lon),
+    findNearestLocationWithDistance(destination.lat, destination.lon),
+  ]);
+
+  if (!originLoc || !destinationLoc) return [];
+  if (originLoc.distanceKm > 8 || destinationLoc.distanceKm > 12) return [];
+
+  const templates = await prisma.routeTemplate.findMany({
+    where: {
+      originLocationId: originLoc.location.id,
+      destinationLocationId: destinationLoc.location.id,
+      isActive: true,
+    },
+    include: {
+      points: { orderBy: { seq: "asc" as const } },
+    },
+    orderBy: { updatedAt: "desc" },
+    take: 2,
+  });
+
+  return templates
+    .filter((t) => Array.isArray(t.points) && t.points.length > 1)
+    .map((t, idx) => {
+      const waypoints: RouteWaypoint[] = t.points.map((p) => ({
+        lat: p.lat,
+        lon: p.lon,
+        name: p.placeName ?? undefined,
+        distanceFromStart: Math.round((p.kmFromStart ?? 0) * 1000),
+      }));
+      return {
+        id: `stored-${t.id}-${idx}`,
+        name: t.name ?? `${originLoc.location.name} to ${destinationLoc.location.name} Route`,
+        description: `${t.name ?? "Stored route"} via template`,
+        waypoints,
+        distance: Math.round((t.distanceKm ?? estimateDistanceKm(waypoints)) * 1000),
+        duration: Math.max(1800, Math.round(((t.distanceKm ?? estimateDistanceKm(waypoints)) / 35) * 3600)),
+        riskScore: 0.5,
+        riskLevel: "MEDIUM" as const,
+        hazards: {
+          landslideZones: [],
+          floodZones: [],
+          activeAlerts: [],
+          weatherRisk: "unknown",
+          historicalRisk: 0.5,
+        },
+        segments: [],
+        source: `stored:${t.source ?? "template"}`,
+      };
+    });
+}
+
+async function saveRouteTemplate(origin: GeoPoint, destination: GeoPoint, route: Route): Promise<void> {
+  const [originLoc, destinationLoc] = await Promise.all([
+    findNearestLocation(origin.lat, origin.lon),
+    findNearestLocation(destination.lat, destination.lon),
+  ]);
+
+  if (!originLoc || !destinationLoc) return;
+
+  const sampled = sampleWaypoints(route.waypoints, Math.max(1, Math.floor(route.waypoints.length / 16)));
+  if (sampled.length < 2) return;
+
+  const template = await prisma.routeTemplate.upsert({
+    where: {
+      originLocationId_destinationLocationId_name: {
+        originLocationId: originLoc.id,
+        destinationLocationId: destinationLoc.id,
+        name: route.name,
+      },
+    },
+    create: {
+      originLocationId: originLoc.id,
+      destinationLocationId: destinationLoc.id,
+      name: route.name,
+      distanceKm: route.distance / 1000,
+      source: route.source,
+      isActive: true,
+    },
+    update: {
+      distanceKm: route.distance / 1000,
+      source: route.source,
+      isActive: true,
+    },
+  });
+
+  await prisma.routeTemplatePoint.deleteMany({ where: { routeTemplateId: template.id } });
+
+  const pointData = await Promise.all(
+    sampled.map(async (wp, i) => {
+      const nearest = await findNearestLocation(wp.lat, wp.lon, 8);
+      return {
+        routeTemplateId: template.id,
+        seq: i,
+        lat: wp.lat,
+        lon: wp.lon,
+        kmFromStart: (wp.distanceFromStart ?? 0) / 1000,
+        placeName: nearest?.name ?? wp.name ?? null,
+        matchedLocationId: nearest?.id ?? null,
+      };
+    })
+  );
+
+  if (pointData.length > 0) {
+    await prisma.routeTemplatePoint.createMany({ data: pointData });
+  }
+}
+
+async function findNearestLocationWithDistance(
+  lat: number,
+  lon: number,
+  maxKm = 30
+): Promise<{ location: { id: string; name: string }; distanceKm: number } | null> {
+  const result = await findNearestLocation(lat, lon, maxKm);
+  if (!result) return null;
+  return {
+    location: { id: result.id, name: result.name },
+    distanceKm: result.distanceKm,
+  };
+}
+
+function estimateDistanceKm(points: RouteWaypoint[]): number {
+  if (points.length < 2) return 1;
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    total += haversineKm(points[i - 1].lat, points[i - 1].lon, points[i].lat, points[i].lon);
+  }
+  return total;
+}
 
 // ── Nepal Route Naming ───────────────────────────────────────────────────────
 
@@ -171,16 +440,6 @@ const NEPAL_HIGHWAYS: Record<string, { waypoints: [number, number][]; name: stri
       [26.8833, 85.5333], // Sunsari
       [26.8000, 86.1333], // Itahari
       [26.4500, 87.0333], // Bhadrapur
-    ],
-  },
-  "karakoram": {
-    name: "Karakoram Highway",
-    waypoints: [
-      [28.2333, 84.0333], // Besi
-      [28.8833, 83.8833], // Manang
-      [29.1667, 83.9333], // Chame
-      [29.5333, 84.0833], // Dharapani
-      [29.8833, 84.4167], // Jumla
     ],
   },
   "arniko": {
@@ -214,434 +473,13 @@ const NEPAL_HIGHWAYS: Record<string, { waypoints: [number, number][]; name: stri
   },
 };
 
-// ── Main Function ─────────────────────────────────────────────────────────────
-
-export async function generateRouteIntelligence(
-  origin: GeoPoint,
-  destination: GeoPoint,
-  departureDate: string,
-  options?: { destinationId?: string }
-): Promise<RouteIntelligenceResult> {
-
-  let resolvedDest = destination;
-  try {
-    const resolved = await resolveDestination({
-      destinationId: options?.destinationId,
-      destinationName: destination.name,
-      destinationLat: destination.lat,
-      destinationLon: destination.lon,
-    });
-    resolvedDest = {
-      lat: resolved.place.lat,
-      lon: resolved.place.lon,
-      name: resolved.place.name,
-    };
-  } catch {
-    // Keep provided coordinates when resolution fails
-  }
-
-  let routes: Route[] = [];
-
-  try {
-    const built = await buildSegmentedRoute({
-      originLat: origin.lat,
-      originLon: origin.lon,
-      originName: origin.name,
-      destinationLat: resolvedDest.lat,
-      destinationLon: resolvedDest.lon,
-      destinationName: resolvedDest.name ?? destination.name,
-      destinationId: options?.destinationId,
-    });
-    routes = [
-      builtRouteToIntelligenceRoute(
-        built,
-        { ...origin, name: origin.name ?? built.origin.name },
-        { ...resolvedDest, name: resolvedDest.name ?? built.destination.name }
-      ),
-    ];
-  } catch (err) {
-    console.warn("[route-intelligence] segmented build failed:", err);
-  }
-
-  if (routes.length === 0) {
-    const storedRoutes = await fetchStoredRoutes(origin, resolvedDest);
-    const osrmRoutes =
-      storedRoutes.length > 0 ? [] : await fetchOsrmRoutes(origin, resolvedDest);
-    routes =
-      storedRoutes.length > 0
-        ? storedRoutes
-        : osrmRoutes.length > 0
-          ? osrmRoutes
-          : await fetchOpenRouteServiceRoutes(origin, resolvedDest);
-
-    if (routes.length === 0) {
-      routes = [generateFallbackRoute(origin, resolvedDest)];
-    }
-
-    routes = await Promise.all(
-      routes.map((r) => ensureSegmentedWaypoints(r, origin, resolvedDest))
-    );
-  }
-
-  if (routes.length > 0 && routes[0].waypoints.length > 2) {
-    await saveRouteTemplate(origin, resolvedDest, routes[0]).catch(() => null);
-  }
-
-  // Analyze each route for hazards
-  const analyzedRoutes = await Promise.all(
-    routes.map(async (route) => await analyzeRouteHazards(route, departureDate))
-  );
-
-  // Find best route (lowest risk)
-  const bestRoute = analyzedRoutes
-    .filter(r => r.riskLevel !== "EXTREME")
-    .sort((a, b) => a.riskScore - b.riskScore)[0] ?? null;
-
-  return {
-    origin,
-    destination,
-    departureDate,
-    routes: analyzedRoutes,
-    bestRoute,
-    generatedAt: new Date().toISOString(),
-  };
-}
-
-async function fetchStoredRoutes(origin: GeoPoint, destination: GeoPoint): Promise<Route[]> {
-  const prismaAny = prisma as any;
-  const [originLoc, destinationLoc] = await Promise.all([
-    findNearestLocationWithDistance(origin.lat, origin.lon),
-    findNearestLocationWithDistance(destination.lat, destination.lon),
-  ]);
-
-  if (!originLoc || !destinationLoc) return [];
-  // Only reuse a template when endpoints are actually close to the requested trip.
-  // This prevents "hub to destination" templates from being used for arbitrary user origins.
-  if (originLoc.distanceKm > 8 || destinationLoc.distanceKm > 12) return [];
-
-  const templates = await prismaAny.routeTemplate.findMany({
-    where: {
-      originLocationId: originLoc.location.id,
-      destinationLocationId: destinationLoc.location.id,
-      isActive: true,
-    },
-    include: {
-      points: { orderBy: { seq: "asc" } },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 2,
-  });
-
-  return templates
-    .filter((t: any) => Array.isArray(t.points) && t.points.length > 1)
-    .map((t: any, idx: number) => {
-      const waypoints: RouteWaypoint[] = t.points.map((p: any) => ({
-        lat: p.lat,
-        lon: p.lon,
-        name: p.placeName ?? undefined,
-        distanceFromStart: Math.round((p.kmFromStart ?? 0) * 1000),
-      }));
-      return {
-        id: `stored-${t.id}-${idx}`,
-        name: t.name ?? `${originLoc.location.name} to ${destinationLoc.location.name} Route`,
-        description: `${t.name ?? "Stored route"} via template`,
-        waypoints,
-        distance: Math.round((t.distanceKm ?? estimateDistanceKm(waypoints)) * 1000),
-        duration: Math.max(1800, Math.round(((t.distanceKm ?? estimateDistanceKm(waypoints)) / 35) * 3600)),
-        riskScore: 0.5,
-        riskLevel: "MEDIUM" as const,
-        hazards: {
-          landslideZones: [],
-          floodZones: [],
-          activeAlerts: [],
-          weatherRisk: "unknown",
-          historicalRisk: 0.5,
-        },
-        segments: [],
-        source: `stored:${t.source ?? "template"}`,
-      };
-    });
-}
-
-async function saveRouteTemplate(origin: GeoPoint, destination: GeoPoint, route: Route): Promise<void> {
-  const prismaAny = prisma as any;
-  const [originLoc, destinationLoc] = await Promise.all([
-    findNearestLocation(origin.lat, origin.lon),
-    findNearestLocation(destination.lat, destination.lon),
-  ]);
-
-  if (!originLoc || !destinationLoc) return;
-
-  const sampled = sampleWaypoints(route.waypoints, Math.max(1, Math.floor(route.waypoints.length / 16)));
-  if (sampled.length < 2) return;
-
-  const template = await prismaAny.routeTemplate.upsert({
-    where: {
-      originLocationId_destinationLocationId_name: {
-        originLocationId: originLoc.id,
-        destinationLocationId: destinationLoc.id,
-        name: route.name,
-      },
-    },
-    create: {
-      originLocationId: originLoc.id,
-      destinationLocationId: destinationLoc.id,
-      name: route.name,
-      distanceKm: route.distance / 1000,
-      source: route.source,
-      isActive: true,
-    },
-    update: {
-      distanceKm: route.distance / 1000,
-      source: route.source,
-      isActive: true,
-    },
-  });
-
-  await prismaAny.routeTemplatePoint.deleteMany({ where: { routeTemplateId: template.id } });
-
-  for (let i = 0; i < sampled.length; i++) {
-    const wp = sampled[i];
-    const nearest = await findNearestLocation(wp.lat, wp.lon, 8);
-    await prismaAny.routeTemplatePoint.create({
-      data: {
-        routeTemplateId: template.id,
-        seq: i,
-        lat: wp.lat,
-        lon: wp.lon,
-        kmFromStart: (wp.distanceFromStart ?? 0) / 1000,
-        placeName: nearest?.name ?? wp.name ?? null,
-        matchedLocationId: nearest?.id ?? null,
-      },
-    });
-  }
-}
-
-async function findNearestLocationWithDistance(
-  lat: number,
-  lon: number,
-  maxKm = 30
-): Promise<{ location: { id: string; name: string }; distanceKm: number } | null> {
-  const prismaAny = prisma as any;
-  const rows = await prismaAny.location.findMany({
-    select: { id: true, name: true, latitude: true, longitude: true },
-  });
-
-  let best: { location: { id: string; name: string }; distanceKm: number } | null = null;
-  let bestDist = Number.POSITIVE_INFINITY;
-
-  for (const row of rows) {
-    const d = haversineKm(lat, lon, row.latitude, row.longitude);
-    if (d < bestDist) {
-      bestDist = d;
-      best = { location: { id: row.id, name: row.name }, distanceKm: d };
-    }
-  }
-
-  if (!best || best.distanceKm > maxKm) return null;
-  return best;
-}
-
-async function findNearestLocation(lat: number, lon: number, maxKm = 30): Promise<{ id: string; name: string } | null> {
-  const prismaAny = prisma as any;
-  const rows = await prismaAny.location.findMany({
-    select: { id: true, name: true, latitude: true, longitude: true },
-  });
-  let best: { id: string; name: string } | null = null;
-  let bestDist = Number.POSITIVE_INFINITY;
-  for (const row of rows) {
-    const d = haversineKm(lat, lon, row.latitude, row.longitude);
-    if (d < bestDist) {
-      bestDist = d;
-      best = { id: row.id, name: row.name };
-    }
-  }
-  if (bestDist > maxKm) return null;
-  return best;
-}
-
-function estimateDistanceKm(points: RouteWaypoint[]): number {
-  if (points.length < 2) return 1;
-  let total = 0;
-  for (let i = 1; i < points.length; i++) {
-    total += haversineKm(points[i - 1].lat, points[i - 1].lon, points[i].lat, points[i].lon);
-  }
-  return total;
-}
-
-// ── OSRM Route Generation ───────────────────────────────────────────────────
-
-async function fetchOsrmRoutes(origin: GeoPoint, destination: GeoPoint): Promise<Route[]> {
-  try {
-    const url = `https://router.project-osrm.org/route/v1/driving/${origin.lon},${origin.lat};${destination.lon},${destination.lat}?overview=full&geometries=geojson&alternatives=true`;
-
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(15_000),
-      cache: "no-store",
-    });
-
-    if (!res.ok) {
-      console.warn("[route] OSRM failed:", res.status);
-      return [];
-    }
-
-    const data = await res.json() as {
-      code?: string;
-      routes?: {
-        distance: number;
-        duration: number;
-        geometry: { coordinates: [number, number][] };
-        legs?: { summary?: string }[];
-      }[];
-    };
-
-    if (data.code !== "Ok" || !data.routes) {
-      return [];
-    }
-
-    return data.routes.map((r, idx) => {
-      const waypoints: RouteWaypoint[] = r.geometry.coordinates.map((coord, i) => ({
-        lat: coord[1],
-        lon: coord[0],
-        distanceFromStart: i === 0 ? 0 : Math.round(r.distance * i / r.geometry.coordinates.length),
-      }));
-
-      // Generate route name based on Nepal highways
-      const routeName = generateRouteName(origin, destination, waypoints);
-
-      return {
-        id: `osrm-${idx}`,
-        name: routeName,
-        description: `${routeName} via OSRM`,
-        waypoints,
-        distance: Math.round(r.distance),
-        duration: Math.round(r.duration),
-        riskScore: 0.5, // Will be updated after hazard analysis
-        riskLevel: "MEDIUM",
-        hazards: {
-          landslideZones: [],
-          floodZones: [],
-          activeAlerts: [],
-          weatherRisk: "unknown",
-          historicalRisk: 0.5,
-        },
-        segments: [],
-        source: "OSRM",
-      };
-    });
-  } catch (err) {
-    console.warn("[route] OSRM error:", err);
-    return [];
-  }
-}
-
-// ── OpenRouteService Fallback ───────────────────────────────────────────────
-
-async function fetchOpenRouteServiceRoutes(origin: GeoPoint, destination: GeoPoint): Promise<Route[]> {
-  try {
-    const apiKey = process.env.OPENROUTESERVICE_API_KEY;
-    if (!apiKey) {
-      console.warn("[route] OpenRouteService API key not set");
-      return [];
-    }
-
-    const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${origin.lon},${origin.lat}&end=${destination.lon},${destination.lat}`;
-
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(15_000),
-      cache: "no-store",
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json() as {
-      features?: {
-        properties: { summary: { distance: number; duration: number } };
-        geometry: { coordinates: [number, number][] };
-      }[];
-    };
-
-    if (!data.features?.length) return [];
-
-    return data.features.map((f, idx) => {
-      const coords = f.geometry.coordinates;
-      const waypoints: RouteWaypoint[] = coords.map((coord, i) => ({
-        lat: coord[1],
-        lon: coord[0],
-        distanceFromStart: Math.round(f.properties.summary.distance * i / coords.length),
-      }));
-
-      const routeName = generateRouteName(origin, destination, waypoints);
-
-      return {
-        id: `ors-${idx}`,
-        name: routeName,
-        description: `${routeName} via OpenRouteService`,
-        waypoints,
-        distance: Math.round(f.properties.summary.distance),
-        duration: Math.round(f.properties.summary.duration),
-        riskScore: 0.5,
-        riskLevel: "MEDIUM",
-        hazards: {
-          landslideZones: [],
-          floodZones: [],
-          activeAlerts: [],
-          weatherRisk: "unknown",
-          historicalRisk: 0.5,
-        },
-        segments: [],
-        source: "OpenRouteService",
-      };
-    });
-  } catch (err) {
-    console.warn("[route] OpenRouteService error:", err);
-    return [];
-  }
-}
-
-// ── Fallback Route ──────────────────────────────────────────────────────────
-
-function generateFallbackRoute(origin: GeoPoint, destination: GeoPoint): Route {
-  const waypoints: RouteWaypoint[] = [
-    { lat: origin.lat, lon: origin.lon, distanceFromStart: 0 },
-    { lat: (origin.lat + destination.lat) / 2, lon: (origin.lon + destination.lon) / 2, distanceFromStart: 50000 },
-    { lat: destination.lat, lon: destination.lon, distanceFromStart: 100000 },
-  ];
-
-  const routeName = generateRouteName(origin, destination, waypoints);
-
-  return {
-    id: "fallback",
-    name: routeName,
-    description: `${routeName} (estimated)`,
-    waypoints,
-    distance: 100000,
-    duration: 7200,
-    riskScore: 0.5,
-    riskLevel: "MEDIUM",
-    hazards: {
-      landslideZones: [],
-      floodZones: [],
-      activeAlerts: [],
-      weatherRisk: "unknown",
-      historicalRisk: 0.5,
-    },
-    segments: [],
-    source: "fallback",
-  };
-}
-
-// ── Route Naming System ─────────────────────────────────────────────────────
-
 function generateRouteName(origin: GeoPoint, destination: GeoPoint, waypoints: RouteWaypoint[]): string {
-  // Check if route matches any Nepal highway
   for (const [, highway] of Object.entries(NEPAL_HIGHWAYS)) {
     if (isRouteOnHighway(waypoints, highway.waypoints)) {
       return highway.name;
     }
   }
 
-  // Generate name based on regions
   const originRegion = getRegionFromCoords(origin.lat, origin.lon);
   const destRegion = getRegionFromCoords(destination.lat, destination.lon);
 
@@ -649,7 +487,6 @@ function generateRouteName(origin: GeoPoint, destination: GeoPoint, waypoints: R
     return `${originRegion} to ${destRegion} Route`;
   }
 
-  // Default: use major cities
   return `${origin.name || "Origin"} to ${destination.name || "Destination"}`;
 }
 
@@ -691,6 +528,38 @@ function getRegionFromCoords(lat: number, lon: number): string | null {
   return minDist < 100 ? closest : null;
 }
 
+// ── Fallback Route ──────────────────────────────────────────────────────────
+
+function generateFallbackRoute(origin: GeoPoint, destination: GeoPoint): Route {
+  const waypoints: RouteWaypoint[] = [
+    { lat: origin.lat, lon: origin.lon, distanceFromStart: 0 },
+    { lat: (origin.lat + destination.lat) / 2, lon: (origin.lon + destination.lon) / 2, distanceFromStart: 50000 },
+    { lat: destination.lat, lon: destination.lon, distanceFromStart: 100000 },
+  ];
+
+  const routeName = generateRouteName(origin, destination, waypoints);
+
+  return {
+    id: "fallback",
+    name: routeName,
+    description: `${routeName} (estimated)`,
+    waypoints,
+    distance: 100000,
+    duration: 7200,
+    riskScore: 0.5,
+    riskLevel: "MEDIUM",
+    hazards: {
+      landslideZones: [],
+      floodZones: [],
+      activeAlerts: [],
+      weatherRisk: "unknown",
+      historicalRisk: 0.5,
+    },
+    segments: [],
+    source: "fallback",
+  };
+}
+
 // ── Route Hazard Analysis ─────────────────────────────────────────────────
 
 async function analyzeRouteHazards(route: Route, departureDate: string): Promise<Route> {
@@ -700,11 +569,10 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
   const sampledWaypoints = sampleWaypoints(route.waypoints, samplingStep);
   const analysisWaypoints = sampledWaypoints.length >= 2 ? sampledWaypoints : route.waypoints;
 
-  // Create segments from waypoints
   for (let i = 0; i < analysisWaypoints.length - 1; i++) {
     const start = analysisWaypoints[i];
     const end = analysisWaypoints[i + 1];
-    
+
     segments.push({
       index: i,
       startPoint: { lat: start.lat, lon: start.lon, name: start.name ?? getDistrictFromCoords(start.lat, start.lon) },
@@ -716,21 +584,18 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
     });
   }
 
-  // Analyze each segment
   const segmentRisks = await Promise.all(
     segments.map(async (segment) => {
       const centerLat = (segment.startPoint.lat + segment.endPoint.lat) / 2;
       const centerLon = (segment.startPoint.lon + segment.endPoint.lon) / 2;
 
-      // Get district name (simplified)
       const district = getDistrictFromCoords(centerLat, centerLon);
 
-      // Fetch hazard data
       const [currentHazard, historicalHazard, weather] = await Promise.all([
         withTimeout(fetchHazard(district, centerLat, centerLon), 6000).catch(() => null),
         withTimeout(fetchHistoricalHazard(district, centerLat, centerLon, departureDate, 5), 6000).catch(() => null),
         withTimeout(
-          fetchWeather(centerLat, centerLon, { fastMode: true, allowNearbyFallback: false, openMeteoTimeoutsMs: [3500] }),
+          fetchWeather(centerLat, centerLon),
           6000
         ).catch(() => null),
       ]);
@@ -764,64 +629,19 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
 
       const disasterClusters = [
         ...(currentHazard?.floodIndex && currentHazard.floodIndex > 0
-          ? [{
-              type: "flood" as const,
-              lat: centerLat,
-              lon: centerLon,
-              location: district,
-              region: inferNepalRegion(centerLat),
-              count: Math.max(1, Math.round(currentHazard.floodIndex * 10)),
-              recent: currentHazard.floodIndex >= 0.2,
-              severityScore: Math.min(1, currentHazard.floodIndex),
-            }]
+          ? [{ type: "flood" as const, lat: centerLat, lon: centerLon, location: district, region: inferNepalRegion(centerLat), count: Math.max(1, Math.round(currentHazard.floodIndex * 10)), recent: currentHazard.floodIndex >= 0.2, severityScore: Math.min(1, currentHazard.floodIndex) }]
           : []),
         ...(currentHazard?.landslideIndex && currentHazard.landslideIndex > 0
-          ? [{
-              type: "landslide" as const,
-              lat: centerLat,
-              lon: centerLon,
-              location: district,
-              region: inferNepalRegion(centerLat),
-              count: Math.max(1, Math.round(currentHazard.landslideIndex * 10)),
-              recent: currentHazard.landslideIndex >= 0.2,
-              severityScore: Math.min(1, currentHazard.landslideIndex),
-            }]
+          ? [{ type: "landslide" as const, lat: centerLat, lon: centerLon, location: district, region: inferNepalRegion(centerLat), count: Math.max(1, Math.round(currentHazard.landslideIndex * 10)), recent: currentHazard.landslideIndex >= 0.2, severityScore: Math.min(1, currentHazard.landslideIndex) }]
           : []),
         ...(currentHazard?.earthquakeIndex && currentHazard.earthquakeIndex > 0
-          ? [{
-              type: "earthquake" as const,
-              lat: centerLat,
-              lon: centerLon,
-              location: district,
-              region: inferNepalRegion(centerLat),
-              count: Math.max(1, Math.round(currentHazard.earthquakeIndex * 10)),
-              recent: currentHazard.earthquakeIndex >= 0.2,
-              severityScore: Math.min(1, currentHazard.earthquakeIndex),
-            }]
+          ? [{ type: "earthquake" as const, lat: centerLat, lon: centerLon, location: district, region: inferNepalRegion(centerLat), count: Math.max(1, Math.round(currentHazard.earthquakeIndex * 10)), recent: currentHazard.earthquakeIndex >= 0.2, severityScore: Math.min(1, currentHazard.earthquakeIndex) }]
           : []),
         ...(floodCount > 0
-          ? [{
-              type: "flood" as const,
-              lat: centerLat,
-              lon: centerLon,
-              location: district,
-              region: inferNepalRegion(centerLat),
-              count: floodCount,
-              recent: false,
-              severityScore: Math.min(1, (historicalHazard?.historicalFloodRisk ?? 0)),
-            }]
+          ? [{ type: "flood" as const, lat: centerLat, lon: centerLon, location: district, region: inferNepalRegion(centerLat), count: floodCount, recent: false, severityScore: Math.min(1, (historicalHazard?.historicalFloodRisk ?? 0)) }]
           : []),
         ...(landslideCount > 0
-          ? [{
-              type: "landslide" as const,
-              lat: centerLat,
-              lon: centerLon,
-              location: district,
-              region: inferNepalRegion(centerLat),
-              count: landslideCount,
-              recent: false,
-              severityScore: Math.min(1, (historicalHazard?.historicalLandslideRisk ?? 0)),
-            }]
+          ? [{ type: "landslide" as const, lat: centerLat, lon: centerLon, location: district, region: inferNepalRegion(centerLat), count: landslideCount, recent: false, severityScore: Math.min(1, (historicalHazard?.historicalLandslideRisk ?? 0)) }]
           : []),
       ];
 
@@ -835,7 +655,6 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
       });
 
       let riskScore = hazardAssessment.riskPercent / 100;
-      // Regional priors blend-in (kept lightweight and explicit).
       let regionalPriorContribution = 0;
       if (centerLat < 27.2 && centerLon > 86.4 && centerLon < 87.6) {
         regionalPriorContribution += 0.16;
@@ -900,15 +719,11 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
     })
   );
 
-  // Update route with segment data
   const avgRisk = segmentRisks.reduce((sum, s) => sum + s.riskScore, 0) / segmentRisks.length;
-  
-  // Collect all hazards along route
+
   const landslideZones = [...new Set(segmentRisks.filter(s => s.hazards.includes("Landslide risk")).map(s => s.startPoint.name || "Unknown"))];
   const floodZones = [...new Set(segmentRisks.filter(s => s.hazards.includes("Flood risk")).map(s => s.startPoint.name || "Unknown"))];
   const activeAlerts = [...new Set(segmentRisks.flatMap(s => s.hazards))];
-
-  // Get weather risk
   const weatherRisk = segmentRisks.find(s => s.weather)?.weather || "unknown";
 
   return {
@@ -950,27 +765,16 @@ function calculateSegmentHazardRisk(input: {
   const realtime = input.realtimeDisasters ?? [];
   const historical = input.historicalDisasters ?? [];
 
-  if (rain > 30) {
-    weatherRisk += 0.7;
-    alerts.push("Heavy rain detected");
-  } else if (rain > 10) {
-    weatherRisk += 0.4;
-    alerts.push("Moderate rain detected");
-  } else if (rain > 2) {
-    weatherRisk += 0.1;
-  }
+  if (rain > 30) { weatherRisk += 0.7; alerts.push("Heavy rain detected"); }
+  else if (rain > 10) { weatherRisk += 0.4; alerts.push("Moderate rain detected"); }
+  else if (rain > 2) { weatherRisk += 0.1; }
   if (wind > 60) weatherRisk += 0.2;
   else if (wind > 35) weatherRisk += 0.1;
 
   for (const d of realtime) {
     const minDist = minDistanceKm(points, d.lat, d.lon);
-    if (minDist < 5) {
-      realtimeRisk += 0.6;
-      alerts.push(`Nearby real-time ${d.type} alert`);
-    } else if (minDist < 10) {
-      realtimeRisk += 0.3;
-      alerts.push(`Regional ${d.type} alert`);
-    }
+    if (minDist < 5) { realtimeRisk += 0.6; alerts.push(`Nearby real-time ${d.type} alert`); }
+    else if (minDist < 10) { realtimeRisk += 0.3; alerts.push(`Regional ${d.type} alert`); }
   }
 
   for (const h of historical) {
@@ -982,7 +786,6 @@ function calculateSegmentHazardRisk(input: {
     if (h.count > 1) alerts.push(`Past ${h.type} zone nearby`);
   }
 
-  // Terrain proxy fallback by coordinate belts (hills/terai).
   const center = points[Math.floor(points.length / 2)];
   if (center) {
     if (center.lat > 27.1) terrainRisk = 0.25;
@@ -992,21 +795,10 @@ function calculateSegmentHazardRisk(input: {
     terrainRisk = 0.12;
   }
 
-  const hasAnyInput =
-    points.length > 0 ||
-    rain > 0 ||
-    wind > 0 ||
-    realtime.length > 0 ||
-    historical.length > 0;
+  const hasAnyInput = points.length > 0 || rain > 0 || wind > 0 || realtime.length > 0 || historical.length > 0;
 
   if (!hasAnyInput) {
-    return {
-      riskPercent: 15,
-      riskLevel: "LOW",
-      breakdown: { weather: 0, realtime: 0, historical: 0, terrain: 15 },
-      alerts: ["No data available, using baseline risk"],
-      reason: "No data available, using baseline risk",
-    };
+    return { riskPercent: 15, riskLevel: "LOW", breakdown: { weather: 0, realtime: 0, historical: 0, terrain: 15 }, alerts: ["No data available, using baseline risk"], reason: "No data available, using baseline risk" };
   }
 
   weatherRisk = Math.min(1, weatherRisk);
@@ -1021,20 +813,9 @@ function calculateSegmentHazardRisk(input: {
   const totalRisk = weightedWeather + weightedRealtime + weightedHistorical + weightedTerrain;
   const riskPercent = Math.min(100, Math.round(totalRisk * 100));
 
-  const riskLevel: "LOW" | "MEDIUM" | "HIGH" =
-    riskPercent > 70 ? "HIGH" : riskPercent > 40 ? "MEDIUM" : "LOW";
+  const riskLevel: "LOW" | "MEDIUM" | "HIGH" = riskPercent > 70 ? "HIGH" : riskPercent > 40 ? "MEDIUM" : "LOW";
 
-  return {
-    riskPercent,
-    riskLevel,
-    breakdown: {
-      weather: Math.round(weightedWeather * 100),
-      realtime: Math.round(weightedRealtime * 100),
-      historical: Math.round(weightedHistorical * 100),
-      terrain: Math.round(weightedTerrain * 100),
-    },
-    alerts: [...new Set(alerts)],
-  };
+  return { riskPercent, riskLevel, breakdown: { weather: Math.round(weightedWeather * 100), realtime: Math.round(weightedRealtime * 100), historical: Math.round(weightedHistorical * 100), terrain: Math.round(weightedTerrain * 100) }, alerts: [...new Set(alerts)] };
 }
 
 function minDistanceKm(points: { lat: number; lon: number }[], lat: number, lon: number): number {
@@ -1047,22 +828,11 @@ function minDistanceKm(points: { lat: number; lon: number }[], lat: number, lon:
   return min;
 }
 
-// ── Helper Functions ─────────────────────────────────────────────────────────
-
 function scoreToLevel(score: number): "LOW" | "MEDIUM" | "HIGH" | "EXTREME" {
   if (score < 0.3) return "LOW";
   if (score < 0.5) return "MEDIUM";
   if (score < 0.7) return "HIGH";
   return "EXTREME";
-}
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
 }
 
 function getDistrictFromCoords(lat: number, lon: number): string {
@@ -1083,14 +853,9 @@ function getDistrictFromCoords(lat: number, lon: number): string {
   let minDist = Infinity;
   for (const [aLat, aLon, name] of anchors) {
     const dist = haversineKm(lat, lon, aLat, aLon);
-    if (dist < minDist) {
-      minDist = dist;
-      closest = name;
-    }
+    if (dist < minDist) { minDist = dist; closest = name; }
   }
-  if (minDist > 80) {
-    return getRegionFromCoords(lat, lon) ?? "Route corridor";
-  }
+  if (minDist > 80) { return getRegionFromCoords(lat, lon) ?? "Route corridor"; }
   return closest;
 }
 
@@ -1110,28 +875,16 @@ function sampleWaypoints(points: RouteWaypoint[], step = 10): RouteWaypoint[] {
   return sampled;
 }
 
-function buildNamedBreakpoints(
-  waypoints: RouteWaypoint[],
-  originName?: string,
-  destinationName?: string
-): string[] {
+function buildNamedBreakpoints(waypoints: RouteWaypoint[], originName?: string, destinationName?: string): string[] {
   if (!waypoints.length) return [];
   const sampled = sampleWaypoints(waypoints, Math.max(1, Math.floor(waypoints.length / 12)));
   const names: string[] = [];
-
   if (originName) names.push(originName);
-
   for (const p of sampled) {
     const name = p.name ?? getDistrictFromCoords(p.lat, p.lon);
-    if (name && names[names.length - 1] !== name) {
-      names.push(name);
-    }
+    if (name && names[names.length - 1] !== name) names.push(name);
   }
-
-  if (destinationName && names[names.length - 1] !== destinationName) {
-    names.push(destinationName);
-  }
-
+  if (destinationName && names[names.length - 1] !== destinationName) names.push(destinationName);
   return names;
 }
 
@@ -1147,37 +900,29 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
-// ── Segmented route conversion ───────────────────────────────────────────────
-
 function builtRouteToIntelligenceRoute(
   built: BuiltRoute,
   origin: GeoPoint,
-  destination: GeoPoint
+  destination: GeoPoint,
+  roadRoute?: { coordinates: RouteCoordinate[]; encodedPolyline?: string; legs?: { steps: RouteInstruction[] }[] },
+  placesAlongRoute?: DetourInfo[],
+  rankedStops?: RouteStop[]
 ): Route {
   let distAcc = 0;
   const nodeWaypoints: RouteWaypoint[] = built.nodes.map((n, i) => {
     if (i > 0) {
       distAcc += haversineKm(built.nodes[i - 1].lat, built.nodes[i - 1].lon, n.lat, n.lon) * 1000;
     }
-    return {
-      lat: n.lat,
-      lon: n.lon,
-      name: n.name,
-      distanceFromStart: Math.round(distAcc),
-    };
+    return { lat: n.lat, lon: n.lon, name: n.name, distanceFromStart: Math.round(distAcc) };
   });
 
-  const polylineWaypoints: RouteWaypoint[] =
-    built.polyline.length >= 2
-      ? built.polyline.map((p, i) => ({
-          lat: p.lat,
-          lon: p.lon,
-          distanceFromStart:
-            i === 0
-              ? 0
-              : Math.round((built.distance * i) / Math.max(built.polyline.length - 1, 1)),
-        }))
-      : nodeWaypoints;
+  const polylineWaypoints: RouteWaypoint[] = roadRoute?.coordinates
+    ? roadRoute.coordinates.map((p, i) => ({
+        lat: p.lat,
+        lon: p.lon,
+        distanceFromStart: i === 0 ? 0 : Math.round((built.distance * i) / Math.max(roadRoute.coordinates.length - 1, 1)),
+      }))
+    : nodeWaypoints;
 
   const segments: RouteSegment[] = built.segments.map((s) => ({
     index: s.index,
@@ -1189,40 +934,38 @@ function builtRouteToIntelligenceRoute(
     hazards: s.hazards ?? [],
   }));
 
-  const corridorLabel =
-    built.nodes.length > 2
-      ? built.nodes.map((n) => n.name).join(" → ")
-      : null;
+  const corridorLabel = built.nodes.length > 2 ? built.nodes.map((n) => n.name).join(" → ") : null;
   const routeName = corridorLabel ?? generateRouteName(origin, destination, nodeWaypoints);
+
+  const turnByTurn: RouteInstruction[] = [];
+  if (roadRoute?.legs) {
+    for (const leg of roadRoute.legs) {
+      turnByTurn.push(...leg.steps);
+    }
+  }
 
   return {
     id: `segmented-${built.source}`,
     name: routeName,
-    description: built.resolutionNote
-      ? `${routeName} (${built.resolutionNote})`
-      : `${routeName} via known corridor stops`,
-    waypoints: polylineWaypoints.length > nodeWaypoints.length ? polylineWaypoints : nodeWaypoints,
+    description: built.resolutionNote ? `${routeName} (${built.resolutionNote})` : `${routeName} via real roads`,
+    waypoints: polylineWaypoints,
     distance: built.distance,
     duration: built.duration,
     riskScore: 0.5,
     riskLevel: "MEDIUM",
-    hazards: {
-      landslideZones: [],
-      floodZones: [],
-      activeAlerts: [],
-      weatherRisk: "unknown",
-      historicalRisk: 0.5,
-    },
+    hazards: { landslideZones: [], floodZones: [], activeAlerts: [], weatherRisk: "unknown", historicalRisk: 0.5 },
     segments,
     source: built.source,
+    encodedPolyline: roadRoute?.encodedPolyline,
+    placesAlongRoute,
+    rankedStops: rankedStops?.slice(0, 10),
+    turnByTurn: turnByTurn.slice(0, 60),
   };
 }
 
 function countCorridorStops(route: Route): number {
   const names = new Set<string>();
-  for (const w of route.waypoints) {
-    if (w.name) names.add(w.name);
-  }
+  for (const w of route.waypoints) { if (w.name) names.add(w.name); }
   for (const s of route.segments) {
     if (s.startPoint.name) names.add(s.startPoint.name);
     if (s.endPoint.name) names.add(s.endPoint.name);
@@ -1230,30 +973,20 @@ function countCorridorStops(route: Route): number {
   return names.size;
 }
 
-async function ensureSegmentedWaypoints(
-  route: Route,
-  origin: GeoPoint,
-  destination: GeoPoint
-): Promise<Route> {
+async function ensureSegmentedWaypoints(route: Route, origin: GeoPoint, destination: GeoPoint): Promise<Route> {
   const hasStructure = route.segments.length >= 2 && countCorridorStops(route) >= 3;
   if (hasStructure) return route;
 
   try {
     const built = await buildSegmentedRoute({
-      originLat: origin.lat,
-      originLon: origin.lon,
-      originName: origin.name,
-      destinationLat: destination.lat,
-      destinationLon: destination.lon,
-      destinationName: destination.name,
+      originLat: origin.lat, originLon: origin.lon, originName: origin.name,
+      destinationLat: destination.lat, destinationLon: destination.lon, destinationName: destination.name,
     });
     return builtRouteToIntelligenceRoute(built, origin, destination);
   } catch {
     return route;
   }
 }
-
-// ── API Response Formatter ─────────────────────────────────────────────────
 
 export function formatRouteIntelligenceResponse(result: RouteIntelligenceResult): object {
   const seen = new Set<string>();
@@ -1273,16 +1006,8 @@ export function formatRouteIntelligenceResponse(result: RouteIntelligenceResult)
       riskScore: route.riskScore,
       riskLevel: route.riskLevel,
       breakpoints: sampleWaypoints(route.waypoints, 10).map((p) => ({ lat: p.lat, lon: p.lon, name: p.name })),
-      breakpointNames: buildNamedBreakpoints(
-        route.waypoints,
-        result.origin.name ?? "Your location",
-        result.destination.name ?? "Destination"
-      ),
-      hazards: {
-        landslideZones: route.hazards.landslideZones,
-        floodZones: route.hazards.floodZones,
-        weatherRisk: route.hazards.weatherRisk,
-      },
+      breakpointNames: buildNamedBreakpoints(route.waypoints, result.origin.name ?? "Your location", result.destination.name ?? "Destination"),
+      hazards: { landslideZones: route.hazards.landslideZones, floodZones: route.hazards.floodZones, weatherRisk: route.hazards.weatherRisk },
       alerts: route.hazards.activeAlerts,
       segments: route.segments.map(seg => ({
         from: seg.startPoint,
@@ -1295,10 +1020,24 @@ export function formatRouteIntelligenceResponse(result: RouteIntelligenceResult)
         contributions: seg.contributions,
         evidence: seg.evidence,
       })),
+      encodedPolyline: route.encodedPolyline,
+      turnByTurn: route.turnByTurn,
+      placesAlongRoute: route.placesAlongRoute?.slice(0, 10).map((p) => ({
+        name: p.placeName,
+        category: p.category,
+        detourMinutes: p.detourMinutes,
+        distanceFromRouteKm: p.distanceFromRouteKm,
+        score: p.score,
+        lat: p.lat,
+        lon: p.lon,
+      })),
+      rankedStops: route.rankedStops?.slice(0, 5).map((s) => ({
+        name: s.name,
+        score: s.score,
+        detourTime: s.detourTime,
+        category: s.category,
+      })),
     })),
-    bestRoute: result.bestRoute ? {
-      name: result.bestRoute.name,
-      riskLevel: result.bestRoute.riskLevel,
-    } : null,
+    bestRoute: result.bestRoute ? { name: result.bestRoute.name, riskLevel: result.bestRoute.riskLevel } : null,
   };
 }

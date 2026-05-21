@@ -36,6 +36,7 @@ interface MemberAnalysis {
 
 interface WeatherSnapshot {
   temperature: number;
+  humidity: number;
   rainfall: number;
   windSpeed: number;
   description: string;
@@ -68,7 +69,7 @@ interface Alternative {
 }
 
 interface PlanReport {
-  destination:    { id: string; name: string; district: string; province: string; altitude: number | null };
+  destination:    { id: string; name: string; district: string; province: string; latitude: number; longitude: number; altitude: number | null };
   travelDate:     string;
   tripType:       string;
   liveWeather?:   WeatherSnapshot | null;
@@ -817,69 +818,158 @@ function PlanInner() {
           </div>
         </div>
 
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <div className={`plan-card rounded-2xl p-6 ${isUnsafe ? "border-red-500/20" : ""}`}
+        {/* ── HERO ──────────────────────────────────────────────────────────── */}
+        <div className={`plan-card rounded-2xl overflow-hidden ${isUnsafe ? "border-red-500/20" : ""}`}
           style={isUnsafe ? { borderColor: "rgba(239,68,68,0.2)" } : {}}>
-          <div className="flex flex-col md:flex-row gap-5 items-start">
-            <ScoreRing score={report.overallScore} size={84}/>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-body text-sm font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                  <LevelIcon size={13}/>{cfg.label}
-                </span>
-                {isGroup && (
-                  <span className="font-body text-xs text-slate-500">
-                    Group min: {report.overallScore} · avg: {report.groupAvgScore}
-                  </span>
-                )}
-                <span className="font-body text-xs text-slate-500">{Math.round(report.confidence * 100)}% confidence</span>
-              </div>
-              <h2 className="font-display text-xl font-bold text-white mb-0.5">
-                {report.destination.name}
-                {report.destination.altitude && <span className="font-body font-normal text-slate-500 text-sm ml-2">{report.destination.altitude.toLocaleString()}m</span>}
-              </h2>
-              <p className="font-body text-xs text-slate-500 mb-3">
-                {report.destination.district}, {report.destination.province} · {new Date(report.travelDate).toLocaleDateString("en-NP", { day: "numeric", month: "long", year: "numeric" })} · {report.season}
-              </p>
-              {report.ai.verdict && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                  <Sparkles size={13} className="text-amber-400 flex-shrink-0 mt-0.5"/>
-                  <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.verdict}</p>
-                </div>
-              )}
 
-              {report.routeRisk && (
-                <div className="mt-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-700/70">
-                  <div className="flex items-center justify-between gap-3 mb-3">
-                    <div>
-                      <p className="font-body text-sm text-white font-semibold">Live route risk</p>
-                      <p className="font-body text-xs text-slate-500">Current segment risk from your home to the destination.</p>
-                    </div>
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-[0.18em] ${
-                      report.routeRisk.risk === "HIGH" ? "bg-orange-500/10 text-orange-300 border border-orange-500/20" : report.routeRisk.risk === "MEDIUM" ? "bg-amber-500/10 text-amber-300 border border-amber-500/20" : "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
-                    }`}>
-                      {report.routeRisk.risk}
-                    </span>
-                  </div>
-                  <p className="font-body text-sm text-slate-400 leading-relaxed">{report.routeRisk.reason}</p>
+          {/* Top bar: destination name + altitude badge */}
+          <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="font-display text-xl font-bold text-white truncate">
+                {report.destination.name}
+              </h1>
+              <p className="font-body text-xs text-slate-500 mt-0.5">
+                <MapPin size={11} className="inline mr-1 -mt-0.5" />
+                {report.destination.district}, {report.destination.province}
+                {report.destination.altitude ? <><span className="mx-1.5 text-slate-600">·</span>{report.destination.altitude.toLocaleString()}m</> : ""}
+              </p>
+            </div>
+            <ScoreRing score={report.overallScore} size={68}/>
+          </div>
+
+          {/* Safety badge + date + confidence row */}
+          <div className="px-5 pb-2 flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-body text-xs font-bold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+              <LevelIcon size={12}/>{cfg.label}
+            </span>
+            <span className="font-body text-[11px] text-slate-500">
+              <Calendar size={10} className="inline mr-1 -mt-0.5" />
+              {new Date(report.travelDate).toLocaleDateString("en-NP", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+            <span className="font-body text-[11px] text-slate-500">{report.season}</span>
+            <span className="font-body text-[11px] text-slate-600">{Math.round(report.confidence * 100)}% confidence</span>
+            {isGroup && (
+              <span className="font-body text-[11px] text-slate-500">Group avg: {report.groupAvgScore}/100</span>
+            )}
+          </div>
+
+          {/* AI Verdict */}
+          {report.ai.verdict && (
+            <div className="mx-5 mb-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
+              <div className="flex items-start gap-2">
+                <Sparkles size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="font-body text-sm text-slate-200 leading-relaxed">{report.ai.verdict}</p>
+              </div>
+            </div>
+          )}
+
+          {/* ── AT A GLANCE — 4 quick-summary cards ───────────────────────── */}
+          <div className="px-5 pb-5 grid grid-cols-2 gap-2">
+            {/* Weather */}
+            {report.liveWeather && (
+              <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <CloudRain size={11} className="text-sky-400" />
+                  <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Weather</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const wc = report.liveWeather!.description.toLowerCase();
+                    const emoji = wc.includes("rain") || wc.includes("drizzle") ? "🌧" :
+                      wc.includes("cloud") || wc.includes("overcast") ? "☁️" :
+                      wc.includes("fog") || wc.includes("mist") ? "🌫" :
+                      wc.includes("clear") || wc.includes("sunny") ? "☀️" :
+                      wc.includes("snow") ? "❄️" : "🌤";
+                    return <span className="text-lg">{emoji}</span>;
+                  })()}
+                  <div>
+                    <p className="font-body text-sm font-semibold text-white">{report.liveWeather.temperature}°C</p>
+                    <p className="font-body text-[10px] text-slate-500 capitalize">{report.liveWeather.description}</p>
+                  </div>
+                </div>
+                <div className="mt-1.5 flex gap-3 text-[10px] text-slate-500">
+                  <span>💧 {report.liveWeather.humidity}%</span>
+                  <span>💨 {report.liveWeather.windSpeed}m/s</span>
+                </div>
+              </div>
+            )}
+
+            {/* Hazard */}
+            {report.liveHazard && (
+              <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <AlertTriangle size={11} className="text-orange-400" />
+                  <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Hazard</span>
+                </div>
+                <div className="space-y-1">
+                  {[["🌊 Flood", report.liveHazard.floodIndex], ["🏔 Landslide", report.liveHazard.landslideIndex], ["🌋 EQ", report.liveHazard.earthquakeIndex], ["💨 AQI", report.liveHazard.airQuality]].map(([label, val]) => {
+                    const numVal = val as number;
+                    const pct = Math.min(numVal * 100, 100);
+                    const barColor = pct > 60 ? "bg-red-500" : pct > 30 ? "bg-amber-500" : "bg-emerald-500";
+                    return (
+                      <div key={label as string} className="flex items-center gap-2">
+                        <span className="font-body text-[10px] text-slate-400 w-16 shrink-0">{label as string}</span>
+                        <div className="flex-1 h-1.5 rounded-full bg-slate-700/60 overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor}`} style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Route risk */}
+            {report.routeRisk && (
+              <div className={`rounded-xl p-3 border ${report.routeRisk.risk === "HIGH" || report.routeRisk.risk === "MEDIUM" ? "bg-orange-500/8 border-orange-500/20" : "bg-emerald-500/8 border-emerald-500/20"}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <Navigation size={11} className={report.routeRisk.risk === "HIGH" ? "text-orange-400" : "text-emerald-400"} />
+                    <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Route Risk</span>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    report.routeRisk.risk === "HIGH" ? "text-orange-300 border-orange-500/20 bg-orange-500/10" :
+                    report.routeRisk.risk === "MEDIUM" ? "text-amber-300 border-amber-500/20 bg-amber-500/10" :
+                    "text-emerald-300 border-emerald-500/20 bg-emerald-500/10"
+                  }`}>{report.routeRisk.risk}</span>
+                </div>
+                <p className="font-body text-[11px] text-slate-400 leading-relaxed line-clamp-2">{report.routeRisk.reason}</p>
+              </div>
+            )}
+
+            {/* Trip type */}
+            <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Users size={11} className="text-indigo-400" />
+                <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Trip</span>
+              </div>
+              <p className="font-body text-sm font-semibold text-white">{isGroup ? "Group Trip" : "Solo Trip"}</p>
+              {isGroup && report.mostVulnerableMember && (
+                <p className="font-body text-[10px] text-orange-400 mt-0.5">Most vulnerable: {report.mostVulnerableMember.name}</p>
+              )}
+              {report.budget.specified > 0 && (
+                <p className="font-body text-[10px] text-slate-500 mt-0.5">Budget: NPR {report.budget.specified.toLocaleString()}</p>
               )}
             </div>
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-800 flex items-start gap-2">
-            <Calendar size={13} className="text-slate-500 flex-shrink-0 mt-0.5"/>
-            <p className="font-body text-xs text-slate-400 leading-relaxed">{report.seasonalContext}</p>
+
+          {/* Seasonal context */}
+          <div className="mx-5 mb-4 px-3 py-2 rounded-lg bg-slate-800/30 border border-slate-700/30 flex items-start gap-2">
+            <Calendar size={12} className="text-slate-500 flex-shrink-0 mt-0.5" />
+            <p className="font-body text-[11px] text-slate-400 leading-relaxed">{report.seasonalContext}</p>
           </div>
         </div>
 
-        {/* ── WHY UNSAFE — shown first and prominently ─────────────────────── */}
+        {/* ── WHY UNSAFE — shown immediately after hero ────────────────────── */}
         {isUnsafe && report.ai.whyUnsafe && (
-          <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.05)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <AlertCircle size={15} className="text-red-400"/>
-              <h3 className="font-display font-bold text-red-300 text-sm">Why this destination is unsafe</h3>
+          <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(239,68,68,0.35)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                <AlertCircle size={13} className="text-red-400" />
+              </div>
+              <h3 className="font-display font-bold text-sm text-red-300">Not recommended — here&apos;s why</h3>
             </div>
-            <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.whyUnsafe}</p>
+            <p className="font-body text-sm text-slate-300 leading-relaxed ml-8">{report.ai.whyUnsafe}</p>
           </div>
         )}
 
@@ -1039,11 +1129,11 @@ function PlanInner() {
             <RouteMapLoader
               startLat={displayOriginLat}
               startLon={displayOriginLon}
-              endLat={report.destination.altitude ? 27.7 : 27.7} // Use actual destination coords if available
-              endLon={report.destination.altitude ? 85.3 : 85.3}
+              endLat={report.destination.latitude}
+              endLon={report.destination.longitude}
               originName="Your Location"
               destinationName={report.destination.name}
-              riskLevel={report.overallLevel}
+              riskLevel={report.overallLevel === "SAFE" ? "LOW" : report.overallLevel === "CAUTION" ? "MEDIUM" : report.overallLevel === "HIGH_RISK" ? "HIGH" : "EXTREME"}
             />
           </div>
         )}
@@ -1142,25 +1232,34 @@ function PlanInner() {
         {/* ── Risk factors ─────────────────────────────────────────────────── */}
         {report.riskFactors.length > 0 && (
           <Section title={`Risk Factors (${report.riskFactors.length})`} icon={AlertTriangle} defaultOpen={isUnsafe}>
-            {riskFactorsVisible.map((f, i) => (
-              <div key={i} className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                <div className="flex items-start justify-between gap-2 mb-1 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <span className="font-body font-semibold text-sm text-white">{f.name}</span>
-                    <span className={`px-2 py-0.5 rounded-full border text-[10px] font-body font-bold uppercase ${SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR["LOW"]}`}>{f.severity}</span>
+            <div className="pt-3 space-y-2">
+              {riskFactorsVisible.map((f, i) => {
+                const severityPct = f.severity === "CRITICAL" ? 100 : f.severity === "HIGH" ? 75 : f.severity === "MEDIUM" ? 50 : 25;
+                const barColor = f.severity === "CRITICAL" || f.severity === "HIGH" ? "bg-red-500" : f.severity === "MEDIUM" ? "bg-amber-500" : "bg-emerald-500";
+                return (
+                  <div key={i} className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-body font-semibold text-sm text-white truncate">{f.name}</span>
+                        <span className={`px-1.5 py-0.5 rounded border text-[10px] font-body font-bold uppercase shrink-0 ${SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR["LOW"]}`}>{f.severity}</span>
+                      </div>
+                      <span className="font-body text-[11px] text-slate-500 font-mono shrink-0">-{f.score}pts</span>
+                    </div>
+                    <div className="w-full h-1.5 rounded-full bg-slate-700/60 mb-1.5 overflow-hidden">
+                      <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${severityPct}%` }} />
+                    </div>
+                    <p className="font-body text-xs text-slate-400 leading-relaxed">{f.description}</p>
                   </div>
-                  <span className="font-body text-xs text-slate-500">-{f.score}pts</span>
-                </div>
-                <p className="font-body text-xs text-slate-400 leading-relaxed">{f.description}</p>
-              </div>
-            ))}
+                );
+              })}
+            </div>
             {report.riskFactors.length > 3 && (
               <button
                 type="button"
                 onClick={() => setShowAllRiskFactors((v) => !v)}
-                className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30"
+                className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30 transition-colors"
               >
-                {showAllRiskFactors ? "Show fewer risk factors" : `Show ${report.riskFactors.length - 3} more risk factors`}
+                {showAllRiskFactors ? "Show fewer" : `Show ${report.riskFactors.length - 3} more`}
               </button>
             )}
           </Section>
@@ -1248,6 +1347,52 @@ function PlanInner() {
   }
 
   // ── Form view ─────────────────────────────────────────────────────────────
+
+  if (submitting) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 pb-16 space-y-4">
+        {/* Skeleton: hero card */}
+        <div className="plan-card rounded-2xl p-6 animate-pulse">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 space-y-3">
+              <div className="h-5 w-48 rounded bg-slate-700/60" />
+              <div className="h-3 w-32 rounded bg-slate-700/40" />
+              <div className="flex gap-2">
+                <div className="h-6 w-28 rounded-full bg-slate-700/50" />
+                <div className="h-6 w-20 rounded-full bg-slate-700/30" />
+              </div>
+            </div>
+            <div className="w-16 h-16 rounded-full bg-slate-700/50" />
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="h-12 w-full rounded-xl bg-slate-700/30" />
+            <div className="h-12 w-full rounded-xl bg-slate-700/20" />
+          </div>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="h-24 rounded-xl bg-slate-700/30" />
+            <div className="h-24 rounded-xl bg-slate-700/30" />
+            <div className="h-24 rounded-xl bg-slate-700/30" />
+            <div className="h-24 rounded-xl bg-slate-700/30" />
+          </div>
+        </div>
+        {/* Skeleton: AI verdict */}
+        <div className="plan-card rounded-2xl p-5 animate-pulse">
+          <div className="h-3 w-36 rounded bg-slate-700/40 mb-3" />
+          <div className="space-y-2">
+            <div className="h-3 w-full rounded bg-slate-700/30" />
+            <div className="h-3 w-4/5 rounded bg-slate-700/30" />
+            <div className="h-3 w-3/5 rounded bg-slate-700/30" />
+          </div>
+        </div>
+        <div className="flex justify-center pt-2">
+          <div className="flex items-center gap-2 text-slate-500">
+            <Loader2 size={14} className="animate-spin" />
+            <span className="font-body text-xs">Analysing trip safety for {destination?.name}…</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto px-4 pb-16">

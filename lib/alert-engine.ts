@@ -4,6 +4,8 @@
  * PURPOSE: Dynamic, rule-based alert generation from route + disaster + weather data.
  */
 
+import { haversineKm } from "@/lib/routing/geo";
+
 export type AlertDisasterType = "landslide" | "flood" | "earthquake";
 export type AlertRegion = "Terai" | "Hill" | "Mountain";
 
@@ -34,19 +36,6 @@ export interface AlertEngineInput {
 
 const LOCATION_CACHE_TTL_MS = 30 * 60 * 1000;
 const locationCache = new Map<string, { expiresAt: number; value: string | null }>();
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 function minDistanceKm(routePoints: RoutePoint[], lat: number, lon: number): number {
   if (!routePoints.length) return Number.POSITIVE_INFINITY;

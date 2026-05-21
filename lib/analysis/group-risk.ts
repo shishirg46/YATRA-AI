@@ -198,7 +198,7 @@ export async function assessRouteSegment(from: StopInput, to: StopInput): Promis
 
   const samples: Sample[] = await Promise.all(pathPoints.map(async (point) => {
     const [weatherResult, hazard] = await Promise.all([
-      fetchWeather(point.lat, point.lon, { fastMode: true, allowNearbyFallback: false, openMeteoTimeoutsMs: [3500] }),
+      fetchWeather(point.lat, point.lon),
       fetchHazard(from.district || to.district, point.lat, point.lon),
     ]);
     const weather = weatherResult ?? {
@@ -210,6 +210,8 @@ export async function assessRouteSegment(from: StopInput, to: StopInput): Promis
       description: "fallback:weather",
       source:      "fallback",
       timestamp:   new Date().toISOString(),
+      sourceLabel: "Fallback",
+      officialSource: false,
     };
 
     return {

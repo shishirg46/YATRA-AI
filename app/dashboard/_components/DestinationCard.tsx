@@ -4,7 +4,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Compass, Eye, MapPin, Navigation, Route, X } from "lucide-react";
+import {
+  AlertTriangle, Compass, Droplet, Eye, MapPin, Navigation, Route,
+  Thermometer, Wind, X, Mountain, TreePine, Landmark, Tent, Waves,
+  Binoculars, Building2,
+} from "lucide-react";
 import { Destination } from "./types";
 import { SafetyBadge, ScoreRing } from "./ui";
 import { OverlayPortal } from "@/components/overlay-portal";
@@ -72,6 +76,19 @@ type PipelineRisk = {
   evidence?: { weather?: { rain_mm_per_hr?: number; wind_kph?: number }; realtimeCount?: number; historicalCount?: number };
 };
 
+type LiveWeather = {
+  temperature: number;
+  humidity: number;
+  rainfall: number;
+  windSpeed: number;
+  description?: string | null;
+  source?: string | null;
+  sourceLabel?: string | null;
+  officialSource?: boolean;
+  stationName?: string;
+  stationDistanceKm?: number;
+};
+
 const summaryCache = new Map<string, RouteSummary>();
 const detailCache = new Map<string, RouteDetail[]>();
 
@@ -121,6 +138,7 @@ export function DestinationCard({
   originAlreadyResolved = false,
   onRequestLocation,
   requestingLocation,
+  onOpenManualLocation,
   shouldFetchRoute = true,
 }: {
   dest: Destination;
@@ -137,6 +155,7 @@ export function DestinationCard({
   originAlreadyResolved?: boolean;
   onRequestLocation?: () => void;
   requestingLocation?: boolean;
+  onOpenManualLocation?: () => void;
   shouldFetchRoute?: boolean;
 }) {
   const router = useRouter();
@@ -149,6 +168,43 @@ export function DestinationCard({
   const [routeDetailsError, setRouteDetailsError] = useState<string | null>(null);
   const [pipelineRiskByRoute, setPipelineRiskByRoute] = useState<Record<number, PipelineRisk | null>>({});
   const [loadingPipelineRisk, setLoadingPipelineRisk] = useState(false);
+  const [liveWeather, setLiveWeather] = useState<LiveWeather | null>(null);
+  const [loadingLiveWeather, setLoadingLiveWeather] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+
+    async function loadLiveWeather() {
+      setLoadingLiveWeather(true);
+      try {
+        const res = await fetch(`/api/destinations/${dest.id}/live`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        if (!res.ok || cancelled) {
+          if (!cancelled) setLiveWeather(null);
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled && data?.weather) {
+          setLiveWeather(data.weather as LiveWeather);
+        } else if (!cancelled) {
+          setLiveWeather(null);
+        }
+      } catch {
+        if (!cancelled) setLiveWeather(null);
+      } finally {
+        if (!cancelled) setLoadingLiveWeather(false);
+      }
+    }
+
+    loadLiveWeather();
+    return () => {
+      cancelled = true;
+      controller.abort();
+    };
+  }, [dest.id]);
 
   useEffect(() => {
     if (!shouldFetchRoute || !userLat || !userLon || !dest.latitude || !dest.longitude) {
@@ -297,42 +353,68 @@ export function DestinationCard({
     router.push(`/plan?${params.toString()}`);
   }
 
-  const weatherSourceText = dest.weather?.sourceLabel || dest.weather?.source || null;
+  const activeWeather = liveWeather ?? dest.weather;
+
+  const CATEGORY_META: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
+    TEMPLE:              { icon: <Landmark size={14} />,  color: "text-orange-400",  label: "Temple" },
+    TOURIST_ATTRACTION:  { icon: <Building2 size={14} />, color: "text-rose-400",    label: "Attraction" },
+    VIEWPOINT:           { icon: <Binoculars size={14} />,color: "text-violet-400",  label: "Viewpoint" },
+    LAKE:                { icon: <Waves size={14} />,     color: "text-sky-400",     label: "Lake" },
+    MOUNTAIN:            { icon: <Mountain size={14} />,  color: "text-slate-300",   label: "Mountain" },
+    FOREST:              { icon: <TreePine size={14} />,  color: "text-emerald-400", label: "Forest" },
+    CAMP:                { icon: <Tent size={14} />,      color: "text-amber-400",   label: "Camp" },
+    HILL:                { icon: <Mountain size={14} />,  color: "text-stone-400",   label: "Hill" },
+    TREKKING_VILLAGE:    { icon: <Tent size={14} />,      color: "text-lime-400",   label: "Trek Village" },
+    RIVERSIDE:           { icon: <Waves size={14} />,     color: "text-cyan-400",   label: "Riverside" },
+    WATERFALL:           { icon: <Droplet size={14} />,   color: "text-blue-400",   label: "Waterfall" },
+  };
+  const catMeta = CATEGORY_META[dest.category] ?? null;
 
   return (
     <>
       <div
-        className={`destination-card p-5 flex flex-col ${highlighted ? "border-amber-400/20" : ""}`}
+        className={`destination-card p-5 flex flex-col gap-3 ${highlighted ? "border-amber-400/20" : ""}`}
         style={{ animation: `fadeUp .4s ease ${index * 0.03}s both` }}
       >
-        <div className="flex items-start justify-between gap-3 mb-3">
+        {/* ── Header: name + badges + score ring ── */}
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <Link onClick={() => trackBehavior("view_details")} href={`/destinations/${dest.id}`} className="hover:text-amber-400 transition-colors"><h3 className="font-display font-bold text-white text-base leading-tight truncate group-hover:text-amber-400">{dest.name}</h3></Link>
+              {catMeta && (
+                <span className={`shrink-0 ${catMeta.color}`}>{catMeta.icon}</span>
+              )}
+              <Link
+                onClick={() => trackBehavior("view_details")}
+                href={`/destinations/${encodeURIComponent(dest.name)}`}
+                className="hover:text-amber-400 transition-colors"
+              >
+                <h3 className="font-display font-bold text-white text-base leading-tight truncate">
+                  {dest.name}
+                </h3>
+              </Link>
               {isNearby && (
                 <span className="shrink-0 px-2 py-0.5 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-400 font-body text-[10px] font-semibold uppercase tracking-wider">Nearby</span>
               )}
-              {highlighted && dest.safetyLevel === "SAFE" && (
-                <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 font-body text-[10px] font-semibold uppercase tracking-wider">✦ Recommended</span>
+              {dest.verified === true && (
+                <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 font-body text-[10px] font-semibold uppercase tracking-wider">Verified</span>
               )}
             </div>
             <div className="flex items-center gap-1.5">
               <MapPin size={11} className="text-slate-500 flex-shrink-0" />
-              <span className="font-body text-xs text-slate-500 truncate">{dest.district}, {dest.province}</span>
+              <span className="font-body text-xs text-slate-500 truncate">
+                {dest.district}, {dest.province}
+                {dest.altitude != null && dest.altitude > 0 && (
+                  <span className="text-slate-600 ml-1">· {dest.altitude.toLocaleString()}m</span>
+                )}
+              </span>
             </div>
           </div>
           <ScoreRing score={dest.safetyScore} />
         </div>
 
-        <div className="flex items-center justify-between mb-3">
-          <SafetyBadge level={dest.safetyLevel} />
-          {dest.altitude != null && dest.altitude > 0 && (
-            <span className="font-body text-xs text-slate-600">{dest.altitude.toLocaleString()}m</span>
-          )}
-        </div>
-
+        {/* ── Risk alert ── */}
         {(dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME") && (
-          <div className={`flex items-start gap-2 px-3 py-2 rounded-lg mb-3 text-xs font-body ${
+          <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-body ${
             dest.safetyLevel === "EXTREME"
               ? "bg-red-500/10 border border-red-500/20 text-red-400"
               : "bg-orange-500/10 border border-orange-500/20 text-orange-400"
@@ -346,10 +428,51 @@ export function DestinationCard({
           </div>
         )}
 
+        {/* ── Safety + Category row ── */}
+        <div className="flex items-center justify-between">
+          <SafetyBadge level={dest.safetyLevel} />
+          {catMeta && (
+            <span className={`inline-flex items-center gap-1 font-body text-xs ${catMeta.color}`}>
+              {catMeta.icon}{catMeta.label}
+            </span>
+          )}
+        </div>
+
+        {/* ── Live weather ── */}
+        {loadingLiveWeather && !activeWeather ? (
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3 text-xs text-slate-400 animate-pulse">
+            Loading weather…
+          </div>
+        ) : activeWeather ? (
+          <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-[10px] uppercase tracking-wider text-sky-300">
+              <span>Weather</span>
+              {activeWeather.description && (
+                <span className="normal-case tracking-normal text-slate-400">{activeWeather.description}</span>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
+                <Thermometer size={13} className="text-amber-300" />
+                {activeWeather.temperature.toFixed(1)}°C
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
+                <Droplet size={13} className="text-sky-300" />
+                {activeWeather.rainfall.toFixed(1)}mm
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
+                <Wind size={13} className="text-cyan-300" />
+                {activeWeather.windSpeed.toFixed(1)}m/s
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {/* ── Route info ── */}
         {loadingSummary ? (
-          <div className="mb-3 p-3 rounded-xl bg-slate-800/50 animate-pulse h-14" />
+          <div className="rounded-xl bg-slate-800/50 animate-pulse h-12" />
         ) : routeSummary ? (
-          <div className="mb-3 p-3 rounded-xl bg-slate-800/50">
+          <div className="rounded-xl bg-slate-800/50 px-4 py-3">
             <div className="flex items-center justify-between gap-2">
               <div className="inline-flex items-center gap-2">
                 <Route size={14} className="text-amber-400" />
@@ -360,66 +483,67 @@ export function DestinationCard({
               <button
                 type="button"
                 onClick={openRouteDetails}
-                className="px-2 py-1 rounded-md border border-slate-600 text-slate-200 hover:text-white hover:border-slate-500 transition-colors text-xs"
+                className="px-3 py-1 rounded-md border border-slate-600 text-slate-200 hover:text-white hover:border-slate-500 transition-colors text-xs"
               >
                 View
               </button>
             </div>
           </div>
-        ) : (
-          <div className="mb-3 p-3 rounded-xl bg-slate-800/50 text-xs text-slate-500">
-            <div className="flex items-center justify-between gap-2">
-              <span className="inline-flex items-center">
-                <Navigation size={12} className="inline mr-1" />
+        ) : shouldFetchRoute ? (
+          <div className="rounded-xl bg-slate-800/50 px-4 py-3 text-xs text-slate-500">
+            <div className="flex flex-col gap-2">
+              <span className="inline-flex items-center gap-1.5">
+                <Navigation size={12} />
                 Set your location to see routes
               </span>
-              {onRequestLocation && (
-                <button
-                  type="button"
-                  onClick={onRequestLocation}
-                  disabled={requestingLocation}
-                  className="px-2 py-1 rounded-md border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
-                >
-                  {requestingLocation ? "Requesting…" : "Enable"}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {onRequestLocation && (
+                  <button
+                    type="button"
+                    onClick={onRequestLocation}
+                    disabled={requestingLocation}
+                    className="flex-1 px-3 py-1.5 rounded-md border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+                  >
+                    {requestingLocation ? "Requesting…" : "Enable GPS"}
+                  </button>
+                )}
+                {onOpenManualLocation && (
+                  <button
+                    type="button"
+                    onClick={onOpenManualLocation}
+                    className="flex-1 px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/5"
+                  >
+                    Set Manually
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {dest.weather?.description && (
-          <div className="mb-3 space-y-1">
-            {weatherSourceText && (
-              <p className="font-body text-[11px] text-sky-300">
-                {weatherSourceText}
-                {dest.weather.stationName ? ` · ${dest.weather.officialSource ? "Station" : "Nearest DHM"}: ${dest.weather.stationName}` : ""}
-                {typeof dest.weather.stationDistanceKm === "number" ? ` (${dest.weather.stationDistanceKm.toFixed(1)} km)` : ""}
-              </p>
-            )}
-            <p className="font-body text-xs text-slate-400">{dest.weather.description}</p>
-          </div>
-        )}
-
-        {dest.reasoning?.[0] && (
-          <p className="font-body text-xs text-slate-500 leading-relaxed line-clamp-2 mb-3">
-            {dest.reasoning[0]}
-          </p>
-        )}
-
+        {/* ── Bottom bar ── */}
         <div className="mt-auto pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <span className="font-body text-xs text-slate-600">
-              {dest.confidence != null ? `${(dest.confidence * 100).toFixed(0)}% confidence` : "—"}
-            </span>
-            <Link onClick={() => trackBehavior("view_details")} href={`/destinations/${dest.id}`} className="flex items-center gap-1 font-body text-xs text-slate-500 hover:text-amber-400 transition-colors">
+            {dest.verified === true ? (
+              <span className="font-body text-xs text-emerald-500">Verified</span>
+            ) : dest.confidence != null ? (
+              <span className="font-body text-xs text-slate-500">
+                {(dest.confidence * 100).toFixed(0)}% match
+              </span>
+            ) : null}
+            <Link
+              onClick={() => trackBehavior("view_details")}
+              href={`/destinations/${encodeURIComponent(dest.name)}`}
+              className="flex items-center gap-1 font-body text-xs text-slate-500 hover:text-amber-400 transition-colors"
+            >
               <Eye size={11} /> Details
             </Link>
           </div>
           <button
             onClick={handlePlanTrip}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-semibold transition-all bg-amber-500 hover:bg-amber-400 text-slate-900"
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-body font-semibold transition-all bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-sm shadow-amber-500/20"
           >
-            <Compass size={12} /> Plan Trip
+            <Compass size={13} /> Plan Trip
           </button>
         </div>
       </div>
@@ -444,6 +568,184 @@ export function DestinationCard({
         />
       )}
     </>
+  );
+}
+
+function RouteCard({
+  route,
+  pipelineRisk,
+  loadingPipelineRisk,
+}: {
+  route: RouteDetail;
+  pipelineRisk: PipelineRisk | null | undefined;
+  loadingPipelineRisk: boolean;
+}) {
+  const { riskLevel, riskScore } = route;
+  const riskPct = Math.round((riskScore ?? 0) * 100);
+
+  const riskColor: Record<string, { text: string; bg: string; border: string; bar: string }> = {
+    LOW:     { text: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/25", bar: "bg-emerald-400" },
+    MEDIUM:  { text: "text-amber-400",   bg: "bg-amber-400/10",   border: "border-amber-400/25",   bar: "bg-amber-400" },
+    HIGH:    { text: "text-orange-400",  bg: "bg-orange-400/10",  border: "border-orange-400/25",  bar: "bg-orange-400" },
+    EXTREME: { text: "text-red-400",     bg: "bg-red-400/10",     border: "border-red-400/25",     bar: "bg-red-400" },
+  };
+  const rc = riskColor[riskLevel] ?? riskColor.MEDIUM;
+
+  const segmentRiskColor = (level: string) => {
+    if (level === "LOW")    return { dot: "bg-emerald-400", text: "text-emerald-400", bg: "bg-emerald-400/8", border: "border-emerald-400/20" };
+    if (level === "MEDIUM") return { dot: "bg-amber-400",   text: "text-amber-400",   bg: "bg-amber-400/8",   border: "border-amber-400/20" };
+    if (level === "HIGH")   return { dot: "bg-orange-400",  text: "text-orange-400",  bg: "bg-orange-400/8",  border: "border-orange-400/20" };
+    return { dot: "bg-red-400",      text: "text-red-400",     bg: "bg-red-400/8",     border: "border-red-400/20" };
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-700/70 bg-slate-800/50 overflow-hidden">
+      {/* Route header */}
+      <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-lg ${rc.bg} border ${rc.border} flex items-center justify-center`}>
+            <Route size={15} className={rc.text} />
+          </div>
+          <div>
+            <p className="font-display text-sm font-semibold text-white">{route.name}</p>
+            <p className="font-body text-[11px] text-slate-500">
+              {route.distance.toFixed(1)} km · {Math.round(route.duration / 60)} min
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`font-body text-xs font-semibold ${rc.text}`}>{riskLevel}</span>
+          <div className="relative w-20 h-2 rounded-full bg-slate-700 overflow-hidden">
+            <div className={`absolute inset-y-0 left-0 rounded-full ${rc.bar} transition-all`} style={{ width: `${riskPct}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Route segments */}
+      {route.segments.length > 0 && (
+        <div className="px-4 py-3 border-b border-slate-700/50">
+          <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest mb-2 font-semibold">Segments</p>
+          <div className="space-y-1.5">
+            {route.segments.map((seg, si) => {
+              const sc = segmentRiskColor(seg.riskLevel);
+              return (
+                <div key={si} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${sc.border} ${sc.bg}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${sc.dot} shrink-0`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-body text-xs text-slate-200 truncate">
+                      {seg.from.name ?? "Start"} → {seg.to.name ?? "End"}
+                    </p>
+                    {seg.hazards.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {seg.hazards.map((h, hi) => (
+                          <span key={hi} className="px-1.5 py-0.5 rounded text-[9px] font-body bg-slate-700/60 text-slate-400">{h}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <span className={`font-body text-[11px] font-medium ${sc.text} shrink-0`}>{seg.riskLevel}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Breakpoints as a visual path */}
+          {Array.isArray(route.breakpoints) && route.breakpoints.length > 0 && (
+            <div className="mt-3">
+              <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest mb-1.5 font-semibold">Route Path</p>
+              <div className="px-3 py-2 rounded-lg border border-slate-700/70 bg-slate-950/40">
+                <div className="h-0.5 w-full bg-gradient-to-r from-amber-500/80 via-sky-400/70 to-emerald-400/70 rounded-full mb-2.5" />
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {compactBreakpointNames(route).map((name, nidx, arr) => (
+                    <span key={`${name}-${nidx}`} className="inline-flex items-center gap-1">
+                      <span className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700/70 text-[11px] font-body text-slate-300 leading-tight">{name}</span>
+                      {nidx < arr.length - 1 && <span className="text-slate-600 text-[10px]">→</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pipeline risk breakdown */}
+      {loadingPipelineRisk && (
+        <div className="px-4 py-3 animate-pulse">
+          <div className="h-3 w-32 bg-slate-700 rounded mb-2" />
+          <div className="h-2 w-full bg-slate-700 rounded" />
+        </div>
+      )}
+      {!loadingPipelineRisk && pipelineRisk && (
+        <div className="px-4 py-3 border-b border-slate-700/50 last:border-0">
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Pipeline Risk</p>
+            <span className={`font-body text-xs font-semibold ${pipelineRisk.riskLevel === "LOW" ? "text-emerald-400" : pipelineRisk.riskLevel === "MEDIUM" ? "text-amber-400" : "text-orange-400"}`}>
+              {pipelineRisk.riskLevel} ({pipelineRisk.riskPercent}%)
+            </span>
+          </div>
+
+          {/* Stacked bar */}
+          <div className="h-3 w-full rounded-full bg-slate-700 flex overflow-hidden mb-2">
+            {[
+              { label: "Weather",  pct: pipelineRisk.breakdown.weather,  color: "bg-sky-400" },
+              { label: "Realtime", pct: pipelineRisk.breakdown.realtime, color: "bg-amber-400" },
+              { label: "History",  pct: pipelineRisk.breakdown.historical, color: "bg-violet-400" },
+              { label: "Terrain",  pct: pipelineRisk.breakdown.terrain, color: "bg-emerald-400" },
+            ].map((b) => (
+              <div key={b.label} className={`${b.color} h-full`} style={{ width: `${b.pct}%` }} title={`${b.label}: ${b.pct}%`} />
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] font-body text-slate-500">
+            {[
+              { label: "Weather",  pct: pipelineRisk.breakdown.weather,  color: "bg-sky-400" },
+              { label: "Realtime", pct: pipelineRisk.breakdown.realtime, color: "bg-amber-400" },
+              { label: "History",  pct: pipelineRisk.breakdown.historical, color: "bg-violet-400" },
+              { label: "Terrain",  pct: pipelineRisk.breakdown.terrain, color: "bg-emerald-400" },
+            ].map((b) => (
+              <span key={b.label} className="inline-flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full ${b.color}`} />
+                {b.label} {b.pct}%
+              </span>
+            ))}
+          </div>
+
+          {pipelineRisk.evidence && (
+            <div className="flex flex-wrap gap-2 mt-2 text-[10px] font-body text-slate-500">
+              {pipelineRisk.evidence.realtimeCount != null && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 border border-slate-700/50">
+                  Realtime: {pipelineRisk.evidence.realtimeCount} events
+                </span>
+              )}
+              {pipelineRisk.evidence.historicalCount != null && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 border border-slate-700/50">
+                  Historical: {pipelineRisk.evidence.historicalCount} points
+                </span>
+              )}
+              {pipelineRisk.evidence.weather?.rain_mm_per_hr != null && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-800 border border-slate-700/50">
+                  Rain: {pipelineRisk.evidence.weather.rain_mm_per_hr} mm/h
+                </span>
+              )}
+            </div>
+          )}
+
+          {pipelineRisk.alerts.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {pipelineRisk.alerts.map((a, ai) => (
+                <span key={ai} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-body bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                  ⚠ {a}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {pipelineRisk.note && (
+            <p className="font-body text-[11px] text-slate-400 mt-2 italic">{pipelineRisk.note}</p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -507,104 +809,107 @@ function RouteModal({
           className="pointer-events-auto w-full max-w-4xl max-h-[85vh] overflow-hidden rounded-xl border border-slate-700 bg-slate-900"
           onClick={(e) => e.stopPropagation()}
         >
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-amber-400/10 border border-amber-400/25 flex items-center justify-center">
+                <Route size={15} className="text-amber-400" />
+              </div>
               <div>
                 <p className="font-display text-white text-base font-semibold">Route Analysis</p>
-                <p className="font-body text-xs text-slate-400">{dest.name}</p>
+                <p className="font-body text-xs text-slate-400">{dest.name}{dest.district ? ` · ${dest.district}` : ""}</p>
               </div>
-              <button type="button" onClick={onClose} className="p-1 rounded text-slate-300 hover:text-white">
+            </div>
+            <div className="flex items-center gap-3">
+              {routeDetails.length > 0 && (
+                <span className="font-body text-[11px] text-slate-500">{routeDetails.length} route{routeDetails.length > 1 ? "s" : ""}</span>
+              )}
+              <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all">
                 <X size={16} />
               </button>
             </div>
-            <div className="p-4 overflow-y-auto max-h-[75vh] space-y-3">
-              {userLat && userLon && dest.latitude && dest.longitude && (
-                <RouteMapLoader
-                  startLat={userLat}
-                  startLon={userLon}
-                  displayStartLat={displayUserLat ?? userLat}
-                  displayStartLon={displayUserLon ?? userLon}
-                  endLat={dest.latitude}
-                  endLon={dest.longitude}
-                  destinationId={dest.id}
-                  destinationName={dest.name}
-                  originName={originName || "Your location"}
-                  originRouteNodeId={originRouteNodeId}
-                  gpsAccuracy={gpsAccuracyMeters}
-                  originAlreadyResolved={originAlreadyResolved}
-                  riskLevel={
-                    (routeDetails[0]?.riskLevel as "LOW" | "MEDIUM" | "HIGH" | "EXTREME") ?? "MEDIUM"
-                  }
-                  height="h-72"
-                />
-              )}
-              {loadingDetails && <p className="font-body text-sm text-slate-400">Loading route hazards and disaster data…</p>}
-              {!loadingDetails && routeDetailsError && (
-                <p className="font-body text-sm text-amber-300">{routeDetailsError}</p>
-              )}
-              {!loadingDetails && !routeDetailsError && routeDetails.length === 0 && (
-                <p className="font-body text-sm text-slate-400">No route details available.</p>
-              )}
-              {!loadingDetails && routeDetails.map((r, idx) => (
-                <div key={r.id ?? `route-${idx}`} className="rounded-lg border p-3 border-slate-700 bg-slate-800/40">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-body text-sm text-white font-semibold text-left">{r.name}</p>
-                    <span className="font-body text-xs text-slate-300">
-                      Risk: {r.riskLevel} ({Math.round((r.riskScore ?? 0) * 100)}%)
-                    </span>
-                  </div>
-                  {Array.isArray(r.breakpoints) && r.breakpoints.length > 0 && (
-                    <div className="mb-2 space-y-1">
-                      <p className="font-body text-xs text-slate-400">
-                        Breakpoints: {r.breakpoints.length}
-                      </p>
-                      <div className="rounded-lg border border-slate-700/70 bg-slate-950/40 px-3 py-2">
-                        <div className="h-0.5 w-full bg-gradient-to-r from-amber-500/80 via-sky-400/70 to-emerald-400/70 rounded-full mb-2" />
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {compactBreakpointNames(r).map((name, nidx, arr) => (
-                            <span key={`${name}-${nidx}`} className="inline-flex items-center gap-1 text-[11px] font-body text-slate-200">
-                              <span className="px-1.5 py-0.5 rounded-md bg-slate-800 border border-slate-700">{name}</span>
-                              {nidx < arr.length - 1 && <span className="text-slate-500">→</span>}
-                            </span>
-                          ))}
-                        </div>
-                        <p className="font-body text-[10px] text-slate-500 mt-2">Highway preview: key breakpoints only</p>
+          </div>
+
+          <div className="p-4 overflow-y-auto max-h-[75vh] space-y-4">
+            {/* Map */}
+            {userLat && userLon && dest.latitude && dest.longitude && (
+              <RouteMapLoader
+                startLat={userLat}
+                startLon={userLon}
+                displayStartLat={displayUserLat ?? userLat}
+                displayStartLon={displayUserLon ?? userLon}
+                endLat={dest.latitude}
+                endLon={dest.longitude}
+                destinationId={dest.id}
+                destinationName={dest.name}
+                originName={originName || "Your location"}
+                originRouteNodeId={originRouteNodeId}
+                gpsAccuracy={gpsAccuracyMeters}
+                originAlreadyResolved={originAlreadyResolved}
+                riskLevel={
+                  (routeDetails[0]?.riskLevel as "LOW" | "MEDIUM" | "HIGH" | "EXTREME") ?? "MEDIUM"
+                }
+                height="h-56"
+              />
+            )}
+
+            {/* Loading */}
+            {loadingDetails && (
+              <div className="space-y-3 animate-pulse">
+                {[1, 2].map((i) => (
+                  <div key={i} className="rounded-xl border border-slate-700/70 bg-slate-800/50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-slate-700/50 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-lg bg-slate-700" />
+                      <div className="flex-1 space-y-1.5">
+                        <div className="h-3 w-40 bg-slate-700 rounded" />
+                        <div className="h-2 w-24 bg-slate-700 rounded" />
                       </div>
                     </div>
-                  )}
-                  <div className="space-y-2">
-                    {loadingPipelineRisk && (
-                      <p className="font-body text-[11px] text-slate-400">Loading pipeline risk…</p>
-                    )}
-                    {!loadingPipelineRisk && pipelineRiskByRoute[idx] && (
-                      <div className="rounded border border-sky-500/30 bg-sky-500/5 p-2">
-                        <p className="font-body text-xs text-sky-200">
-                          Pipeline Risk: {pipelineRiskByRoute[idx]?.riskLevel} ({pipelineRiskByRoute[idx]?.riskPercent}%)
-                        </p>
-                        <p className="font-body text-[11px] text-slate-300">
-                          Breakdown — weather {pipelineRiskByRoute[idx]?.breakdown.weather}% · realtime {pipelineRiskByRoute[idx]?.breakdown.realtime}% · historical {pipelineRiskByRoute[idx]?.breakdown.historical}% · terrain {pipelineRiskByRoute[idx]?.breakdown.terrain}%
-                        </p>
-                        <p className="font-body text-[11px] text-slate-400">
-                          Evidence — realtime events: {pipelineRiskByRoute[idx]?.evidence?.realtimeCount ?? 0}, historical points: {pipelineRiskByRoute[idx]?.evidence?.historicalCount ?? 0}, rain: {pipelineRiskByRoute[idx]?.evidence?.weather?.rain_mm_per_hr ?? 0} mm/h
-                        </p>
-                        {(pipelineRiskByRoute[idx]?.alerts?.length ?? 0) > 0 && (
-                          <p className="font-body text-[11px] text-amber-300">
-                            Alerts: {pipelineRiskByRoute[idx]?.alerts.join(", ")}
-                          </p>
-                        )}
-                        {pipelineRiskByRoute[idx]?.note && (
-                          <p className="font-body text-[11px] text-slate-500">{pipelineRiskByRoute[idx]?.note}</p>
-                        )}
-                      </div>
-                    )}
-                    <p className="font-body text-[11px] text-slate-500">
-                      Detailed segment-by-segment analysis is shown after you click Plan Trip and run Analyse.
-                    </p>
+                    <div className="px-4 py-3 space-y-2">
+                      <div className="h-2 w-full bg-slate-700 rounded" />
+                      <div className="h-2 w-3/4 bg-slate-700 rounded" />
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Error */}
+            {!loadingDetails && routeDetailsError && (
+              <div className="flex items-start gap-3 px-4 py-3 rounded-xl border border-amber-500/20 bg-amber-500/5">
+                <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                <p className="font-body text-sm text-amber-300">{routeDetailsError}</p>
+              </div>
+            )}
+
+            {/* Empty */}
+            {!loadingDetails && !routeDetailsError && routeDetails.length === 0 && (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Route size={32} className="text-slate-700 mb-3" />
+                <p className="font-body text-sm text-slate-500">No route details available for this destination.</p>
+              </div>
+            )}
+
+            {/* Route cards */}
+            {!loadingDetails && routeDetails.map((r, idx) => (
+              <RouteCard
+                key={r.id ?? `route-${idx}`}
+                route={r}
+                pipelineRisk={pipelineRiskByRoute[idx]}
+                loadingPipelineRisk={loadingPipelineRisk}
+              />
+            ))}
+
+            {/* Footer */}
+            {!loadingDetails && routeDetails.length > 0 && (
+              <div className="flex items-center justify-center pt-2">
+                <p className="font-body text-[11px] text-slate-600">
+                  For detailed segment-by-segment analysis with recommendations, click <span className="text-amber-400">Plan Trip</span> and run Analyse.
+                </p>
+              </div>
+            )}
           </div>
         </div>
+      </div>
     </OverlayPortal>
   );
 }

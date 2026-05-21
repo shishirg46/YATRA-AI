@@ -38,7 +38,9 @@ export async function proxy(req: NextRequest) {
       return NextResponse.next();
     }
     // Everything else → sign in
-    return NextResponse.redirect(new URL("/sign-in", req.url));
+    const signInUrl = new URL("/sign-in", req.url);
+    signInUrl.searchParams.set("redirect", pathname);
+    return NextResponse.redirect(signInUrl);
   }
 
   // ── Logged in ──────────────────────────────────────────────────────────────
@@ -54,6 +56,15 @@ export async function proxy(req: NextRequest) {
     pathname === ONBOARDING_ROUTE
   ) {
     return NextResponse.next();
+  }
+
+  // For admin routes, set x-pathname header for role-based layout checks
+  if (pathname.startsWith("/admin")) {
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-pathname", pathname);
+    return NextResponse.next({
+      request: { headers: requestHeaders },
+    });
   }
 
   // All other protected routes — allow through

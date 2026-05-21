@@ -11,12 +11,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse }   from "next/server";
 import { auth }                        from "@/lib/auth";
 import { headers }                     from "next/headers";
-import { PrismaClient, Prisma }        from "@/app/generated/prisma/client";
-import { PrismaPg }                    from "@prisma/adapter-pg";
-import { Pool }                        from "pg";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { Prisma }                      from "@/app/generated/prisma/client";
+import { prisma }                      from "@/lib/prisma";
 
 // ── GET — list plans ──────────────────────────────────────────────────────────
 
@@ -86,6 +82,39 @@ export async function POST(req: NextRequest) {
   if (!endDate)          return NextResponse.json({ message: "End date is required." },          { status: 400 });
   if (!stops?.length)    return NextResponse.json({ message: "At least one stop is required." }, { status: 400 });
 
+  // Resolve stop location IDs — they may be Destination IDs, not Location IDs
+  const resolvedStops = await Promise.all(
+    stops.map(async (s) => {
+      const loc = await prisma.location.findUnique({ where: { id: s.locationId } });
+      if (loc) return { ...s, locationId: loc.id };
+
+      const dest = await prisma.destination.findUnique({ where: { id: s.locationId } });
+      if (dest) {
+        const name = `Stop: ${dest.name}`;
+        let newLoc = await prisma.location.findFirst({
+          where: { latitude: dest.latitude, longitude: dest.longitude },
+        });
+        if (!newLoc) {
+          const district = await prisma.district.findFirst({
+            where: { name: { equals: dest.district, mode: "insensitive" } },
+          });
+          newLoc = await prisma.location.create({
+            data: {
+              name,
+              latitude:  dest.latitude,
+              longitude: dest.longitude,
+              altitude:  dest.altitude ?? null,
+              districtId: district?.id ?? (await prisma.district.findFirst())!.id,
+            },
+          });
+        }
+        return { ...s, locationId: newLoc.id };
+      }
+
+      throw new Error(`Stop location not found: ${s.locationId}`);
+    })
+  );
+
   // Resolve member usernames to user IDs
   const invitedUsers = memberUsernames.length > 0
     ? await prisma.user.findMany({
@@ -106,7 +135,7 @@ export async function POST(req: NextRequest) {
       budgetNPR,
       groupRiskResult: groupRiskResult as Prisma.InputJsonValue | undefined,
       stops: {
-        create: stops.map((s) => ({
+        create: resolvedStops.map((s) => ({
           locationId:    s.locationId,
           stopOrder:     s.stopOrder,
           arrivalDate:   new Date(s.arrivalDate),

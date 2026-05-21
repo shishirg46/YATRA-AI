@@ -240,17 +240,17 @@ export type LocationWhereInput = {
   longitude?: Prisma.FloatFilter<"Location"> | number
   altitude?: Prisma.IntNullableFilter<"Location"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Location"> | Date | string
-  district?: Prisma.XOR<Prisma.DistrictScalarRelationFilter, Prisma.DistrictWhereInput>
-  weatherData?: Prisma.WeatherDataListRelationFilter
   hazardData?: Prisma.HazardDataListRelationFilter
+  district?: Prisma.XOR<Prisma.DistrictScalarRelationFilter, Prisma.DistrictWhereInput>
   riskReports?: Prisma.RiskAssessmentListRelationFilter
-  travelStops?: Prisma.TravelStopListRelationFilter
-  routeOrigins?: Prisma.RouteTemplateListRelationFilter
   routeDestinations?: Prisma.RouteTemplateListRelationFilter
+  routeOrigins?: Prisma.RouteTemplateListRelationFilter
   routePoints?: Prisma.RouteTemplatePointListRelationFilter
-  residents?: Prisma.UserListRelationFilter
   groupTrips?: Prisma.TravelGroupListRelationFilter
+  travelStops?: Prisma.TravelStopListRelationFilter
+  weatherData?: Prisma.WeatherDataListRelationFilter
   place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
+  residents?: Prisma.UserListRelationFilter
 }
 
 export type LocationOrderByWithRelationInput = {
@@ -261,17 +261,17 @@ export type LocationOrderByWithRelationInput = {
   longitude?: Prisma.SortOrder
   altitude?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  district?: Prisma.DistrictOrderByWithRelationInput
-  weatherData?: Prisma.WeatherDataOrderByRelationAggregateInput
   hazardData?: Prisma.HazardDataOrderByRelationAggregateInput
+  district?: Prisma.DistrictOrderByWithRelationInput
   riskReports?: Prisma.RiskAssessmentOrderByRelationAggregateInput
-  travelStops?: Prisma.TravelStopOrderByRelationAggregateInput
-  routeOrigins?: Prisma.RouteTemplateOrderByRelationAggregateInput
   routeDestinations?: Prisma.RouteTemplateOrderByRelationAggregateInput
+  routeOrigins?: Prisma.RouteTemplateOrderByRelationAggregateInput
   routePoints?: Prisma.RouteTemplatePointOrderByRelationAggregateInput
-  residents?: Prisma.UserOrderByRelationAggregateInput
   groupTrips?: Prisma.TravelGroupOrderByRelationAggregateInput
+  travelStops?: Prisma.TravelStopOrderByRelationAggregateInput
+  weatherData?: Prisma.WeatherDataOrderByRelationAggregateInput
   place?: Prisma.PlaceOrderByWithRelationInput
+  residents?: Prisma.UserOrderByRelationAggregateInput
 }
 
 export type LocationWhereUniqueInput = Prisma.AtLeast<{
@@ -286,17 +286,17 @@ export type LocationWhereUniqueInput = Prisma.AtLeast<{
   longitude?: Prisma.FloatFilter<"Location"> | number
   altitude?: Prisma.IntNullableFilter<"Location"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Location"> | Date | string
-  district?: Prisma.XOR<Prisma.DistrictScalarRelationFilter, Prisma.DistrictWhereInput>
-  weatherData?: Prisma.WeatherDataListRelationFilter
   hazardData?: Prisma.HazardDataListRelationFilter
+  district?: Prisma.XOR<Prisma.DistrictScalarRelationFilter, Prisma.DistrictWhereInput>
   riskReports?: Prisma.RiskAssessmentListRelationFilter
-  travelStops?: Prisma.TravelStopListRelationFilter
-  routeOrigins?: Prisma.RouteTemplateListRelationFilter
   routeDestinations?: Prisma.RouteTemplateListRelationFilter
+  routeOrigins?: Prisma.RouteTemplateListRelationFilter
   routePoints?: Prisma.RouteTemplatePointListRelationFilter
-  residents?: Prisma.UserListRelationFilter
   groupTrips?: Prisma.TravelGroupListRelationFilter
+  travelStops?: Prisma.TravelStopListRelationFilter
+  weatherData?: Prisma.WeatherDataListRelationFilter
   place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
+  residents?: Prisma.UserListRelationFilter
 }, "id" | "name_districtId">
 
 export type LocationOrderByWithAggregationInput = {
@@ -334,17 +334,17 @@ export type LocationCreateInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateInput = {
@@ -355,16 +355,16 @@ export type LocationUncheckedCreateInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUpdateInput = {
@@ -374,17 +374,17 @@ export type LocationUpdateInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateInput = {
@@ -395,16 +395,16 @@ export type LocationUncheckedUpdateInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateManyInput = {
@@ -577,24 +577,16 @@ export type LocationUpdateOneWithoutPlaceNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.LocationUpdateToOneWithWhereWithoutPlaceInput, Prisma.LocationUpdateWithoutPlaceInput>, Prisma.LocationUncheckedUpdateWithoutPlaceInput>
 }
 
-export type LocationCreateNestedOneWithoutRouteOriginsInput = {
-  create?: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
-  connectOrCreate?: Prisma.LocationCreateOrConnectWithoutRouteOriginsInput
-  connect?: Prisma.LocationWhereUniqueInput
-}
-
 export type LocationCreateNestedOneWithoutRouteDestinationsInput = {
   create?: Prisma.XOR<Prisma.LocationCreateWithoutRouteDestinationsInput, Prisma.LocationUncheckedCreateWithoutRouteDestinationsInput>
   connectOrCreate?: Prisma.LocationCreateOrConnectWithoutRouteDestinationsInput
   connect?: Prisma.LocationWhereUniqueInput
 }
 
-export type LocationUpdateOneRequiredWithoutRouteOriginsNestedInput = {
+export type LocationCreateNestedOneWithoutRouteOriginsInput = {
   create?: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
   connectOrCreate?: Prisma.LocationCreateOrConnectWithoutRouteOriginsInput
-  upsert?: Prisma.LocationUpsertWithoutRouteOriginsInput
   connect?: Prisma.LocationWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.LocationUpdateToOneWithWhereWithoutRouteOriginsInput, Prisma.LocationUpdateWithoutRouteOriginsInput>, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
 }
 
 export type LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput = {
@@ -603,6 +595,14 @@ export type LocationUpdateOneRequiredWithoutRouteDestinationsNestedInput = {
   upsert?: Prisma.LocationUpsertWithoutRouteDestinationsInput
   connect?: Prisma.LocationWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.LocationUpdateToOneWithWhereWithoutRouteDestinationsInput, Prisma.LocationUpdateWithoutRouteDestinationsInput>, Prisma.LocationUncheckedUpdateWithoutRouteDestinationsInput>
+}
+
+export type LocationUpdateOneRequiredWithoutRouteOriginsNestedInput = {
+  create?: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
+  connectOrCreate?: Prisma.LocationCreateOrConnectWithoutRouteOriginsInput
+  upsert?: Prisma.LocationUpsertWithoutRouteOriginsInput
+  connect?: Prisma.LocationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.LocationUpdateToOneWithWhereWithoutRouteOriginsInput, Prisma.LocationUpdateWithoutRouteOriginsInput>, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
 }
 
 export type LocationCreateNestedOneWithoutRoutePointsInput = {
@@ -698,15 +698,15 @@ export type LocationCreateWithoutResidentsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
 }
 
@@ -718,14 +718,14 @@ export type LocationUncheckedCreateWithoutResidentsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
 }
 
@@ -752,15 +752,15 @@ export type LocationUpdateWithoutResidentsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
 }
 
@@ -772,14 +772,14 @@ export type LocationUncheckedUpdateWithoutResidentsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
 }
 
@@ -790,16 +790,16 @@ export type LocationCreateWithoutDistrictInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutDistrictInput = {
@@ -809,16 +809,16 @@ export type LocationUncheckedCreateWithoutDistrictInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutDistrictInput = {
@@ -867,16 +867,16 @@ export type LocationCreateWithoutPlaceInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutPlaceInput = {
@@ -887,15 +887,15 @@ export type LocationUncheckedCreateWithoutPlaceInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutPlaceInput = {
@@ -921,16 +921,16 @@ export type LocationUpdateWithoutPlaceInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutPlaceInput = {
@@ -941,58 +941,15 @@ export type LocationUncheckedUpdateWithoutPlaceInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
-}
-
-export type LocationCreateWithoutRouteOriginsInput = {
-  id?: string
-  name: string
-  latitude: number
-  longitude: number
-  altitude?: number | null
-  createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
-  hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
-  riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
-  routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
-  groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
-  place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
-}
-
-export type LocationUncheckedCreateWithoutRouteOriginsInput = {
-  id?: string
-  name: string
-  districtId: string
-  latitude: number
-  longitude: number
-  altitude?: number | null
-  createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
-  hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
-  riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
-  routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
-  groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
-  place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
-}
-
-export type LocationCreateOrConnectWithoutRouteOriginsInput = {
-  where: Prisma.LocationWhereUniqueInput
-  create: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutRouteDestinationsInput = {
@@ -1002,16 +959,16 @@ export type LocationCreateWithoutRouteDestinationsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
   routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutRouteDestinationsInput = {
@@ -1022,15 +979,15 @@ export type LocationUncheckedCreateWithoutRouteDestinationsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
   routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutRouteDestinationsInput = {
@@ -1038,53 +995,47 @@ export type LocationCreateOrConnectWithoutRouteDestinationsInput = {
   create: Prisma.XOR<Prisma.LocationCreateWithoutRouteDestinationsInput, Prisma.LocationUncheckedCreateWithoutRouteDestinationsInput>
 }
 
-export type LocationUpsertWithoutRouteOriginsInput = {
-  update: Prisma.XOR<Prisma.LocationUpdateWithoutRouteOriginsInput, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
+export type LocationCreateWithoutRouteOriginsInput = {
+  id?: string
+  name: string
+  latitude: number
+  longitude: number
+  altitude?: number | null
+  createdAt?: Date | string
+  hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
+  riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
+  routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
+  groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
+  place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
+}
+
+export type LocationUncheckedCreateWithoutRouteOriginsInput = {
+  id?: string
+  name: string
+  districtId: string
+  latitude: number
+  longitude: number
+  altitude?: number | null
+  createdAt?: Date | string
+  hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
+  riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
+  routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
+  groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
+  place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
+}
+
+export type LocationCreateOrConnectWithoutRouteOriginsInput = {
+  where: Prisma.LocationWhereUniqueInput
   create: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
-  where?: Prisma.LocationWhereInput
-}
-
-export type LocationUpdateToOneWithWhereWithoutRouteOriginsInput = {
-  where?: Prisma.LocationWhereInput
-  data: Prisma.XOR<Prisma.LocationUpdateWithoutRouteOriginsInput, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
-}
-
-export type LocationUpdateWithoutRouteOriginsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
-  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
-  altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
-  hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
-  riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
-  routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
-  groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
-  place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
-}
-
-export type LocationUncheckedUpdateWithoutRouteOriginsInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  districtId?: Prisma.StringFieldUpdateOperationsInput | string
-  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
-  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
-  altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
-  hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
-  riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
-  routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
-  groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
-  place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
 }
 
 export type LocationUpsertWithoutRouteDestinationsInput = {
@@ -1105,16 +1056,16 @@ export type LocationUpdateWithoutRouteDestinationsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
   routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutRouteDestinationsInput = {
@@ -1125,15 +1076,64 @@ export type LocationUncheckedUpdateWithoutRouteDestinationsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
   routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
+}
+
+export type LocationUpsertWithoutRouteOriginsInput = {
+  update: Prisma.XOR<Prisma.LocationUpdateWithoutRouteOriginsInput, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
+  create: Prisma.XOR<Prisma.LocationCreateWithoutRouteOriginsInput, Prisma.LocationUncheckedCreateWithoutRouteOriginsInput>
+  where?: Prisma.LocationWhereInput
+}
+
+export type LocationUpdateToOneWithWhereWithoutRouteOriginsInput = {
+  where?: Prisma.LocationWhereInput
+  data: Prisma.XOR<Prisma.LocationUpdateWithoutRouteOriginsInput, Prisma.LocationUncheckedUpdateWithoutRouteOriginsInput>
+}
+
+export type LocationUpdateWithoutRouteOriginsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
+  riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
+  routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
+  groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
+}
+
+export type LocationUncheckedUpdateWithoutRouteOriginsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  districtId?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
+  riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
+  routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
+  groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
+  place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutRoutePointsInput = {
@@ -1143,16 +1143,16 @@ export type LocationCreateWithoutRoutePointsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutRoutePointsInput = {
@@ -1163,15 +1163,15 @@ export type LocationUncheckedCreateWithoutRoutePointsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutRoutePointsInput = {
@@ -1197,16 +1197,16 @@ export type LocationUpdateWithoutRoutePointsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutRoutePointsInput = {
@@ -1217,15 +1217,15 @@ export type LocationUncheckedUpdateWithoutRoutePointsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutWeatherDataInput = {
@@ -1235,16 +1235,16 @@ export type LocationCreateWithoutWeatherDataInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutWeatherDataInput = {
@@ -1257,13 +1257,13 @@ export type LocationUncheckedCreateWithoutWeatherDataInput = {
   createdAt?: Date | string
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutWeatherDataInput = {
@@ -1289,16 +1289,16 @@ export type LocationUpdateWithoutWeatherDataInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutWeatherDataInput = {
@@ -1311,13 +1311,13 @@ export type LocationUncheckedUpdateWithoutWeatherDataInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutHazardDataInput = {
@@ -1328,15 +1328,15 @@ export type LocationCreateWithoutHazardDataInput = {
   altitude?: number | null
   createdAt?: Date | string
   district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutHazardDataInput = {
@@ -1347,15 +1347,15 @@ export type LocationUncheckedCreateWithoutHazardDataInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutHazardDataInput = {
@@ -1382,15 +1382,15 @@ export type LocationUpdateWithoutHazardDataInput = {
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutHazardDataInput = {
@@ -1401,15 +1401,15 @@ export type LocationUncheckedUpdateWithoutHazardDataInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutRiskReportsInput = {
@@ -1419,16 +1419,16 @@ export type LocationCreateWithoutRiskReportsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutRiskReportsInput = {
@@ -1439,15 +1439,15 @@ export type LocationUncheckedCreateWithoutRiskReportsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutRiskReportsInput = {
@@ -1473,16 +1473,16 @@ export type LocationUpdateWithoutRiskReportsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutRiskReportsInput = {
@@ -1493,15 +1493,15 @@ export type LocationUncheckedUpdateWithoutRiskReportsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutTravelStopsInput = {
@@ -1511,16 +1511,16 @@ export type LocationCreateWithoutTravelStopsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupCreateNestedManyWithoutDestinationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutTravelStopsInput = {
@@ -1531,15 +1531,15 @@ export type LocationUncheckedCreateWithoutTravelStopsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
   groupTrips?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutDestinationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutTravelStopsInput = {
@@ -1565,16 +1565,16 @@ export type LocationUpdateWithoutTravelStopsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutTravelStopsInput = {
@@ -1585,15 +1585,15 @@ export type LocationUncheckedUpdateWithoutTravelStopsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateWithoutGroupTripsInput = {
@@ -1603,16 +1603,16 @@ export type LocationCreateWithoutGroupTripsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
-  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataCreateNestedManyWithoutLocationInput
+  district: Prisma.DistrictCreateNestedOneWithoutLocationsInput
   riskReports?: Prisma.RiskAssessmentCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
+  travelStops?: Prisma.TravelStopCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationUncheckedCreateWithoutGroupTripsInput = {
@@ -1623,15 +1623,15 @@ export type LocationUncheckedCreateWithoutGroupTripsInput = {
   longitude: number
   altitude?: number | null
   createdAt?: Date | string
-  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   hazardData?: Prisma.HazardDataUncheckedCreateNestedManyWithoutLocationInput
   riskReports?: Prisma.RiskAssessmentUncheckedCreateNestedManyWithoutLocationInput
-  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routeDestinations?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutDestinationLocationInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedCreateNestedManyWithoutOriginLocationInput
   routePoints?: Prisma.RouteTemplatePointUncheckedCreateNestedManyWithoutMatchedLocationInput
-  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
+  travelStops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutLocationInput
+  weatherData?: Prisma.WeatherDataUncheckedCreateNestedManyWithoutLocationInput
   place?: Prisma.PlaceUncheckedCreateNestedOneWithoutLocationInput
+  residents?: Prisma.UserUncheckedCreateNestedManyWithoutHomeLocationInput
 }
 
 export type LocationCreateOrConnectWithoutGroupTripsInput = {
@@ -1657,16 +1657,16 @@ export type LocationUpdateWithoutGroupTripsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
+  district?: Prisma.DistrictUpdateOneRequiredWithoutLocationsNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutGroupTripsInput = {
@@ -1677,15 +1677,15 @@ export type LocationUncheckedUpdateWithoutGroupTripsInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationCreateManyDistrictInput = {
@@ -1704,16 +1704,16 @@ export type LocationUpdateWithoutDistrictInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateWithoutDistrictInput = {
@@ -1723,16 +1723,16 @@ export type LocationUncheckedUpdateWithoutDistrictInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   altitude?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   hazardData?: Prisma.HazardDataUncheckedUpdateManyWithoutLocationNestedInput
   riskReports?: Prisma.RiskAssessmentUncheckedUpdateManyWithoutLocationNestedInput
-  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
-  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routeDestinations?: Prisma.RouteTemplateUncheckedUpdateManyWithoutDestinationLocationNestedInput
+  routeOrigins?: Prisma.RouteTemplateUncheckedUpdateManyWithoutOriginLocationNestedInput
   routePoints?: Prisma.RouteTemplatePointUncheckedUpdateManyWithoutMatchedLocationNestedInput
-  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
   groupTrips?: Prisma.TravelGroupUncheckedUpdateManyWithoutDestinationNestedInput
+  travelStops?: Prisma.TravelStopUncheckedUpdateManyWithoutLocationNestedInput
+  weatherData?: Prisma.WeatherDataUncheckedUpdateManyWithoutLocationNestedInput
   place?: Prisma.PlaceUncheckedUpdateOneWithoutLocationNestedInput
+  residents?: Prisma.UserUncheckedUpdateManyWithoutHomeLocationNestedInput
 }
 
 export type LocationUncheckedUpdateManyWithoutDistrictInput = {
@@ -1750,27 +1750,27 @@ export type LocationUncheckedUpdateManyWithoutDistrictInput = {
  */
 
 export type LocationCountOutputType = {
-  weatherData: number
   hazardData: number
   riskReports: number
-  travelStops: number
-  routeOrigins: number
   routeDestinations: number
+  routeOrigins: number
   routePoints: number
-  residents: number
   groupTrips: number
+  travelStops: number
+  weatherData: number
+  residents: number
 }
 
 export type LocationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  weatherData?: boolean | LocationCountOutputTypeCountWeatherDataArgs
   hazardData?: boolean | LocationCountOutputTypeCountHazardDataArgs
   riskReports?: boolean | LocationCountOutputTypeCountRiskReportsArgs
-  travelStops?: boolean | LocationCountOutputTypeCountTravelStopsArgs
-  routeOrigins?: boolean | LocationCountOutputTypeCountRouteOriginsArgs
   routeDestinations?: boolean | LocationCountOutputTypeCountRouteDestinationsArgs
+  routeOrigins?: boolean | LocationCountOutputTypeCountRouteOriginsArgs
   routePoints?: boolean | LocationCountOutputTypeCountRoutePointsArgs
-  residents?: boolean | LocationCountOutputTypeCountResidentsArgs
   groupTrips?: boolean | LocationCountOutputTypeCountGroupTripsArgs
+  travelStops?: boolean | LocationCountOutputTypeCountTravelStopsArgs
+  weatherData?: boolean | LocationCountOutputTypeCountWeatherDataArgs
+  residents?: boolean | LocationCountOutputTypeCountResidentsArgs
 }
 
 /**
@@ -1781,13 +1781,6 @@ export type LocationCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ext
    * Select specific fields to fetch from the LocationCountOutputType
    */
   select?: Prisma.LocationCountOutputTypeSelect<ExtArgs> | null
-}
-
-/**
- * LocationCountOutputType without action
- */
-export type LocationCountOutputTypeCountWeatherDataArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.WeatherDataWhereInput
 }
 
 /**
@@ -1807,21 +1800,14 @@ export type LocationCountOutputTypeCountRiskReportsArgs<ExtArgs extends runtime.
 /**
  * LocationCountOutputType without action
  */
-export type LocationCountOutputTypeCountTravelStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.TravelStopWhereInput
-}
-
-/**
- * LocationCountOutputType without action
- */
-export type LocationCountOutputTypeCountRouteOriginsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type LocationCountOutputTypeCountRouteDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RouteTemplateWhereInput
 }
 
 /**
  * LocationCountOutputType without action
  */
-export type LocationCountOutputTypeCountRouteDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type LocationCountOutputTypeCountRouteOriginsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.RouteTemplateWhereInput
 }
 
@@ -1835,15 +1821,29 @@ export type LocationCountOutputTypeCountRoutePointsArgs<ExtArgs extends runtime.
 /**
  * LocationCountOutputType without action
  */
-export type LocationCountOutputTypeCountResidentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.UserWhereInput
+export type LocationCountOutputTypeCountGroupTripsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TravelGroupWhereInput
 }
 
 /**
  * LocationCountOutputType without action
  */
-export type LocationCountOutputTypeCountGroupTripsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.TravelGroupWhereInput
+export type LocationCountOutputTypeCountTravelStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TravelStopWhereInput
+}
+
+/**
+ * LocationCountOutputType without action
+ */
+export type LocationCountOutputTypeCountWeatherDataArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WeatherDataWhereInput
+}
+
+/**
+ * LocationCountOutputType without action
+ */
+export type LocationCountOutputTypeCountResidentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserWhereInput
 }
 
 
@@ -1855,17 +1855,17 @@ export type LocationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   longitude?: boolean
   altitude?: boolean
   createdAt?: boolean
-  district?: boolean | Prisma.DistrictDefaultArgs<ExtArgs>
-  weatherData?: boolean | Prisma.Location$weatherDataArgs<ExtArgs>
   hazardData?: boolean | Prisma.Location$hazardDataArgs<ExtArgs>
+  district?: boolean | Prisma.DistrictDefaultArgs<ExtArgs>
   riskReports?: boolean | Prisma.Location$riskReportsArgs<ExtArgs>
-  travelStops?: boolean | Prisma.Location$travelStopsArgs<ExtArgs>
-  routeOrigins?: boolean | Prisma.Location$routeOriginsArgs<ExtArgs>
   routeDestinations?: boolean | Prisma.Location$routeDestinationsArgs<ExtArgs>
+  routeOrigins?: boolean | Prisma.Location$routeOriginsArgs<ExtArgs>
   routePoints?: boolean | Prisma.Location$routePointsArgs<ExtArgs>
-  residents?: boolean | Prisma.Location$residentsArgs<ExtArgs>
   groupTrips?: boolean | Prisma.Location$groupTripsArgs<ExtArgs>
+  travelStops?: boolean | Prisma.Location$travelStopsArgs<ExtArgs>
+  weatherData?: boolean | Prisma.Location$weatherDataArgs<ExtArgs>
   place?: boolean | Prisma.Location$placeArgs<ExtArgs>
+  residents?: boolean | Prisma.Location$residentsArgs<ExtArgs>
   _count?: boolean | Prisma.LocationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["location"]>
 
@@ -1903,17 +1903,17 @@ export type LocationSelectScalar = {
 
 export type LocationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "districtId" | "latitude" | "longitude" | "altitude" | "createdAt", ExtArgs["result"]["location"]>
 export type LocationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  district?: boolean | Prisma.DistrictDefaultArgs<ExtArgs>
-  weatherData?: boolean | Prisma.Location$weatherDataArgs<ExtArgs>
   hazardData?: boolean | Prisma.Location$hazardDataArgs<ExtArgs>
+  district?: boolean | Prisma.DistrictDefaultArgs<ExtArgs>
   riskReports?: boolean | Prisma.Location$riskReportsArgs<ExtArgs>
-  travelStops?: boolean | Prisma.Location$travelStopsArgs<ExtArgs>
-  routeOrigins?: boolean | Prisma.Location$routeOriginsArgs<ExtArgs>
   routeDestinations?: boolean | Prisma.Location$routeDestinationsArgs<ExtArgs>
+  routeOrigins?: boolean | Prisma.Location$routeOriginsArgs<ExtArgs>
   routePoints?: boolean | Prisma.Location$routePointsArgs<ExtArgs>
-  residents?: boolean | Prisma.Location$residentsArgs<ExtArgs>
   groupTrips?: boolean | Prisma.Location$groupTripsArgs<ExtArgs>
+  travelStops?: boolean | Prisma.Location$travelStopsArgs<ExtArgs>
+  weatherData?: boolean | Prisma.Location$weatherDataArgs<ExtArgs>
   place?: boolean | Prisma.Location$placeArgs<ExtArgs>
+  residents?: boolean | Prisma.Location$residentsArgs<ExtArgs>
   _count?: boolean | Prisma.LocationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type LocationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1926,17 +1926,17 @@ export type LocationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type $LocationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Location"
   objects: {
-    district: Prisma.$DistrictPayload<ExtArgs>
-    weatherData: Prisma.$WeatherDataPayload<ExtArgs>[]
     hazardData: Prisma.$HazardDataPayload<ExtArgs>[]
+    district: Prisma.$DistrictPayload<ExtArgs>
     riskReports: Prisma.$RiskAssessmentPayload<ExtArgs>[]
-    travelStops: Prisma.$TravelStopPayload<ExtArgs>[]
-    routeOrigins: Prisma.$RouteTemplatePayload<ExtArgs>[]
     routeDestinations: Prisma.$RouteTemplatePayload<ExtArgs>[]
+    routeOrigins: Prisma.$RouteTemplatePayload<ExtArgs>[]
     routePoints: Prisma.$RouteTemplatePointPayload<ExtArgs>[]
-    residents: Prisma.$UserPayload<ExtArgs>[]
     groupTrips: Prisma.$TravelGroupPayload<ExtArgs>[]
+    travelStops: Prisma.$TravelStopPayload<ExtArgs>[]
+    weatherData: Prisma.$WeatherDataPayload<ExtArgs>[]
     place: Prisma.$PlacePayload<ExtArgs> | null
+    residents: Prisma.$UserPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2340,17 +2340,17 @@ readonly fields: LocationFieldRefs;
  */
 export interface Prisma__LocationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  district<T extends Prisma.DistrictDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DistrictDefaultArgs<ExtArgs>>): Prisma.Prisma__DistrictClient<runtime.Types.Result.GetResult<Prisma.$DistrictPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  weatherData<T extends Prisma.Location$weatherDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$weatherDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WeatherDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   hazardData<T extends Prisma.Location$hazardDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$hazardDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HazardDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  district<T extends Prisma.DistrictDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DistrictDefaultArgs<ExtArgs>>): Prisma.Prisma__DistrictClient<runtime.Types.Result.GetResult<Prisma.$DistrictPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   riskReports<T extends Prisma.Location$riskReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$riskReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RiskAssessmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  travelStops<T extends Prisma.Location$travelStopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$travelStopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  routeOrigins<T extends Prisma.Location$routeOriginsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$routeOriginsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   routeDestinations<T extends Prisma.Location$routeDestinationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$routeDestinationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  routeOrigins<T extends Prisma.Location$routeOriginsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$routeOriginsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   routePoints<T extends Prisma.Location$routePointsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$routePointsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePointPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  residents<T extends Prisma.Location$residentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$residentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   groupTrips<T extends Prisma.Location$groupTripsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$groupTripsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  travelStops<T extends Prisma.Location$travelStopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$travelStopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  weatherData<T extends Prisma.Location$weatherDataArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$weatherDataArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WeatherDataPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   place<T extends Prisma.Location$placeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$placeArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  residents<T extends Prisma.Location$residentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Location$residentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2788,30 +2788,6 @@ export type LocationDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 /**
- * Location.weatherData
- */
-export type Location$weatherDataArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the WeatherData
-   */
-  select?: Prisma.WeatherDataSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the WeatherData
-   */
-  omit?: Prisma.WeatherDataOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.WeatherDataInclude<ExtArgs> | null
-  where?: Prisma.WeatherDataWhereInput
-  orderBy?: Prisma.WeatherDataOrderByWithRelationInput | Prisma.WeatherDataOrderByWithRelationInput[]
-  cursor?: Prisma.WeatherDataWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.WeatherDataScalarFieldEnum | Prisma.WeatherDataScalarFieldEnum[]
-}
-
-/**
  * Location.hazardData
  */
 export type Location$hazardDataArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2860,33 +2836,9 @@ export type Location$riskReportsArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * Location.travelStops
+ * Location.routeDestinations
  */
-export type Location$travelStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the TravelStop
-   */
-  select?: Prisma.TravelStopSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the TravelStop
-   */
-  omit?: Prisma.TravelStopOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.TravelStopInclude<ExtArgs> | null
-  where?: Prisma.TravelStopWhereInput
-  orderBy?: Prisma.TravelStopOrderByWithRelationInput | Prisma.TravelStopOrderByWithRelationInput[]
-  cursor?: Prisma.TravelStopWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.TravelStopScalarFieldEnum | Prisma.TravelStopScalarFieldEnum[]
-}
-
-/**
- * Location.routeOrigins
- */
-export type Location$routeOriginsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Location$routeDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the RouteTemplate
    */
@@ -2908,9 +2860,9 @@ export type Location$routeOriginsArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * Location.routeDestinations
+ * Location.routeOrigins
  */
-export type Location$routeDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Location$routeOriginsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the RouteTemplate
    */
@@ -2956,30 +2908,6 @@ export type Location$routePointsArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * Location.residents
- */
-export type Location$residentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the User
-   */
-  select?: Prisma.UserSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the User
-   */
-  omit?: Prisma.UserOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
-  cursor?: Prisma.UserWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
-}
-
-/**
  * Location.groupTrips
  */
 export type Location$groupTripsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3004,6 +2932,54 @@ export type Location$groupTripsArgs<ExtArgs extends runtime.Types.Extensions.Int
 }
 
 /**
+ * Location.travelStops
+ */
+export type Location$travelStopsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TravelStop
+   */
+  select?: Prisma.TravelStopSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TravelStop
+   */
+  omit?: Prisma.TravelStopOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TravelStopInclude<ExtArgs> | null
+  where?: Prisma.TravelStopWhereInput
+  orderBy?: Prisma.TravelStopOrderByWithRelationInput | Prisma.TravelStopOrderByWithRelationInput[]
+  cursor?: Prisma.TravelStopWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TravelStopScalarFieldEnum | Prisma.TravelStopScalarFieldEnum[]
+}
+
+/**
+ * Location.weatherData
+ */
+export type Location$weatherDataArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WeatherData
+   */
+  select?: Prisma.WeatherDataSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WeatherData
+   */
+  omit?: Prisma.WeatherDataOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WeatherDataInclude<ExtArgs> | null
+  where?: Prisma.WeatherDataWhereInput
+  orderBy?: Prisma.WeatherDataOrderByWithRelationInput | Prisma.WeatherDataOrderByWithRelationInput[]
+  cursor?: Prisma.WeatherDataWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WeatherDataScalarFieldEnum | Prisma.WeatherDataScalarFieldEnum[]
+}
+
+/**
  * Location.place
  */
 export type Location$placeArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3020,6 +2996,30 @@ export type Location$placeArgs<ExtArgs extends runtime.Types.Extensions.Internal
    */
   include?: Prisma.PlaceInclude<ExtArgs> | null
   where?: Prisma.PlaceWhereInput
+}
+
+/**
+ * Location.residents
+ */
+export type Location$residentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
+  orderBy?: Prisma.UserOrderByWithRelationInput | Prisma.UserOrderByWithRelationInput[]
+  cursor?: Prisma.UserWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserScalarFieldEnum | Prisma.UserScalarFieldEnum[]
 }
 
 /**

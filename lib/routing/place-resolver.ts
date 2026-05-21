@@ -1,6 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { haversineKm, isValidLatLon, nameSimilarity, normalizePlaceName } from "@/lib/routing/geo";
-import { findNearestRouteNode, getRouteNodeById } from "@/lib/routing/node-graph";
+import { getRouteNodeById } from "@/lib/routing/node-graph";
+import {
+  findNearestLocation,
+  findNearestRouteNode,
+  findNearestPlace,
+} from "@/lib/routing/spatial";
 import type { ResolvedPlace } from "@/lib/routing/types";
 
 type DbLocation = {
@@ -10,27 +15,19 @@ type DbLocation = {
   longitude: number;
 };
 
-let locationCache: { expiresAt: number; rows: DbLocation[] } | null = null;
-
-async function loadAllLocations(): Promise<DbLocation[]> {
-  if (locationCache && locationCache.expiresAt > Date.now()) {
-    return locationCache.rows;
-  }
-  const rows = await prisma.location.findMany({
-    select: { id: true, name: true, latitude: true, longitude: true },
-  });
-  const valid = rows.filter(
-    (r) =>
-      Number.isFinite(r.latitude) &&
-      Number.isFinite(r.longitude) &&
-      !(r.latitude === 0 && r.longitude === 0)
+async function searchLocationsByName(
+  name: string,
+  limit = 20
+): Promise<DbLocation[]> {
+  const normalized = normalizePlaceName(name);
+  return prisma.$queryRawUnsafe<DbLocation[]>(
+    `SELECT id, name, latitude, longitude
+     FROM "Location"
+     WHERE name ILIKE $1
+     LIMIT $2`,
+    `%${normalized}%`,
+    limit
   );
-  locationCache = { rows: valid, expiresAt: Date.now() + 10 * 60 * 1000 };
-  return valid;
-}
-
-export function invalidatePlaceCache(): void {
-  locationCache = null;
 }
 
 export async function resolvePlaceByName(
@@ -38,41 +35,76 @@ export async function resolvePlaceByName(
   hintLat?: number,
   hintLon?: number
 ): Promise<ResolvedPlace | null> {
-  const locations = await loadAllLocations();
-  if (!locations.length) return null;
-
   const normalized = normalizePlaceName(name);
-  let best: { row: DbLocation; score: number } | null = null;
+  if (!normalized) return null;
 
-  for (const row of locations) {
-    const score = nameSimilarity(name, row.name);
-    if (score >= 0.5 && (!best || score > best.score)) {
-      best = { row, score };
-    }
-    if (normalizePlaceName(row.name) === normalized) {
+  // Try exact match first via ILIKE + spatial proximity
+  const candidates = await searchLocationsByName(normalized, 20);
+  if (candidates.length === 0) return null;
+
+  // Check for exact normalized match
+  for (const c of candidates) {
+    if (normalizePlaceName(c.name) === normalized) {
       return {
-        id: row.id,
-        name: row.name,
-        lat: row.latitude,
-        lon: row.longitude,
+        id: c.id,
+        name: c.name,
+        lat: c.latitude,
+        lon: c.longitude,
         match: "exact",
       };
     }
   }
 
+  // Fuzzy sort by name similarity, then spatial proximity
+  let scored = candidates.map((c) => ({
+    row: c,
+    score: nameSimilarity(name, c.name),
+    dist: hintLat != null && hintLon != null
+      ? haversineKm(hintLat, hintLon, c.latitude, c.longitude)
+      : Infinity,
+  }));
+  scored.sort((a, b) => b.score - a.score);
+
+  const best = scored[0];
   if (best && best.score >= 0.6) {
-    const dist =
-      hintLat != null && hintLon != null
-        ? haversineKm(hintLat, hintLon, best.row.latitude, best.row.longitude)
-        : undefined;
     return {
       id: best.row.id,
       name: best.row.name,
       lat: best.row.latitude,
       lon: best.row.longitude,
       match: "fuzzy",
-      distanceKm: dist,
+      distanceKm: best.dist === Infinity ? undefined : best.dist,
     };
+  }
+
+  // Fallback: search Destination table
+  const destHits = await prisma.destination.findMany({
+    where: { normalizedName: { contains: normalized } },
+    select: { id: true, name: true, normalizedName: true, latitude: true, longitude: true, district: true },
+    take: 10,
+  });
+
+  if (destHits.length > 0) {
+    const byName = hintLat != null && hintLon != null
+      ? destHits.sort(
+          (a, b) => haversineKm(hintLat!, hintLon!, a.latitude, a.longitude)
+            - haversineKm(hintLat!, hintLon!, b.latitude, b.longitude)
+        )[0]
+      : destHits.sort((a, b) => nameSimilarity(name, b.name) - nameSimilarity(name, a.name))[0];
+
+    if (
+      Number.isFinite(byName.latitude) &&
+      Number.isFinite(byName.longitude) &&
+      !(byName.latitude === 0 && byName.longitude === 0)
+    ) {
+      return {
+        id: byName.id,
+        name: byName.name,
+        lat: byName.latitude,
+        lon: byName.longitude,
+        match: normalizePlaceName(byName.name) === normalized ? "exact" : "fuzzy",
+      };
+    }
   }
 
   return null;
@@ -105,27 +137,15 @@ export async function findNearestKnownPlace(
   lon: number,
   maxKm = 50
 ): Promise<ResolvedPlace | null> {
-  const locations = await loadAllLocations();
-  let best: DbLocation | null = null;
-  let bestDist = Infinity;
-
-  for (const row of locations) {
-    const d = haversineKm(lat, lon, row.latitude, row.longitude);
-    if (d < bestDist) {
-      bestDist = d;
-      best = row;
-    }
-  }
-
-  if (!best || bestDist > maxKm) return null;
-
+  const best = await findNearestLocation(lat, lon, maxKm);
+  if (!best) return null;
   return {
     id: best.id,
     name: best.name,
-    lat: best.latitude,
-    lon: best.longitude,
+    lat: best.lat,
+    lon: best.lon,
     match: "nearest",
-    distanceKm: bestDist,
+    distanceKm: best.distanceKm,
   };
 }
 
@@ -153,17 +173,6 @@ export async function resolveDestination(input: {
       input.destinationLon != null &&
       isValidLatLon(input.destinationLat, input.destinationLon)
     ) {
-      const nearest = await findNearestKnownPlace(
-        input.destinationLat,
-        input.destinationLon,
-        80
-      );
-      if (nearest) {
-        return {
-          place: nearest,
-          note: `"${input.destinationName}" not found; using nearest known place ${nearest.name} (${nearest.distanceKm?.toFixed(1)} km away)`,
-        };
-      }
       return {
         place: {
           id: null,
@@ -275,5 +284,11 @@ export async function resolveOrigin(
 }
 
 export async function getAllKnownPlaces(): Promise<DbLocation[]> {
-  return loadAllLocations();
+  return prisma.location.findMany({
+    select: { id: true, name: true, latitude: true, longitude: true },
+    where: {
+      latitude: { not: 0 },
+      longitude: { not: 0 },
+    },
+  });
 }

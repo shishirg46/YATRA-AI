@@ -15,15 +15,10 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
-import { PrismaClient }              from "@/app/generated/prisma/client";
-import { PrismaPg }                  from "@prisma/adapter-pg";
-import { Pool }                      from "pg";
+import { prisma }                    from "@/lib/prisma";
 import { fetchWeather }              from "@/lib/collectors/weather";
 import { fetchHazard }               from "@/lib/collectors/hazard";
 import { computeSafetyScore, buildHealthFlags } from "@/lib/scoring/safety";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 // ── Seasonal helpers ──────────────────────────────────────────────────────────
 

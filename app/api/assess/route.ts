@@ -10,20 +10,11 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, AssessmentType, Prisma } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { AssessmentType } from "@/app/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
-import { computeSafetyScore, LocationContext } from "@/lib/scoring/safety";
-
-// Helper: cast a plain object to Prisma's JSON input type
-function toJson(value: unknown): Prisma.InputJsonValue {
-  return value as Prisma.InputJsonValue;
-}
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { computeSafetyScore } from "@/lib/scoring/safety";
 
 export async function POST(req: NextRequest) {
   // Simple secret check — set ASSESS_SECRET in .env.local
@@ -50,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   for (const loc of locations) {
     try {
-      // ── Step 1: Fetch weather from OpenWeatherMap ──────────────────────────
+      // ── Step 1: Fetch weather from DHM API ──────────────────────────
       const weather = await fetchWeather(loc.latitude, loc.longitude);
       if (!weather) {
         results.push({ location: loc.name, score: 0, level: "UNKNOWN", error: "Weather fetch failed" });
@@ -106,7 +97,7 @@ export async function POST(req: NextRequest) {
           humidity:    weather.humidity,
           rainfall:    weather.rainfall,
           windSpeed:   weather.windSpeed,
-          pressure:    weather.pressure,
+          pressure:    weather.pressure ?? 1013,
         },
         {
           floodIndex:      hazard.floodIndex,
@@ -133,9 +124,9 @@ export async function POST(req: NextRequest) {
           safetyScore:     score.safetyScore,
           safetyLevel:     score.safetyLevel,
           confidence:      score.confidence,
-          decisionTrace:   toJson(score.decisionTrace),
-          weatherSnapshot: toJson(score.weatherSnapshot),
-          hazardSnapshot:  toJson(score.hazardSnapshot),
+          decisionTrace:   score.decisionTrace as never,
+          weatherSnapshot: score.weatherSnapshot as never,
+          hazardSnapshot:  score.hazardSnapshot as never,
           modelVersion:    "rule-v1",
         },
       });

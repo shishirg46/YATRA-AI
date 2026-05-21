@@ -1,8 +1,13 @@
+import type { GeoPoint, VehicleProfile, RouteCoordinate } from "@/lib/routing/types";
+import { fetchRoadRoute, fetchRouteWithAlternatives } from "@/lib/routing/openroute-service";
+import { routeCache, makeRouteCacheKey } from "@/lib/routing/route-cache";
+
 export interface DynamicRouteRequest {
   startLat: number;
   startLon: number;
   endLat: number;
   endLon: number;
+  vehicle?: VehicleProfile;
 }
 
 export interface RoutePoint {
@@ -17,37 +22,20 @@ export interface DynamicRoute {
   duration: number;
   points: RoutePoint[];
   sampledPoints: RoutePoint[];
-}
-
-interface OsrmRoute {
-  distance: number;
-  duration: number;
-  geometry: { coordinates: [number, number][] };
-}
-
-interface OsrmResponse {
-  code?: string;
-  routes?: OsrmRoute[];
-}
-
-interface OrsFeature {
-  properties?: {
-    summary?: {
-      distance?: number;
-      duration?: number;
-    };
-    segments?: Array<{
-      distance?: number;
-      duration?: number;
+  encodedPolyline?: string;
+  legs?: Array<{
+    distance: number;
+    duration: number;
+    summary: string;
+    steps: Array<{
+      text: string;
+      distance: number;
+      duration: number;
+      type: string;
+      lat: number;
+      lon: number;
     }>;
-  };
-  geometry?: {
-    coordinates?: [number, number][];
-  };
-}
-
-interface OrsResponse {
-  features?: OrsFeature[];
+  }>;
 }
 
 export function sampleRoutePoints(points: RoutePoint[], step = 10): RoutePoint[] {
@@ -60,8 +48,8 @@ function toRouteName(index: number): string {
   return index === 0 ? "Primary Route" : `Alternative Route ${index}`;
 }
 
-function toDynamicRoute(index: number, distance: number, duration: number, coordinates: [number, number][]): DynamicRoute {
-  const points = coordinates.map(([lon, lat]) => ({ lat, lon }));
+function toDynamicRoute(index: number, coordinates: RouteCoordinate[], distance: number, duration: number, encodedPolyline?: string, legs?: DynamicRoute["legs"]): DynamicRoute {
+  const points = coordinates.map((c) => ({ lat: c.lat, lon: c.lon }));
   return {
     id: `route_${index + 1}`,
     name: toRouteName(index),
@@ -69,78 +57,54 @@ function toDynamicRoute(index: number, distance: number, duration: number, coord
     duration: Math.round(duration),
     points,
     sampledPoints: sampleRoutePoints(points, 10),
+    encodedPolyline,
+    legs,
   };
 }
 
-async function fetchOsrmRoutes(input: DynamicRouteRequest): Promise<DynamicRoute[]> {
-  const url = `http://router.project-osrm.org/route/v1/driving/${input.startLon},${input.startLat};${input.endLon},${input.endLat}?alternatives=true&overview=full&geometries=geojson`;
+async function fetchRoadRoutes(input: DynamicRouteRequest): Promise<DynamicRoute[]> {
+  const start: GeoPoint = { lat: input.startLat, lon: input.startLon };
+  const end: GeoPoint = { lat: input.endLat, lon: input.endLon };
+  const vehicle = input.vehicle ?? "car";
 
-  const res = await fetch(url, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(12000),
-  });
+  const cacheKey = makeRouteCacheKey(input.startLat, input.startLon, input.endLat, input.endLon, vehicle);
 
-  if (!res.ok) {
-    throw new Error(`OSRM request failed with status ${res.status}`);
-  }
-
-  const data = (await res.json()) as OsrmResponse;
-  if (data.code !== "Ok" || !data.routes?.length) {
-    throw new Error("OSRM returned no routes");
-  }
-
-  return data.routes.map((route, index) =>
-    toDynamicRoute(index, route.distance, route.duration, route.geometry.coordinates)
+  return routeCache.getOrFetch(
+    cacheKey,
+    async () => {
+      const routes = await fetchRouteWithAlternatives(start, end, vehicle);
+      return routes.map((route, index) =>
+        toDynamicRoute(
+          index,
+          route.coordinates,
+          route.distance,
+          route.duration,
+          route.encodedPolyline,
+          route.legs.map((leg) => ({
+            distance: leg.distance,
+            duration: leg.duration,
+            summary: leg.summary,
+            steps: leg.steps.map((s) => ({
+              text: s.text,
+              distance: s.distance,
+              duration: s.duration,
+              type: s.type,
+              lat: s.lat,
+              lon: s.lon,
+            })),
+          }))
+        )
+      );
+    },
+    10 * 60 * 1000
   );
-}
-
-async function fetchOrsRoutes(input: DynamicRouteRequest): Promise<DynamicRoute[]> {
-  const apiKey = process.env.OPENROUTESERVICE_API_KEY;
-  if (!apiKey) {
-    throw new Error("OPENROUTESERVICE_API_KEY is missing");
-  }
-
-  const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${input.startLon},${input.startLat}&end=${input.endLon},${input.endLat}`;
-  const res = await fetch(url, {
-    cache: "no-store",
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!res.ok) {
-    throw new Error(`OpenRouteService request failed with status ${res.status}`);
-  }
-
-  const data = (await res.json()) as OrsResponse;
-  const features = Array.isArray(data.features) ? data.features : [];
-  if (!features.length) {
-    throw new Error("OpenRouteService returned no routes");
-  }
-
-  return features
-    .map((feature, index) => {
-      const coords = feature.geometry?.coordinates ?? [];
-      if (!coords.length) return null;
-
-      const summary = feature.properties?.summary;
-      const firstSeg = feature.properties?.segments?.[0];
-      const distance = summary?.distance ?? firstSeg?.distance ?? 0;
-      const duration = summary?.duration ?? firstSeg?.duration ?? 0;
-
-      return toDynamicRoute(index, distance, duration, coords);
-    })
-    .filter((r): r is DynamicRoute => r !== null);
 }
 
 export async function generateDynamicRoutes(input: DynamicRouteRequest): Promise<{ routes: DynamicRoute[] }> {
   try {
-    const routes = await fetchOsrmRoutes(input);
+    const routes = await fetchRoadRoutes(input);
     return { routes };
-  } catch (osrmErr) {
-    try {
-      const routes = await fetchOrsRoutes(input);
-      if (!routes.length) throw new Error("OpenRouteService returned no usable route");
-      return { routes };
-    } catch (orsErr) {
-      throw new Error(`OSRM failed (${String(osrmErr)}); OpenRouteService failed (${String(orsErr)})`);
-    }
+  } catch (orsErr) {
+    throw new Error(`OpenRouteService routing failed: ${String(orsErr)}`);
   }
 }

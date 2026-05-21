@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
+import { findNearestRouteNode as spatialFindNearestRouteNode } from "@/lib/routing/spatial";
+import { MinPriorityQueue } from "@/lib/binary-heap";
 import type { RouteNode as RouteNodeType } from "@/lib/routing/types";
 
 type GraphNode = {
@@ -84,17 +86,7 @@ export async function findNearestRouteNode(
   lon: number,
   maxKm = 35
 ): Promise<(GraphNode & { distanceKm: number }) | null> {
-  const { nodes } = await loadGraph();
-  let best: (GraphNode & { distanceKm: number }) | null = null;
-
-  for (const node of nodes.values()) {
-    const d = haversineKm(lat, lon, node.lat, node.lon);
-    if (d <= maxKm && (!best || d < best.distanceKm)) {
-      best = { ...node, distanceKm: d };
-    }
-  }
-
-  return best;
+  return spatialFindNearestRouteNode(lat, lon, maxKm);
 }
 
 /** Dijkstra shortest path on the route graph. */
@@ -111,34 +103,27 @@ export async function findRouteNodePath(
   const { nodes, adjacency } = await loadGraph();
   const dist = new Map<string, number>();
   const prev = new Map<string, string | null>();
-  const unvisited = new Set(nodes.keys());
+  const pq = new MinPriorityQueue();
 
   for (const id of nodes.keys()) {
-    dist.set(id, id === fromNodeId ? 0 : Infinity);
+    const d = id === fromNodeId ? 0 : Infinity;
+    dist.set(id, d);
     prev.set(id, null);
+    pq.push(id, d);
   }
 
-  while (unvisited.size > 0) {
-    let current: string | null = null;
-    let minDist = Infinity;
-    for (const id of unvisited) {
-      const d = dist.get(id) ?? Infinity;
-      if (d < minDist) {
-        minDist = d;
-        current = id;
-      }
-    }
-    if (current === null || minDist === Infinity) break;
-    if (current === toNodeId) break;
+  while (pq.size > 0) {
+    const current = pq.pop();
+    if (!current) break;
+    if (current.key === toNodeId) break;
+    if (!Number.isFinite(current.priority)) break;
 
-    unvisited.delete(current);
-
-    for (const edge of adjacency.get(current) ?? []) {
-      if (!unvisited.has(edge.to)) continue;
-      const alt = minDist + edge.weight;
+    for (const edge of adjacency.get(current.key) ?? []) {
+      const alt = current.priority + edge.weight;
       if (alt < (dist.get(edge.to) ?? Infinity)) {
         dist.set(edge.to, alt);
-        prev.set(edge.to, current);
+        prev.set(edge.to, current.key);
+        pq.push(edge.to, alt);
       }
     }
   }

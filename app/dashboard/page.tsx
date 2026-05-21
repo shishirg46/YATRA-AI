@@ -24,13 +24,13 @@ import Image                    from "next/image";
 import {
   Mountain, XCircle, RefreshCw,
   Search, X, User, Bell, Users, MapPin,
-  ChevronLeft, ChevronRight, Navigation, Loader2
+  ChevronLeft, ChevronRight, Navigation, Loader2, Download
 } from "lucide-react";
 import { Button }          from "@/components/ui/button";
 import { authClient }      from "@/lib/auth-client";
 import { useRealtime }     from "@/lib/hooks/useRealtime";
 
-import { DashboardData, Destination, UserProfile, HazardNotif } from "./_components/types";
+import { DashboardData, Destination, DestinationSummary, UserProfile, HazardNotif } from "./_components/types";
 import { NotificationPanel } from "./_components/NotificationPanel";
 import { FriendsSidebar }    from "./_components/FriendsSidebar";
 import { DestinationCard }   from "./_components/DestinationCard";
@@ -100,7 +100,7 @@ export default function DashboardPage() {
   const [notifOpen, setNotifOpen]     = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [search, setSearch]           = useState("");
-  const [filter, setFilter]           = useState<"ALL" | Destination["safetyLevel"]>("ALL");
+  const [filter, setFilter]           = useState<string>("ALL");
   const [notifications, setNotifs]    = useState<HazardNotif[]>([]);
   const [userImage, setUserImage]     = useState<string | null>(null);
   const [userData, setUserData]       = useState<UserProfile | null>(null);
@@ -108,7 +108,18 @@ export default function DashboardPage() {
   const [assessStatus, setAssessStatus] = useState<{ hoursAgo: number | null; isStale: boolean } | null>(null);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [destinationSummary, setDestinationSummary] = useState<DestinationSummary | null>(null);
   const [visibleRouteCards, setVisibleRouteCards] = useState(5);
+  const FILTER_OPTIONS = [
+    { value: "ALL", label: "All Destinations" },
+    { value: "RECOMMENDED", label: "Recommended for You" },
+    { value: "SAFE", label: "Safe" },
+    { value: "CAUTION", label: "Caution" },
+    { value: "HIGH_RISK", label: "High Risk & Extreme" },
+    { value: "NEARBY", label: "Nearby" },
+  ];
+  const [fetchingOsm, setFetchingOsm] = useState(false);
+  const [osmFetchResult, setOsmFetchResult] = useState<string | null>(null);
   const [pickingLocation, setPickingLocation] = useState(false);
   const {
     origin: resolvedOrigin,
@@ -142,6 +153,18 @@ export default function DashboardPage() {
         setLocating(false);
       };
 
+      const resolveAndSave = async (latitude: number, longitude: number, accuracy: number) => {
+        const resolved = await resolveFromGps(latitude, longitude, accuracy);
+        if (resolved) {
+          fetch("/api/user/location", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ placeName: resolved.name, lat: latitude, lon: longitude, accuracy }),
+          }).catch(() => {});
+        }
+      };
+
       const timeoutId = setTimeout(() => {
         stopWatching();
         if (bestPos) {
@@ -149,7 +172,7 @@ export default function DashboardPage() {
           if (accuracy > 300) {
              setLocationError(`Could not get accurate location (best: ${Math.round(accuracy)}m). Using approximate coordinates.`);
           }
-          void resolveFromGps(latitude, longitude, accuracy);
+          void resolveAndSave(latitude, longitude, accuracy);
         } else {
           setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
         }
@@ -164,7 +187,7 @@ export default function DashboardPage() {
           if (pos.coords.accuracy < 40) {
             clearTimeout(timeoutId);
             stopWatching();
-            void resolveFromGps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+            void resolveAndSave(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
           }
         },
         (err) => {
@@ -235,7 +258,7 @@ export default function DashboardPage() {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  useEffect(() => { fetchDashboard(); checkAndRefreshData(); }, []);
+  useEffect(() => { fetchDashboard(); checkAndRefreshData(); fetchDestinationSummary(); }, []);
   useEffect(() => {
     void loadSavedHome();
   }, [loadSavedHome]);
@@ -284,6 +307,14 @@ export default function DashboardPage() {
         setError(`Error ${res.status}: ${json.message ?? "Unknown error"}`);
         return;
       }
+      if (json.user?.role === "ADMIN") {
+        router.replace("/admin/dashboard");
+        return;
+      }
+      if (json.user?.role === "ANALYST") {
+        router.replace("/admin/analytics");
+        return;
+      }
       setData(json);
       setUserImage(json.user.image);
       setUserData(json.user);
@@ -291,6 +322,28 @@ export default function DashboardPage() {
       setError(`Failed to load: ${String(err)}`);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleFetchFromOsm() {
+    setFetchingOsm(true);
+    setOsmFetchResult(null);
+    try {
+      const res = await fetch("/api/destinations/fetch-from-osm", {
+        method: "POST",
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setOsmFetchResult(json.message);
+        setTimeout(fetchDashboard, 2000);
+      } else {
+        setOsmFetchResult(json.message || "Failed to fetch from OSM");
+      }
+    } catch (err) {
+      setOsmFetchResult(`Error: ${String(err)}`);
+    } finally {
+      setFetchingOsm(false);
     }
   }
 
@@ -312,6 +365,15 @@ export default function DashboardPage() {
       if (Array.isArray(json)) {
         setNotifs(filterHazardNotifs(json));
       }
+    } catch {}
+  }
+
+  async function fetchDestinationSummary() {
+    try {
+      const res = await fetch("/api/destinations/summary", { credentials: "include" });
+      if (!res.ok) return;
+      const json = await res.json();
+      setDestinationSummary(json);
     } catch {}
   }
 
@@ -344,60 +406,83 @@ export default function DashboardPage() {
     return R * c;
   }
 
-  // Priority Ranking Algorithm
+  // Priority Ranking Algorithm — safe > nearby > personalized
   function calculateScore(dest: Destination, userProf: UserProfile | null): number {
     let score = 0;
     const pref = userProf?.preference;
-    if (!pref) return dest.safetyScore; // Fallback to raw safety score
+    const health = userProf?.health;
+    if (!pref) return dest.safetyScore;
 
-    // 1. Safety Dominates
-    if (pref.riskTolerance === "LOW" && (dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME")) {
-      return -9999; // Heavily penalize to push to bottom
-    }
-    if (pref.riskTolerance === "MEDIUM" && dest.safetyLevel === "EXTREME") {
-      return -9999;
-    }
-    
-    // Base safety points
-    if (dest.safetyLevel === "SAFE") score += 50;
-    else if (dest.safetyLevel === "CAUTION") score += 20;
-    else if (dest.safetyLevel === "HIGH_RISK") score -= 30;
+    // 1. SAFETY DOMINATES — safe destinations always recommended first
+    if (dest.safetyLevel === "SAFE") score += 150;
+    else if (dest.safetyLevel === "CAUTION") score += 80;
+    else if (dest.safetyLevel === "HIGH_RISK") score -= 100;
+    else score -= 500;
 
-    // 2. Distance / Proximity
+    // Risk tolerance check
+    if (pref.riskTolerance === "LOW" && (dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME")) return -9999;
+    if (pref.riskTolerance === "MEDIUM" && dest.safetyLevel === "EXTREME") return -9999;
+
+    // 2. PROXIMITY — nearby destinations get major boost
     if (pref.locationLat && pref.locationLng && dest.latitude && dest.longitude) {
       const dist = getDistanceFromLatLonInKm(pref.locationLat, pref.locationLng, dest.latitude, dest.longitude);
       if (pref.maxDistanceKm && dist > pref.maxDistanceKm) {
-        score -= 50; // penalty for being too far based on constraint
+        score -= 150;
       } else {
-        // Closer is better (max +30 points)
-        score += Math.max(0, 30 - (dist / 20)); 
+        score += Math.max(0, 80 - dist);
       }
     }
 
-    // 3. Match Interests & Travel Style (Simulated by checking name/district/reasoning)
-    const destStr = (dest.name + " " + dest.district + " " + dest.reasoning.join(" ")).toLowerCase();
+    // Same province = nearby boost
+    if (userProf?.homeLocation?.province && dest.province === userProf.homeLocation.province) {
+      score += 50;
+    }
+
+    // 3. PERSONALIZATION — interests, travel style, behavior
+    const destStr = (dest.name + " " + dest.district + " " + dest.province + " " + dest.reasoning.join(" ")).toLowerCase();
     
     let interestMatches = 0;
     pref.interests?.forEach((interest: string) => {
       if (destStr.includes(interest.toLowerCase())) interestMatches++;
     });
-    score += (interestMatches * 15);
+    score += (interestMatches * 20);
 
     let styleMatches = 0;
     pref.travelStyle?.forEach((style: string) => {
       if (destStr.includes(style.toLowerCase())) styleMatches++;
     });
-    score += (styleMatches * 10);
+    score += (styleMatches * 15);
 
-    // 4. Behavior Adjustments
+    // 4. HEALTH-BASED ADJUSTMENTS
+    if (health) {
+      if (health.chronicConditions?.includes("asthma")) {
+        if (dest.altitude && dest.altitude > 2500) score -= 60;
+      }
+      if (health.chronicConditions?.includes("heart") || health.chronicConditions?.includes("hypertension")) {
+        if (dest.altitude && dest.altitude > 2000) score -= 50;
+      }
+      if (health.fitnessLevel === "LOW") {
+        if (dest.altitude && dest.altitude > 1500) score -= 40;
+        if (dest.safetyLevel === "EXTREME") score -= 200;
+      }
+      if (health.mobilityLimited) {
+        if (dest.altitude && dest.altitude > 1000) score -= 60;
+        if (!dest.routeAccessible) score -= 80;
+      }
+      if (health.chronicConditions?.includes("diabetes")) {
+        if (dest.altitude && dest.altitude > 3000) score -= 40;
+      }
+    }
+
+    // 5. Behavior Adjustments
     const behavior = userProf?.behavior?.metrics || {};
     const destClicks = behavior.destinations?.[dest.id] || 0;
-    score += (destClicks * 5); // Direct destination clicks give strong boost
+    score += (destClicks * 5);
 
     if (behavior.categories) {
       Object.entries(behavior.categories).forEach(([cat, clicks]) => {
         if (destStr.includes(cat.toLowerCase())) {
-          score += (Number(clicks) * 2); // Category interest boost
+          score += (Number(clicks) * 2);
         }
       });
     }
@@ -410,8 +495,16 @@ export default function DashboardPage() {
 
   const filtered = all.filter((d) => {
     const q = search.toLowerCase();
-    return (d.name.toLowerCase().includes(q) || d.district.toLowerCase().includes(q) || d.province.toLowerCase().includes(q))
-      && (filter === "ALL" || d.safetyLevel === filter);
+    if (!d.name.toLowerCase().includes(q) && !d.district.toLowerCase().includes(q) && !d.province.toLowerCase().includes(q)) return false;
+    if (filter === "ALL" || filter === "RECOMMENDED") return true;
+    if (filter === "SAFE") return d.safetyLevel === "SAFE";
+    if (filter === "CAUTION") return d.safetyLevel === "CAUTION";
+    if (filter === "HIGH_RISK") return d.safetyLevel === "HIGH_RISK" || d.safetyLevel === "EXTREME";
+    if (filter === "NEARBY") {
+      if (!userData?.homeLocation?.province) return false;
+      return d.province === userData.homeLocation.province;
+    }
+    return true;
   });
 
   // Sort by personalized priority score instead of just safety
@@ -477,6 +570,11 @@ export default function DashboardPage() {
         <Mountain size={14} />
         Plan a Trip
       </Link>
+      {user.role === "ADMIN" && (
+        <Link href="/admin" className="hidden md:inline-flex yatra-cta-ghost">
+          Admin Panel
+        </Link>
+      )}
       <Link href="/trips" className="hidden md:inline-flex yatra-cta-ghost">
         <Users size={14} />
         Your Plans
@@ -616,6 +714,33 @@ export default function DashboardPage() {
             </button>
           ))}
         </div>
+        {destinationSummary && (
+          <>
+            {destinationSummary.topUnverified.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-sm text-amber-300">⚠️</span>
+                  <h3 className="font-display text-base font-semibold text-white">Unverified destinations</h3>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  {destinationSummary.topUnverified.map((dest) => (
+                    <div key={dest.id} className="stat-card p-4 border border-slate-700/50 bg-slate-900/70">
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <div>
+                          <p className="font-semibold text-white truncate">{dest.name}</p>
+                          <p className="font-body text-xs text-slate-500">{dest.district}, {dest.province}</p>
+                        </div>
+                        <span className="text-xs text-slate-400">{dest.category}</span>
+                      </div>
+                      <p className="font-body text-xs text-slate-400">Quality: {dest.dataQualityScore != null ? `${Math.round(dest.dataQualityScore)} / 100` : "Unknown"}</p>
+                      <p className="font-body text-xs text-slate-400 mt-1">Route accessible: {dest.routeAccessible ? "Yes" : "No"}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
 
         {/* Last updated indicator */}
         <div className="flex items-center justify-between mb-6">
@@ -637,8 +762,8 @@ export default function DashboardPage() {
           <p className="mb-4 font-body text-xs text-sky-300/90">{resolvedOrigin.note}</p>
         )}
 
-        {/* Recommended — top 3 safe/caution, shown only on "All" view */}
-        {filter === "ALL" && stats.total > 0 && recommended.length > 0 && (
+        {/* Recommended — top 3 personalized picks, shown on All & Recommended views */}
+        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && recommended.length > 0 && (
           <div className="mb-8" style={{ animation: "fadeUp .6s .15s ease both" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center gap-2">
@@ -666,6 +791,7 @@ export default function DashboardPage() {
                   originAlreadyResolved={!!resolvedOrigin}
                   onRequestLocation={requestUserLocation}
                   requestingLocation={locating}
+                  onOpenManualLocation={() => setPickingLocation(true)}
                   shouldFetchRoute
                 />
               ))}
@@ -673,7 +799,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Search + filter bar */}
+        {/* Search + unified filter dropdown */}
         <div className="flex flex-col md:flex-row gap-3 mb-4" style={{ animation: "fadeUp .6s .2s ease both" }}>
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -681,26 +807,42 @@ export default function DashboardPage() {
               onChange={(e) => setSearch(e.target.value)} className="search-input w-full pl-9 pr-9 py-2.5 text-sm rounded-xl" />
             {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"><X size={14} /></button>}
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {(["ALL","SAFE","CAUTION","HIGH_RISK","EXTREME"] as const).map((f) => (
-              <button key={f} onClick={() => setFilter(f)}
-                className={`filter-pill px-3 py-1.5 text-xs font-medium text-slate-400 ${filter === f ? "active" : ""}`}>
-                {f === "ALL" ? "All" : f === "HIGH_RISK" ? "High Risk" : f.charAt(0) + f.slice(1).toLowerCase()}
-              </button>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="px-3 py-2.5 text-sm rounded-xl bg-slate-800/80 border border-slate-700/50 text-white font-body focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 transition-all"
+          >
+            {FILTER_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
+                {opt.label}
+              </option>
             ))}
-          </div>
+          </select>
         </div>
 
-        {/* Count row */}
+        {/* Count row + OSM fetch */}
         <div className="flex items-center justify-between mb-4">
           <p className="font-body text-xs text-slate-600">
             {stats.total === 0 ? "Run POST /api/assess to populate safety scores"
               : sortedAndRanked.length === 0 ? "No destinations match"
               : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, sortedAndRanked.length)} of ${sortedAndRanked.length}`}
           </p>
-          {filter !== "ALL" && (
-            <button onClick={() => setFilter("ALL")} className="font-body text-xs text-amber-400 hover:text-amber-300 transition-colors">Clear filter ×</button>
-          )}
+          <div className="flex items-center gap-3">
+            {osmFetchResult && (
+              <span className="font-body text-xs text-sky-300">{osmFetchResult}</span>
+            )}
+            <button
+              onClick={handleFetchFromOsm}
+              disabled={fetchingOsm}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-50"
+            >
+              {fetchingOsm ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+              {fetchingOsm ? "Fetching..." : "Fetch from OSM"}
+            </button>
+            {filter !== "ALL" && (
+              <button onClick={() => setFilter("ALL")} className="font-body text-xs text-amber-400 hover:text-amber-300 transition-colors">Clear filter ×</button>
+            )}
+          </div>
         </div>
 
         {/* Empty states */}
@@ -720,12 +862,14 @@ export default function DashboardPage() {
         )}
 
         {/* Filter heading */}
-        {filter !== "ALL" && paginated.length > 0 && (
+          {filter !== "ALL" && paginated.length > 0 && (
           <h2 className="font-display text-base font-bold text-white mb-4">
+            {filter === "RECOMMENDED" && "✨ Recommended for you"}
             {filter === "SAFE" && "✅ Safe destinations"}
             {filter === "CAUTION" && "⚠️ Caution — travel with care"}
             {filter === "HIGH_RISK" && "🚨 High risk — avoid if possible"}
             {filter === "EXTREME" && "❌ Extreme — do not travel"}
+            {filter === "NEARBY" && "📍 Nearby destinations"}
           </h2>
         )}
 
@@ -750,6 +894,7 @@ export default function DashboardPage() {
                   originAlreadyResolved={!!resolvedOrigin}
                   onRequestLocation={requestUserLocation}
                   requestingLocation={locating}
+                  onOpenManualLocation={() => setPickingLocation(true)}
                   shouldFetchRoute={i < visibleRouteCards}
                 />
               ))}

@@ -1,7 +1,3 @@
-/////////////////////////////////////////////////
-// GENERATOR & DATASOURCE
-/////////////////////////////////////////////////
-
 generator client {
   provider        = "prisma-client"
   output          = "../app/generated/prisma"
@@ -12,9 +8,502 @@ datasource db {
   provider = "postgresql"
 }
 
-/////////////////////////////////////////////////
-// ENUMS
-/////////////////////////////////////////////////
+model User {
+  id               String              @id @default(cuid())
+  name             String
+  username         String?             @unique
+  displayUsername  String?
+  email            String              @unique
+  emailVerified    Boolean             @default(false)
+  image            String?
+  role             Role                @default(USER)
+  isActive         Boolean             @default(true)
+  homeLocationId   String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  deletedAt        DateTime?
+  auditLogs        AuditLog[]
+  receivedRequests Friendship[]        @relation("FriendReceived")
+  sentRequests     Friendship[]        @relation("FriendRequests")
+  notifications    Notification[]
+  createdGroups    TravelGroup[]       @relation("GroupCreator")
+  groupMemberships TravelGroupMember[]
+  travelPlans      TravelPlan[]        @relation("TripLeader")
+  planMemberships  TravelPlanMember[]
+  behavior         UserBehavior?
+  health           UserHealth?
+  preference       UserPreference?
+  accounts         Account[]
+  sessions         Session[]
+  homeLocation     Location?           @relation("HomeLocation", fields: [homeLocationId], references: [id])
+  savedLocation    UserSavedLocation?
+
+  @@index([email])
+  @@index([username])
+  @@map("user")
+}
+
+model UserHealth {
+  id                String       @id @default(cuid())
+  userId            String       @unique
+  bloodType         String?
+  fitnessLevel      FitnessLevel @default(MODERATE)
+  mobilityLimited   Boolean      @default(false)
+  chronicConditions String[]
+  allergies         String[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPreference {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  locationLat         Float?
+  locationLng         Float?
+  interests           String[]
+  riskTolerance       String   @default("MEDIUM")
+  travelStyle         String[]
+  maxDistanceKm       Float?
+  typicalDurationDays Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserBehavior {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  metrics   Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  receiverId  String
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  receiver    User             @relation("FriendReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  requester   User             @relation("FriendRequests", fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId, status])
+  @@index([requesterId, status])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
+}
+
+model Destination {
+  id                 String              @id @default(uuid())
+  name               String
+  normalizedName     String
+  district           String
+  province           String
+  municipality       String?
+  latitude           Float
+  longitude          Float
+  altitude           Float?
+  category           DestinationCategory
+  description        String?
+  image              String?
+  tags               String[]
+  osmId              String?             @unique
+  source             DestinationSource
+  verified           Boolean             @default(false)
+  verifiedBy         String?
+  verifiedAt         DateTime?
+  routeAccessible    Boolean             @default(true)
+  coordinateAccuracy Float?
+  dataQualityScore   Float?
+  popularityScore    Float?
+  confidenceScore    Float?
+  accessibilityScore Float?
+  tourismSupportScore Float?
+  destinationTier    Int?
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  sourceLastFetch    DateTime?
+
+  @@unique([name, district, province])
+  @@index([normalizedName])
+  @@index([district, province])
+  @@index([latitude, longitude])
+  @@index([category])
+  @@index([verified])
+  @@index([source])
+  @@index([popularityScore])
+  @@index([destinationTier])
+  @@index([confidenceScore])
+  @@map("destination")
+}
+
+model Province {
+  id        String     @id @default(uuid())
+  name      String     @unique
+  districts District[]
+}
+
+model District {
+  id         String     @id @default(uuid())
+  name       String
+  provinceId String
+  province   Province   @relation(fields: [provinceId], references: [id])
+  locations  Location[]
+  places     Place[]
+
+  @@unique([name, provinceId])
+}
+
+model Location {
+  id                String               @id @default(uuid())
+  name              String
+  districtId        String
+  latitude          Float
+  longitude         Float
+  altitude          Int?
+  createdAt         DateTime             @default(now())
+  hazardData        HazardData[]
+  district          District             @relation(fields: [districtId], references: [id])
+  riskReports       RiskAssessment[]
+  routeDestinations RouteTemplate[]      @relation("RouteTemplateDestination")
+  routeOrigins      RouteTemplate[]      @relation("RouteTemplateOrigin")
+  routePoints       RouteTemplatePoint[] @relation("RoutePointLocation")
+  groupTrips        TravelGroup[]
+  travelStops       TravelStop[]
+  weatherData       WeatherData[]
+  place             Place?
+  residents         User[]               @relation("HomeLocation")
+
+  @@unique([name, districtId])
+  @@index([latitude, longitude])
+}
+
+model Place {
+  id         String      @id @default(uuid())
+  name       String
+  type       PlaceType
+  latitude   Float
+  longitude  Float
+  parentId   String?
+  districtId String?
+  locationId String?     @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  district   District?   @relation(fields: [districtId], references: [id])
+  location   Location?   @relation(fields: [locationId], references: [id])
+  parent     Place?      @relation("PlaceHierarchy", fields: [parentId], references: [id])
+  children   Place[]     @relation("PlaceHierarchy")
+  routeNodes RouteNode[]
+
+  @@index([type])
+  @@index([latitude, longitude])
+  @@index([districtId])
+  @@index([parentId])
+  @@map("place")
+}
+
+model RouteNode {
+  id             String              @id @default(uuid())
+  name           String
+  type           PlaceType           @default(ROUTE_NODE)
+  latitude       Float
+  longitude      Float
+  placeId        String?
+  isHub          Boolean             @default(false)
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  edgesFrom      RouteEdge[]         @relation("EdgeFrom")
+  edgesTo        RouteEdge[]         @relation("EdgeTo")
+  place          Place?              @relation(fields: [placeId], references: [id])
+  savedLocations UserSavedLocation[]
+
+  @@index([latitude, longitude])
+  @@index([isHub, isActive])
+  @@map("route_node")
+}
+
+model RouteEdge {
+  id              String    @id @default(uuid())
+  fromNodeId      String
+  toNodeId        String
+  distanceKm      Float
+  roadName        String?
+  isBidirectional Boolean   @default(true)
+  fromNode        RouteNode @relation("EdgeFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode          RouteNode @relation("EdgeTo", fields: [toNodeId], references: [id], onDelete: Cascade)
+
+  @@unique([fromNodeId, toNodeId])
+  @@index([fromNodeId])
+  @@index([toNodeId])
+  @@map("route_edge")
+}
+
+model UserSavedLocation {
+  userId             String     @id
+  placeName          String
+  latitude           Float
+  longitude          Float
+  nearestRouteNodeId String?
+  accuracyMeters     Float?
+  source             String     @default("manual")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  nearestRouteNode   RouteNode? @relation(fields: [nearestRouteNodeId], references: [id])
+  user               User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_saved_location")
+}
+
+model RouteTemplate {
+  id                    String               @id @default(uuid())
+  originLocationId      String
+  destinationLocationId String
+  name                  String
+  distanceKm            Float?
+  source                String?
+  isActive              Boolean              @default(true)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  destinationLocation   Location             @relation("RouteTemplateDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
+  originLocation        Location             @relation("RouteTemplateOrigin", fields: [originLocationId], references: [id], onDelete: Cascade)
+  points                RouteTemplatePoint[]
+
+  @@unique([originLocationId, destinationLocationId, name])
+  @@index([originLocationId, destinationLocationId, isActive])
+}
+
+model RouteTemplatePoint {
+  id                String        @id @default(uuid())
+  routeTemplateId   String
+  seq               Int
+  lat               Float
+  lon               Float
+  kmFromStart       Float
+  placeName         String?
+  matchedLocationId String?
+  createdAt         DateTime      @default(now())
+  matchedLocation   Location?     @relation("RoutePointLocation", fields: [matchedLocationId], references: [id])
+  routeTemplate     RouteTemplate @relation(fields: [routeTemplateId], references: [id], onDelete: Cascade)
+
+  @@unique([routeTemplateId, seq])
+  @@index([routeTemplateId, seq])
+  @@index([lat, lon])
+}
+
+model WeatherData {
+  id          String   @id @default(uuid())
+  locationId  String
+  temperature Float
+  humidity    Float
+  rainfall    Float
+  windSpeed   Float
+  pressure    Float?
+  source      String?
+  recordedAt  DateTime
+  createdAt   DateTime @default(now())
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId, recordedAt])
+}
+
+model HazardData {
+  id             String   @id @default(uuid())
+  locationId     String
+  floodIndex     Float?
+  landslideIndex Float?
+  heatIndex      Float?
+  airQuality     Float?
+  source         String?
+  recordedAt     DateTime
+  createdAt      DateTime @default(now())
+  location       Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId, recordedAt])
+}
+
+model RiskAssessment {
+  id              String         @id @default(uuid())
+  locationId      String
+  type            AssessmentType
+  safetyScore     Float
+  safetyLevel     SafetyLevel
+  confidence      Float?
+  decisionTrace   Json
+  weatherSnapshot Json?
+  hazardSnapshot  Json?
+  modelVersion    String?
+  createdAt       DateTime       @default(now())
+  location        Location       @relation(fields: [locationId], references: [id])
+
+  @@index([locationId, createdAt])
+}
+
+model TravelPlan {
+  id              String             @id @default(uuid())
+  title           String
+  leaderId        String
+  tripType        AssessmentType     @default(SOLO)
+  status          TravelStatus       @default(PENDING)
+  startDate       DateTime
+  endDate         DateTime
+  budgetNPR       Float?
+  groupRiskResult Json?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  leader          User               @relation("TripLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members         TravelPlanMember[]
+  stops           TravelStop[]
+
+  @@index([leaderId])
+}
+
+model TravelStop {
+  id            String     @id @default(uuid())
+  planId        String
+  locationId    String
+  stopOrder     Int
+  arrivalDate   DateTime
+  departureDate DateTime
+  riskSnapshot  Json?
+  location      Location   @relation(fields: [locationId], references: [id])
+  plan          TravelPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, stopOrder])
+  @@index([planId])
+}
+
+model TravelPlanMember {
+  id           String       @id @default(uuid())
+  planId       String
+  userId       String
+  status       MemberStatus @default(PENDING)
+  invitedAt    DateTime     @default(now())
+  respondedAt  DateTime?
+  riskSnapshot Json?
+  plan         TravelPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, userId])
+  @@index([planId])
+  @@index([userId])
+}
+
+model TravelGroup {
+  id            String              @id @default(uuid())
+  name          String
+  destinationId String
+  startDate     DateTime
+  endDate       DateTime
+  status        TravelStatus        @default(PENDING)
+  createdById   String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  createdBy     User                @relation("GroupCreator", fields: [createdById], references: [id])
+  destination   Location            @relation(fields: [destinationId], references: [id])
+  members       TravelGroupMember[]
+
+  @@index([destinationId])
+}
+
+model TravelGroupMember {
+  id       String      @id @default(uuid())
+  groupId  String
+  userId   String
+  joinedAt DateTime    @default(now())
+  group    TravelGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+}
+
+model yatra_disaster_events {
+  id          BigInt   @id @default(autoincrement())
+  external_id String
+  type        String
+  lat         Float
+  lon         Float
+  date        DateTime @db.Timestamptz(6)
+  severity    String
+  source      String
+  metadata    Json?
+  created_at  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@unique([source, external_id])
+  @@index([date], map: "idx_disaster_events_date")
+  @@index([lat, lon], map: "idx_disaster_events_lat_lon")
+  @@index([type], map: "idx_disaster_events_type")
+}
 
 enum Role {
   USER
@@ -75,189 +564,6 @@ enum PlaceType {
   TOWN
 }
 
-/////////////////////////////////////////////////
-// USER DOMAIN
-/////////////////////////////////////////////////
-
-model User {
-  id            String  @id @default(cuid())
-  name          String
-  username         String?  @unique              // null for Google users until onboarding
-  displayUsername  String?                       // optional display version
-  email         String  @unique
-  emailVerified Boolean @default(false)
-  image         String?
-  role          Role    @default(USER)
-  isActive      Boolean @default(true)
-
-  homeLocationId   String?
-  homeLocation     Location?           @relation("HomeLocation", fields: [homeLocationId], references: [id])
-  createdGroups    TravelGroup[]       @relation("GroupCreator")
-  travelPlans      TravelPlan[]        @relation("TripLeader")
-  planMemberships  TravelPlanMember[]
-  groupMemberships TravelGroupMember[]
-  notifications    Notification[]
-  auditLogs        AuditLog[]
-
-  health           UserHealth?
-  preference       UserPreference?
-  behavior         UserBehavior?
-  savedLocation    UserSavedLocation?
-  sentRequests     Friendship[]        @relation("FriendRequests")
-  receivedRequests Friendship[]        @relation("FriendReceived")
-
-  // Better Auth
-  sessions         Session[]
-  accounts         Account[]
-
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
-
-  @@index([email])
-  @@index([username])
-  @@map("user")
-}
-
-/////////////////////////////////////////////////
-// USER HEALTH — NEW
-/////////////////////////////////////////////////
-
-model UserHealth {
-  id     String @id @default(cuid())
-  userId String @unique
-
-  bloodType          String?      // A+, A-, B+, B-, O+, O-, AB+, AB-
-  fitnessLevel       FitnessLevel @default(MODERATE)
-  mobilityLimited    Boolean      @default(false)
-  chronicConditions  String[]     // ["diabetes", "hypertension", "asthma", "heart"]
-  allergies          String[]     // ["peanuts", "penicillin", "pollen"]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-/////////////////////////////////////////////////
-// USER PREFERENCES & BEHAVIOR
-/////////////////////////////////////////////////
-
-model UserPreference {
-  id     String @id @default(cuid())
-  userId String @unique
-
-  // 1. Location (Could be mapped to District/Province or lat/lon)
-  locationLat Float?
-  locationLng Float?
-
-  // 2. Primary interests
-  interests String[]
-
-  // 3. Risk tolerance
-  riskTolerance String @default("MEDIUM")
-
-  // 4. Travel style
-  travelStyle String[]
-
-  // 5. Trip constraints
-  maxDistanceKm Float?
-  typicalDurationDays Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model UserBehavior {
-  id     String @id @default(cuid())
-  userId String @unique
-
-  // JSON format for clicks/ignores per category/destination
-  metrics Json @default("{}")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-/////////////////////////////////////////////////
-// FRIENDSHIPS — NEW
-/////////////////////////////////////////////////
-
-model Friendship {
-  id          String           @id @default(cuid())
-  requesterId String           // user who sent the request
-  receiverId  String           // user who received it
-  status      FriendshipStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  requester User @relation("FriendRequests", fields: [requesterId], references: [id], onDelete: Cascade)
-  receiver  User @relation("FriendReceived",  fields: [receiverId],  references: [id], onDelete: Cascade)
-
-  @@unique([requesterId, receiverId]) // prevent duplicate requests
-  @@index([receiverId, status])       // fast lookup of pending requests
-  @@index([requesterId, status])
-}
-
-/////////////////////////////////////////////////
-// BETTER AUTH
-/////////////////////////////////////////////////
-
-model Session {
-  id        String   @id @default(cuid())
-  expiresAt DateTime
-  token     String   @unique
-  ipAddress String?
-  userAgent String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("session")
-}
-
-model Account {
-  id                    String    @id @default(cuid())
-  accountId             String
-  providerId            String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("account")
-}
-
-model Verification {
-  id         String   @id @default(cuid())
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@map("verification")
-}
-
-/////////////////////////////////////////////////
-// GEOGRAPHY DOMAIN
-/////////////////////////////////////////////////
-
 enum DestinationCategory {
   VIEWPOINT
   TREKKING_VILLAGE
@@ -284,439 +590,4 @@ enum DestinationSource {
   MANUAL
   LOCAL_KNOWLEDGE
   HISTORICAL
-}
-
-model Destination {
-  id              String    @id @default(uuid())
-  name            String
-  normalizedName  String                           // normalized for deduplication (lowercase, no accents)
-  
-  // Location info
-  district        String
-  province        String
-  municipality    String?
-  latitude        Float
-  longitude       Float
-  altitude        Float?
-  
-  // Metadata
-  category        DestinationCategory
-  description     String?
-  image           String?
-  tags            String[]
-  
-  // Verification & tracking
-  osmId           String?                 @unique
-  source          DestinationSource
-  verified        Boolean     @default(false)
-  verifiedBy      String?                         // user ID who verified
-  verifiedAt      DateTime?
-  
-  // Routing & accessibility
-  routeAccessible Boolean     @default(true)      // can routes reach this?
-  
-  // Data quality metrics
-  coordinateAccuracy Float?                       // meters
-  dataQualityScore   Float?                       // 0-100
-  
-  // Timestamps
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  sourceLastFetch DateTime?
-  
-  // Search indexing
-  @@index([normalizedName])
-  @@index([district, province])
-  @@index([latitude, longitude])
-  @@index([category])
-  @@index([verified])
-  @@index([source])
-  @@unique([name, district, province])           // prevent exact duplicates
-  @@map("destination")
-}
-
-model Province {
-  id   String @id @default(uuid())
-  name String @unique
-
-  districts District[]
-}
-
-model District {
-  id         String @id @default(uuid())
-  name       String
-  provinceId String
-
-  province  Province   @relation(fields: [provinceId], references: [id])
-  locations Location[]
-  places    Place[]
-
-  @@unique([name, provinceId])
-}
-
-model Location {
-  id         String @id @default(uuid())
-  name       String
-  districtId String
-
-  latitude  Float
-  longitude Float
-  altitude  Int?
-
-  district    District         @relation(fields: [districtId], references: [id])
-  weatherData WeatherData[]
-  hazardData  HazardData[]
-  riskReports RiskAssessment[]
-  travelStops TravelStop[]
-  routeOrigins RouteTemplate[] @relation("RouteTemplateOrigin")
-  routeDestinations RouteTemplate[] @relation("RouteTemplateDestination")
-  routePoints RouteTemplatePoint[] @relation("RoutePointLocation")
-  residents   User[]           @relation("HomeLocation")
-  groupTrips  TravelGroup[]
-  place       Place?
-
-  createdAt DateTime @default(now())
-
-  @@unique([name, districtId])
-  @@index([latitude, longitude])
-}
-
-/////////////////////////////////////////////////
-// NEPAL GEOGRAPHY & ROUTING GRAPH
-/////////////////////////////////////////////////
-
-model Place {
-  id        String    @id @default(uuid())
-  name      String
-  type      PlaceType
-  latitude  Float
-  longitude Float
-  parentId  String?
-  districtId String?
-
-  parent   Place?    @relation("PlaceHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  children Place[]   @relation("PlaceHierarchy")
-  district District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
-  location Location? @relation(fields: [locationId], references: [id], onDelete: SetNull)
-  locationId String? @unique
-  routeNodes RouteNode[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([type])
-  @@index([latitude, longitude])
-  @@index([districtId])
-  @@index([parentId])
-  @@map("place")
-}
-
-model RouteNode {
-  id        String    @id @default(uuid())
-  name      String
-  type      PlaceType @default(ROUTE_NODE)
-  latitude  Float
-  longitude Float
-  placeId   String?
-  isHub     Boolean   @default(false)
-  isActive  Boolean   @default(true)
-
-  place           Place?              @relation(fields: [placeId], references: [id], onDelete: SetNull)
-  edgesFrom       RouteEdge[]         @relation("EdgeFrom")
-  edgesTo         RouteEdge[]         @relation("EdgeTo")
-  savedLocations  UserSavedLocation[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([latitude, longitude])
-  @@index([isHub, isActive])
-  @@map("route_node")
-}
-
-model RouteEdge {
-  id              String  @id @default(uuid())
-  fromNodeId      String
-  toNodeId        String
-  distanceKm      Float
-  roadName        String?
-  isBidirectional Boolean @default(true)
-
-  fromNode RouteNode @relation("EdgeFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
-  toNode   RouteNode @relation("EdgeTo", fields: [toNodeId], references: [id], onDelete: Cascade)
-
-  @@unique([fromNodeId, toNodeId])
-  @@index([fromNodeId])
-  @@index([toNodeId])
-  @@map("route_edge")
-}
-
-model UserSavedLocation {
-  userId             String  @id
-  placeName          String
-  latitude           Float
-  longitude          Float
-  nearestRouteNodeId String?
-  accuracyMeters     Float?
-  source             String  @default("manual")
-
-  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nearestRouteNode RouteNode? @relation(fields: [nearestRouteNodeId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("user_saved_location")
-}
-
-/////////////////////////////////////////////////
-// STORED ROUTE CORRIDORS
-/////////////////////////////////////////////////
-
-model RouteTemplate {
-  id String @id @default(uuid())
-
-  originLocationId      String
-  destinationLocationId String
-  name                  String
-  distanceKm            Float?
-  source                String?
-  isActive              Boolean  @default(true)
-
-  points RouteTemplatePoint[]
-
-  originLocation      Location @relation("RouteTemplateOrigin", fields: [originLocationId], references: [id], onDelete: Cascade)
-  destinationLocation Location @relation("RouteTemplateDestination", fields: [destinationLocationId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([originLocationId, destinationLocationId, isActive])
-  @@unique([originLocationId, destinationLocationId, name])
-}
-
-model RouteTemplatePoint {
-  id String @id @default(uuid())
-
-  routeTemplateId String
-  seq             Int
-  lat             Float
-  lon             Float
-  kmFromStart     Float
-  placeName       String?
-  matchedLocationId String?
-
-  routeTemplate RouteTemplate @relation(fields: [routeTemplateId], references: [id], onDelete: Cascade)
-  matchedLocation Location? @relation("RoutePointLocation", fields: [matchedLocationId], references: [id], onDelete: SetNull)
-
-  createdAt DateTime @default(now())
-
-  @@index([routeTemplateId, seq])
-  @@index([lat, lon])
-  @@unique([routeTemplateId, seq])
-}
-
-/////////////////////////////////////////////////
-// WEATHER (TIME SERIES)
-/////////////////////////////////////////////////
-
-model WeatherData {
-  id         String @id @default(uuid())
-  locationId String
-
-  temperature Float
-  humidity    Float
-  rainfall    Float
-  windSpeed   Float
-  pressure    Float?
-
-  source     String?
-  recordedAt DateTime
-  createdAt  DateTime @default(now())
-
-  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  @@index([locationId, recordedAt])
-}
-
-/////////////////////////////////////////////////
-// HAZARD INTELLIGENCE
-/////////////////////////////////////////////////
-
-model HazardData {
-  id         String @id @default(uuid())
-  locationId String
-
-  floodIndex     Float?
-  landslideIndex Float?
-  heatIndex      Float?
-  airQuality     Float?
-
-  source     String?
-  recordedAt DateTime
-  createdAt  DateTime @default(now())
-
-  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
-
-  @@index([locationId, recordedAt])
-}
-
-/////////////////////////////////////////////////
-// AI RISK ASSESSMENT
-/////////////////////////////////////////////////
-
-model RiskAssessment {
-  id         String         @id @default(uuid())
-  locationId String
-  type       AssessmentType
-
-  safetyScore Float
-  safetyLevel SafetyLevel
-  confidence  Float?
-
-  decisionTrace   Json
-  weatherSnapshot Json?
-  hazardSnapshot  Json?
-
-  modelVersion String?
-  createdAt    DateTime @default(now())
-
-  location     Location      @relation(fields: [locationId], references: [id])
-
-  @@index([locationId, createdAt])
-}
-
-/////////////////////////////////////////////////
-// SOLO TRAVEL
-/////////////////////////////////////////////////
-
-// ── Trip Plan (solo or group, multi-stop route) ───────────────────────────────
-
-model TravelPlan {
-  id          String      @id @default(uuid())
-  title       String                         // e.g. "Annapurna Circuit"
-  leaderId    String                         // always the creator
-  tripType    AssessmentType @default(SOLO)
-  status      TravelStatus   @default(PENDING)
-
-  startDate   DateTime
-  endDate     DateTime
-  budgetNPR   Float?                         // total trip budget
-
-  // Cached group risk analysis result
-  groupRiskResult Json?
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  leader  User              @relation("TripLeader",   fields: [leaderId],  references: [id], onDelete: Cascade)
-  stops   TravelStop[]
-  members TravelPlanMember[]
-
-  @@index([leaderId])
-}
-
-// Each stop in the route (ordered)
-model TravelStop {
-  id           String   @id @default(uuid())
-  planId       String
-  locationId   String
-  stopOrder    Int                            // 1, 2, 3…
-  arrivalDate  DateTime
-  departureDate DateTime
-
-  // Cached per-stop risk snapshot
-  riskSnapshot Json?
-
-  plan     TravelPlan @relation(fields: [planId],     references: [id], onDelete: Cascade)
-  location Location   @relation(fields: [locationId], references: [id])
-
-  @@unique([planId, stopOrder])
-  @@index([planId])
-}
-
-// Group members with invitation workflow
-model TravelPlanMember {
-  id        String           @id @default(uuid())
-  planId    String
-  userId    String
-  status    MemberStatus     @default(PENDING)
-  invitedAt DateTime         @default(now())
-  respondedAt DateTime?
-
-  // Per-member risk snapshot (computed at analysis time)
-  riskSnapshot Json?
-
-  plan TravelPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([planId, userId])
-  @@index([planId])
-  @@index([userId])
-}
-
-// Legacy — kept for backwards compatibility, no longer used for new plans
-model TravelGroup {
-  id   String @id @default(uuid())
-  name String
-
-  destinationId String
-  startDate     DateTime
-  endDate       DateTime
-
-  status      TravelStatus @default(PENDING)
-  createdById String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  destination Location            @relation(fields: [destinationId], references: [id])
-  createdBy   User                @relation("GroupCreator", fields: [createdById], references: [id])
-  members     TravelGroupMember[]
-
-  @@index([destinationId])
-}
-
-model TravelGroupMember {
-  id       String   @id @default(uuid())
-  groupId  String
-  userId   String
-  joinedAt DateTime @default(now())
-
-  group TravelGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([groupId, userId])
-}
-
-/////////////////////////////////////////////////
-// NOTIFICATIONS
-/////////////////////////////////////////////////
-
-model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-}
-
-/////////////////////////////////////////////////
-// AUDIT LOG
-/////////////////////////////////////////////////
-
-model AuditLog {
-  id        String   @id @default(uuid())
-  userId    String?
-  action    String
-  entity    String
-  entityId  String?
-  createdAt DateTime @default(now())
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
-
-  @@index([entity, entityId])
 }

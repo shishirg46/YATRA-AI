@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { distanceToSegmentKm, haversineKm } from "@/lib/routing/geo";
 import { buildGraphWaypoints, findNearestRouteNode } from "@/lib/routing/node-graph";
 import { getAllKnownPlaces } from "@/lib/routing/place-resolver";
+import { fetchOsmRoadNodesBetween } from "@/lib/routing/osm-road-fetcher";
 import type { ResolvedPlace, RouteNode } from "@/lib/routing/types";
 
 export async function loadTemplateNodes(
@@ -34,7 +35,8 @@ export async function buildIntermediateNodes(
   origin: ResolvedPlace,
   destination: ResolvedPlace,
   originRouteNodeId?: string | null,
-  destRouteNodeId?: string | null
+  destRouteNodeId?: string | null,
+  dynamicOsmRouting: boolean = false
 ): Promise<{ nodes: RouteNode[]; source: string }> {
   if (origin.id && destination.id) {
     const template = await loadTemplateNodes(origin.id, destination.id);
@@ -75,6 +77,18 @@ export async function buildIntermediateNodes(
       destHub.id
     );
     if (retry.nodes.length > 0) return retry;
+  }
+
+  if (dynamicOsmRouting && totalKm > 30) {
+    const osmNodes = await fetchOsmRoadNodesBetween(
+      origin.lat,
+      origin.lon,
+      destination.lat,
+      destination.lon
+    );
+    if (osmNodes.length > 0) {
+      return { nodes: osmNodes, source: "osm-road" };
+    }
   }
 
   return { nodes: [], source: "direct" };

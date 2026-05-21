@@ -419,7 +419,7 @@ export default function TripDetailPage({ params }: { params: Promise<{ id: strin
               endLon={plan.stops[plan.stops.length - 1].location?.id === plan.stops[0].location?.id ? 85.9 : 85.3}
               originName={plan.stops[0].location.name}
               destinationName={plan.stops[plan.stops.length - 1].location.name}
-              riskLevel={risk?.overallGroupLevel || "MEDIUM"}
+              riskLevel={risk ? ({ SAFE: "LOW", CAUTION: "MEDIUM", HIGH_RISK: "HIGH", EXTREME: "EXTREME" } as const)[risk.overallGroupLevel] : "MEDIUM"}
             />
           </div>
         )}

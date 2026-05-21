@@ -23,15 +23,10 @@ export const dynamic = "force-dynamic";
 import { NextRequest }   from "next/server";
 import { auth }          from "@/lib/auth";
 import { headers }       from "next/headers";
-import { PrismaClient }  from "@/app/generated/prisma/client";
-import { PrismaPg }      from "@prisma/adapter-pg";
-import { Pool }          from "pg";
+import { prisma }        from "@/lib/prisma";
 import { fetchWeather }  from "@/lib/collectors/weather";
 import { fetchHazard }   from "@/lib/collectors/hazard";
 import { computeSafetyScore, buildHealthFlags } from "@/lib/scoring/safety";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 // How many locations to update per cycle (avoid hammering APIs)
 const LOCATIONS_PER_CYCLE = 20;
@@ -202,7 +197,7 @@ export async function GET(req: NextRequest) {
 
                 // Recompute score with user's health flags
                 const score = computeSafetyScore(
-                  { temperature: weather.temperature, humidity: weather.humidity, rainfall: weather.rainfall, windSpeed: weather.windSpeed, pressure: weather.pressure },
+                  { temperature: weather.temperature, humidity: weather.humidity, rainfall: weather.rainfall, windSpeed: weather.windSpeed, pressure: weather.pressure ?? 1013 },
                   { floodIndex: hazard.floodIndex, landslideIndex: hazard.landslideIndex, earthquakeIndex: hazard.earthquakeIndex ?? 0, heatIndex, airQuality: hazard.airQuality },
                   healthFlags,
                   "SOLO",

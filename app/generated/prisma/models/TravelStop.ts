@@ -228,8 +228,8 @@ export type TravelStopWhereInput = {
   arrivalDate?: Prisma.DateTimeFilter<"TravelStop"> | Date | string
   departureDate?: Prisma.DateTimeFilter<"TravelStop"> | Date | string
   riskSnapshot?: Prisma.JsonNullableFilter<"TravelStop">
-  plan?: Prisma.XOR<Prisma.TravelPlanScalarRelationFilter, Prisma.TravelPlanWhereInput>
   location?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  plan?: Prisma.XOR<Prisma.TravelPlanScalarRelationFilter, Prisma.TravelPlanWhereInput>
 }
 
 export type TravelStopOrderByWithRelationInput = {
@@ -240,8 +240,8 @@ export type TravelStopOrderByWithRelationInput = {
   arrivalDate?: Prisma.SortOrder
   departureDate?: Prisma.SortOrder
   riskSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
-  plan?: Prisma.TravelPlanOrderByWithRelationInput
   location?: Prisma.LocationOrderByWithRelationInput
+  plan?: Prisma.TravelPlanOrderByWithRelationInput
 }
 
 export type TravelStopWhereUniqueInput = Prisma.AtLeast<{
@@ -256,8 +256,8 @@ export type TravelStopWhereUniqueInput = Prisma.AtLeast<{
   arrivalDate?: Prisma.DateTimeFilter<"TravelStop"> | Date | string
   departureDate?: Prisma.DateTimeFilter<"TravelStop"> | Date | string
   riskSnapshot?: Prisma.JsonNullableFilter<"TravelStop">
-  plan?: Prisma.XOR<Prisma.TravelPlanScalarRelationFilter, Prisma.TravelPlanWhereInput>
   location?: Prisma.XOR<Prisma.LocationScalarRelationFilter, Prisma.LocationWhereInput>
+  plan?: Prisma.XOR<Prisma.TravelPlanScalarRelationFilter, Prisma.TravelPlanWhereInput>
 }, "id" | "planId_stopOrder">
 
 export type TravelStopOrderByWithAggregationInput = {
@@ -294,8 +294,8 @@ export type TravelStopCreateInput = {
   arrivalDate: Date | string
   departureDate: Date | string
   riskSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  plan: Prisma.TravelPlanCreateNestedOneWithoutStopsInput
   location: Prisma.LocationCreateNestedOneWithoutTravelStopsInput
+  plan: Prisma.TravelPlanCreateNestedOneWithoutStopsInput
 }
 
 export type TravelStopUncheckedCreateInput = {
@@ -314,8 +314,8 @@ export type TravelStopUpdateInput = {
   arrivalDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   departureDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   riskSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
-  plan?: Prisma.TravelPlanUpdateOneRequiredWithoutStopsNestedInput
   location?: Prisma.LocationUpdateOneRequiredWithoutTravelStopsNestedInput
+  plan?: Prisma.TravelPlanUpdateOneRequiredWithoutStopsNestedInput
 }
 
 export type TravelStopUncheckedUpdateInput = {
@@ -674,8 +674,8 @@ export type TravelStopSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   arrivalDate?: boolean
   departureDate?: boolean
   riskSnapshot?: boolean
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelStop"]>
 
 export type TravelStopSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -686,8 +686,8 @@ export type TravelStopSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   arrivalDate?: boolean
   departureDate?: boolean
   riskSnapshot?: boolean
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelStop"]>
 
 export type TravelStopSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -698,8 +698,8 @@ export type TravelStopSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   arrivalDate?: boolean
   departureDate?: boolean
   riskSnapshot?: boolean
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelStop"]>
 
 export type TravelStopSelectScalar = {
@@ -714,23 +714,23 @@ export type TravelStopSelectScalar = {
 
 export type TravelStopOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "planId" | "locationId" | "stopOrder" | "arrivalDate" | "departureDate" | "riskSnapshot", ExtArgs["result"]["travelStop"]>
 export type TravelStopInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }
 export type TravelStopIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }
 export type TravelStopIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
   location?: boolean | Prisma.LocationDefaultArgs<ExtArgs>
+  plan?: boolean | Prisma.TravelPlanDefaultArgs<ExtArgs>
 }
 
 export type $TravelStopPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "TravelStop"
   objects: {
-    plan: Prisma.$TravelPlanPayload<ExtArgs>
     location: Prisma.$LocationPayload<ExtArgs>
+    plan: Prisma.$TravelPlanPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1134,8 +1134,8 @@ readonly fields: TravelStopFieldRefs;
  */
 export interface Prisma__TravelStopClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  plan<T extends Prisma.TravelPlanDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlanDefaultArgs<ExtArgs>>): Prisma.Prisma__TravelPlanClient<runtime.Types.Result.GetResult<Prisma.$TravelPlanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   location<T extends Prisma.LocationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.LocationDefaultArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  plan<T extends Prisma.TravelPlanDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlanDefaultArgs<ExtArgs>>): Prisma.Prisma__TravelPlanClient<runtime.Types.Result.GetResult<Prisma.$TravelPlanPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

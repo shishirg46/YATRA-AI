@@ -260,8 +260,8 @@ export type RouteTemplatePointWhereInput = {
   placeName?: Prisma.StringNullableFilter<"RouteTemplatePoint"> | string | null
   matchedLocationId?: Prisma.StringNullableFilter<"RouteTemplatePoint"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RouteTemplatePoint"> | Date | string
-  routeTemplate?: Prisma.XOR<Prisma.RouteTemplateScalarRelationFilter, Prisma.RouteTemplateWhereInput>
   matchedLocation?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
+  routeTemplate?: Prisma.XOR<Prisma.RouteTemplateScalarRelationFilter, Prisma.RouteTemplateWhereInput>
 }
 
 export type RouteTemplatePointOrderByWithRelationInput = {
@@ -274,8 +274,8 @@ export type RouteTemplatePointOrderByWithRelationInput = {
   placeName?: Prisma.SortOrderInput | Prisma.SortOrder
   matchedLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  routeTemplate?: Prisma.RouteTemplateOrderByWithRelationInput
   matchedLocation?: Prisma.LocationOrderByWithRelationInput
+  routeTemplate?: Prisma.RouteTemplateOrderByWithRelationInput
 }
 
 export type RouteTemplatePointWhereUniqueInput = Prisma.AtLeast<{
@@ -292,8 +292,8 @@ export type RouteTemplatePointWhereUniqueInput = Prisma.AtLeast<{
   placeName?: Prisma.StringNullableFilter<"RouteTemplatePoint"> | string | null
   matchedLocationId?: Prisma.StringNullableFilter<"RouteTemplatePoint"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RouteTemplatePoint"> | Date | string
-  routeTemplate?: Prisma.XOR<Prisma.RouteTemplateScalarRelationFilter, Prisma.RouteTemplateWhereInput>
   matchedLocation?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
+  routeTemplate?: Prisma.XOR<Prisma.RouteTemplateScalarRelationFilter, Prisma.RouteTemplateWhereInput>
 }, "id" | "routeTemplateId_seq">
 
 export type RouteTemplatePointOrderByWithAggregationInput = {
@@ -336,8 +336,8 @@ export type RouteTemplatePointCreateInput = {
   kmFromStart: number
   placeName?: string | null
   createdAt?: Date | string
-  routeTemplate: Prisma.RouteTemplateCreateNestedOneWithoutPointsInput
   matchedLocation?: Prisma.LocationCreateNestedOneWithoutRoutePointsInput
+  routeTemplate: Prisma.RouteTemplateCreateNestedOneWithoutPointsInput
 }
 
 export type RouteTemplatePointUncheckedCreateInput = {
@@ -360,8 +360,8 @@ export type RouteTemplatePointUpdateInput = {
   kmFromStart?: Prisma.FloatFieldUpdateOperationsInput | number
   placeName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  routeTemplate?: Prisma.RouteTemplateUpdateOneRequiredWithoutPointsNestedInput
   matchedLocation?: Prisma.LocationUpdateOneWithoutRoutePointsNestedInput
+  routeTemplate?: Prisma.RouteTemplateUpdateOneRequiredWithoutPointsNestedInput
 }
 
 export type RouteTemplatePointUncheckedUpdateInput = {
@@ -778,8 +778,8 @@ export type RouteTemplatePointSelect<ExtArgs extends runtime.Types.Extensions.In
   placeName?: boolean
   matchedLocationId?: boolean
   createdAt?: boolean
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplatePoint"]>
 
 export type RouteTemplatePointSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -792,8 +792,8 @@ export type RouteTemplatePointSelectCreateManyAndReturn<ExtArgs extends runtime.
   placeName?: boolean
   matchedLocationId?: boolean
   createdAt?: boolean
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplatePoint"]>
 
 export type RouteTemplatePointSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -806,8 +806,8 @@ export type RouteTemplatePointSelectUpdateManyAndReturn<ExtArgs extends runtime.
   placeName?: boolean
   matchedLocationId?: boolean
   createdAt?: boolean
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["routeTemplatePoint"]>
 
 export type RouteTemplatePointSelectScalar = {
@@ -824,23 +824,23 @@ export type RouteTemplatePointSelectScalar = {
 
 export type RouteTemplatePointOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "routeTemplateId" | "seq" | "lat" | "lon" | "kmFromStart" | "placeName" | "matchedLocationId" | "createdAt", ExtArgs["result"]["routeTemplatePoint"]>
 export type RouteTemplatePointInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }
 export type RouteTemplatePointIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }
 export type RouteTemplatePointIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
   matchedLocation?: boolean | Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>
+  routeTemplate?: boolean | Prisma.RouteTemplateDefaultArgs<ExtArgs>
 }
 
 export type $RouteTemplatePointPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "RouteTemplatePoint"
   objects: {
-    routeTemplate: Prisma.$RouteTemplatePayload<ExtArgs>
     matchedLocation: Prisma.$LocationPayload<ExtArgs> | null
+    routeTemplate: Prisma.$RouteTemplatePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1246,8 +1246,8 @@ readonly fields: RouteTemplatePointFieldRefs;
  */
 export interface Prisma__RouteTemplatePointClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  routeTemplate<T extends Prisma.RouteTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__RouteTemplateClient<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   matchedLocation<T extends Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteTemplatePoint$matchedLocationArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  routeTemplate<T extends Prisma.RouteTemplateDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteTemplateDefaultArgs<ExtArgs>>): Prisma.Prisma__RouteTemplateClient<runtime.Types.Result.GetResult<Prisma.$RouteTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

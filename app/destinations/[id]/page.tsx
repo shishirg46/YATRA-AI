@@ -9,7 +9,7 @@ import {
   Mountain, ArrowLeft, Shield, AlertTriangle, Zap, XCircle,
   MapPin, Thermometer, Droplets, Wind, CloudRain, Gauge,
   Calendar, Route, Compass, RefreshCw, Loader2, ChevronDown, ChevronUp,
-  TrendingUp, Activity, Navigation,
+  TrendingUp, Activity, Navigation, ExternalLink, Camera,
 } from "lucide-react";
 import { Sparkline, BarChart, HazardBars, PenaltyBreakdown } from "./_components/charts";
 
@@ -27,6 +27,21 @@ interface DestData {
   connectedRoutes: { id: string; name: string; distanceKm: number | null; from: { id: string; name: string }; to: { id: string; name: string } }[];
   nearbyDestinations: { id: string; name: string; district: string; altitude: number | null; safetyScore: number | null; safetyLevel: string | null }[];
   assessedAt: string;
+}
+interface DestinationInsights {
+  overview: string;
+  sources: { name: string; url: string; snippet: string }[];
+  photos: { url: string; thumbUrl?: string; title?: string; sourceUrl: string }[];
+  fetchedAt: string;
+}
+interface EnrichedPlaceDetails {
+  name: string;
+  description: string;
+  image: string;
+  images: string[];
+  wikipediaUrl?: string;
+  coordinates?: { lat: number; lng: number };
+  source: "wikipedia" | "cloudinary-cache" | "osm";
 }
 
 const LEVEL_CFG: Record<string, { label: string; color: string; bg: string; border: string; Icon: typeof Shield }> = {
@@ -87,6 +102,9 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
   const [data, setData] = useState<DestData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [insights, setInsights] = useState<DestinationInsights | null>(null);
+  const [loadingInsights, setLoadingInsights] = useState(false);
+  const [enriched, setEnriched] = useState<EnrichedPlaceDetails | null>(null);
 
   useEffect(() => { params.then(p => setId(p.id)); }, [params]);
 
@@ -97,6 +115,13 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
       .then(async (res) => {
         if (!res.ok) {
           if (res.status === 401) { router.push("/sign-in"); return; }
+          const fallbackRes = await fetch(`/api/place-details?name=${encodeURIComponent(id)}`, { credentials: "include" });
+          if (fallbackRes.ok) {
+            const enrichedPayload = (await fallbackRes.json()) as EnrichedPlaceDetails;
+            setEnriched(enrichedPayload);
+            setData(null);
+            return;
+          }
           const j = await res.json().catch(() => ({}));
           setError((j as { message?: string }).message ?? "Failed to load.");
           return;
@@ -107,11 +132,72 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
       .finally(() => setLoading(false));
   }, [id, router]);
 
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    setLoadingInsights(true);
+    fetch(`/api/destinations/${id}/insights`, { credentials: "include" })
+      .then(async (res) => {
+        if (!res.ok) return;
+        const payload = (await res.json()) as DestinationInsights;
+        if (!cancelled) setInsights(payload);
+      })
+      .catch(() => {
+        if (!cancelled) setInsights(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingInsights(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: "#0a0f1e" }}>
       <div className="text-center">
         <Mountain className="text-amber-400 mx-auto mb-4 animate-pulse" size={40} />
         <p className="font-body text-slate-400 text-sm">Loading destination…</p>
+      </div>
+    </div>
+  );
+
+  if (enriched && !data) return (
+    <div className="min-h-screen" style={{ background: "#0a0f1e" }}>
+      <div className="pt-12 max-w-4xl mx-auto px-4 md:px-8 pb-16 space-y-5">
+        <button onClick={() => router.back()} className="flex items-center gap-1 font-body text-sm text-slate-400 hover:text-white transition-colors">
+          <ArrowLeft size={14} /> Back
+        </button>
+        <div className="detail-card rounded-2xl p-6 md:p-8">
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">{enriched.name}</h1>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={enriched.image} alt={enriched.name} className="w-full h-64 md:h-80 object-cover rounded-xl border border-slate-700/40 mb-4" />
+          <p className="font-body text-sm text-slate-300 leading-relaxed mb-4">{enriched.description}</p>
+          <div className="flex flex-wrap gap-3 text-xs font-body text-slate-400">
+            <span className="px-2 py-1 rounded-full bg-slate-800 border border-slate-700">Source: {enriched.source}</span>
+            {enriched.coordinates && (
+              <span className="px-2 py-1 rounded-full bg-slate-800 border border-slate-700">
+                {enriched.coordinates.lat.toFixed(4)}, {enriched.coordinates.lng.toFixed(4)}
+              </span>
+            )}
+            {enriched.wikipediaUrl && (
+              <a href={enriched.wikipediaUrl} target="_blank" rel="noreferrer" className="px-2 py-1 rounded-full bg-slate-800 border border-slate-700 hover:border-amber-400/30 hover:text-amber-300">
+                Wikipedia
+              </a>
+            )}
+          </div>
+        </div>
+        {enriched.images.length > 0 && (
+          <div className="detail-card rounded-2xl p-6">
+            <h2 className="font-display text-xl font-bold text-white mb-4">Gallery</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {enriched.images.map((img, idx) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={`${img}-${idx}`} src={img} alt={`${enriched.name} ${idx + 1}`} className="w-full h-32 object-cover rounded-lg border border-slate-700/40" />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -360,6 +446,58 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
             </div>
           </Section>
         )}
+
+        <Section title="Place Details & Photos" icon={Camera} defaultOpen={false}>
+          <div className="pt-4 space-y-4">
+            {loadingInsights && <p className="font-body text-sm text-slate-400">Loading details from multiple sources…</p>}
+            {!loadingInsights && insights?.overview && (
+              <p className="font-body text-sm text-slate-300 leading-relaxed">{insights.overview}</p>
+            )}
+            {!loadingInsights && insights?.sources?.length ? (
+              <div className="grid gap-2">
+                {insights.sources.map((s, idx) => (
+                  <a
+                    key={`${s.name}-${idx}`}
+                    href={s.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/30 hover:border-amber-400/25 transition-all"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-body text-xs text-amber-300 uppercase tracking-wider">{s.name}</span>
+                      <ExternalLink size={12} className="text-slate-500" />
+                    </div>
+                    <p className="font-body text-xs text-slate-300 leading-relaxed">{s.snippet}</p>
+                  </a>
+                ))}
+              </div>
+            ) : null}
+            {!loadingInsights && insights?.photos?.length ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {insights.photos.map((p, idx) => (
+                  <a
+                    key={`${p.url}-${idx}`}
+                    href={p.sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group relative rounded-xl overflow-hidden border border-slate-700/40 bg-slate-900/50"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.thumbUrl || p.url}
+                      alt={p.title || loc.name}
+                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 to-transparent p-2">
+                      <p className="font-body text-[10px] text-slate-200 truncate">{p.title || loc.name}</p>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </Section>
 
         {/* ── Footer CTA ──────────────────────────────────────────────── */}
         <div className="detail-card rounded-2xl p-8 text-center anim" style={{ animationDelay: ".3s" }}>

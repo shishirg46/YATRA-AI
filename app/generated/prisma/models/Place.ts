@@ -260,10 +260,10 @@ export type PlaceWhereInput = {
   locationId?: Prisma.StringNullableFilter<"Place"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Place"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Place"> | Date | string
-  parent?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
-  children?: Prisma.PlaceListRelationFilter
   district?: Prisma.XOR<Prisma.DistrictNullableScalarRelationFilter, Prisma.DistrictWhereInput> | null
   location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
+  parent?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
+  children?: Prisma.PlaceListRelationFilter
   routeNodes?: Prisma.RouteNodeListRelationFilter
 }
 
@@ -278,10 +278,10 @@ export type PlaceOrderByWithRelationInput = {
   locationId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  parent?: Prisma.PlaceOrderByWithRelationInput
-  children?: Prisma.PlaceOrderByRelationAggregateInput
   district?: Prisma.DistrictOrderByWithRelationInput
   location?: Prisma.LocationOrderByWithRelationInput
+  parent?: Prisma.PlaceOrderByWithRelationInput
+  children?: Prisma.PlaceOrderByRelationAggregateInput
   routeNodes?: Prisma.RouteNodeOrderByRelationAggregateInput
 }
 
@@ -299,10 +299,10 @@ export type PlaceWhereUniqueInput = Prisma.AtLeast<{
   districtId?: Prisma.StringNullableFilter<"Place"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Place"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Place"> | Date | string
-  parent?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
-  children?: Prisma.PlaceListRelationFilter
   district?: Prisma.XOR<Prisma.DistrictNullableScalarRelationFilter, Prisma.DistrictWhereInput> | null
   location?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
+  parent?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
+  children?: Prisma.PlaceListRelationFilter
   routeNodes?: Prisma.RouteNodeListRelationFilter
 }, "id" | "locationId">
 
@@ -348,10 +348,10 @@ export type PlaceCreateInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
-  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
   district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
+  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
+  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
   routeNodes?: Prisma.RouteNodeCreateNestedManyWithoutPlaceInput
 }
 
@@ -378,10 +378,10 @@ export type PlaceUpdateInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
-  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
   district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
+  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
   routeNodes?: Prisma.RouteNodeUpdateManyWithoutPlaceNestedInput
 }
 
@@ -660,9 +660,9 @@ export type PlaceCreateWithoutDistrictInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
   parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
   children?: Prisma.PlaceCreateNestedManyWithoutParentInput
-  location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
   routeNodes?: Prisma.RouteNodeCreateNestedManyWithoutPlaceInput
 }
 
@@ -730,9 +730,9 @@ export type PlaceCreateWithoutLocationInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
+  district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
   children?: Prisma.PlaceCreateNestedManyWithoutParentInput
-  district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   routeNodes?: Prisma.RouteNodeCreateNestedManyWithoutPlaceInput
 }
 
@@ -774,9 +774,9 @@ export type PlaceUpdateWithoutLocationInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
   children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
-  district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   routeNodes?: Prisma.RouteNodeUpdateManyWithoutPlaceNestedInput
 }
 
@@ -802,9 +802,9 @@ export type PlaceCreateWithoutChildrenInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
   district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
+  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
   routeNodes?: Prisma.RouteNodeCreateNestedManyWithoutPlaceInput
 }
 
@@ -835,9 +835,9 @@ export type PlaceCreateWithoutParentInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
   district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
+  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
   routeNodes?: Prisma.RouteNodeCreateNestedManyWithoutPlaceInput
 }
 
@@ -884,9 +884,9 @@ export type PlaceUpdateWithoutChildrenInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
   district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
+  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
   routeNodes?: Prisma.RouteNodeUpdateManyWithoutPlaceNestedInput
 }
 
@@ -928,10 +928,10 @@ export type PlaceCreateWithoutRouteNodesInput = {
   longitude: number
   createdAt?: Date | string
   updatedAt?: Date | string
-  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
-  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
   district?: Prisma.DistrictCreateNestedOneWithoutPlacesInput
   location?: Prisma.LocationCreateNestedOneWithoutPlaceInput
+  parent?: Prisma.PlaceCreateNestedOneWithoutChildrenInput
+  children?: Prisma.PlaceCreateNestedManyWithoutParentInput
 }
 
 export type PlaceUncheckedCreateWithoutRouteNodesInput = {
@@ -972,10 +972,10 @@ export type PlaceUpdateWithoutRouteNodesInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
-  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
   district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
+  parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
+  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
 }
 
 export type PlaceUncheckedUpdateWithoutRouteNodesInput = {
@@ -1012,9 +1012,9 @@ export type PlaceUpdateWithoutDistrictInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
   parent?: Prisma.PlaceUpdateOneWithoutChildrenNestedInput
   children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
-  location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
   routeNodes?: Prisma.RouteNodeUpdateManyWithoutPlaceNestedInput
 }
 
@@ -1064,9 +1064,9 @@ export type PlaceUpdateWithoutParentInput = {
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
   district?: Prisma.DistrictUpdateOneWithoutPlacesNestedInput
   location?: Prisma.LocationUpdateOneWithoutPlaceNestedInput
+  children?: Prisma.PlaceUpdateManyWithoutParentNestedInput
   routeNodes?: Prisma.RouteNodeUpdateManyWithoutPlaceNestedInput
 }
 
@@ -1147,10 +1147,10 @@ export type PlaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   locationId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
-  children?: boolean | Prisma.Place$childrenArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Place$childrenArgs<ExtArgs>
   routeNodes?: boolean | Prisma.Place$routeNodesArgs<ExtArgs>
   _count?: boolean | Prisma.PlaceCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["place"]>
@@ -1166,9 +1166,9 @@ export type PlaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   locationId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
 }, ExtArgs["result"]["place"]>
 
 export type PlaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1182,9 +1182,9 @@ export type PlaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   locationId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
 }, ExtArgs["result"]["place"]>
 
 export type PlaceSelectScalar = {
@@ -1202,31 +1202,31 @@ export type PlaceSelectScalar = {
 
 export type PlaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "parentId" | "districtId" | "locationId" | "createdAt" | "updatedAt", ExtArgs["result"]["place"]>
 export type PlaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
-  children?: boolean | Prisma.Place$childrenArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
+  children?: boolean | Prisma.Place$childrenArgs<ExtArgs>
   routeNodes?: boolean | Prisma.Place$routeNodesArgs<ExtArgs>
   _count?: boolean | Prisma.PlaceCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PlaceIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
 }
 export type PlaceIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
   district?: boolean | Prisma.Place$districtArgs<ExtArgs>
   location?: boolean | Prisma.Place$locationArgs<ExtArgs>
+  parent?: boolean | Prisma.Place$parentArgs<ExtArgs>
 }
 
 export type $PlacePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Place"
   objects: {
-    parent: Prisma.$PlacePayload<ExtArgs> | null
-    children: Prisma.$PlacePayload<ExtArgs>[]
     district: Prisma.$DistrictPayload<ExtArgs> | null
     location: Prisma.$LocationPayload<ExtArgs> | null
+    parent: Prisma.$PlacePayload<ExtArgs> | null
+    children: Prisma.$PlacePayload<ExtArgs>[]
     routeNodes: Prisma.$RouteNodePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1634,10 +1634,10 @@ readonly fields: PlaceFieldRefs;
  */
 export interface Prisma__PlaceClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  parent<T extends Prisma.Place$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$parentArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  children<T extends Prisma.Place$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   district<T extends Prisma.Place$districtArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$districtArgs<ExtArgs>>): Prisma.Prisma__DistrictClient<runtime.Types.Result.GetResult<Prisma.$DistrictPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   location<T extends Prisma.Place$locationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$locationArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  parent<T extends Prisma.Place$parentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$parentArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  children<T extends Prisma.Place$childrenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   routeNodes<T extends Prisma.Place$routeNodesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Place$routeNodesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteNodePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -2079,6 +2079,44 @@ export type PlaceDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
+ * Place.district
+ */
+export type Place$districtArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the District
+   */
+  select?: Prisma.DistrictSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the District
+   */
+  omit?: Prisma.DistrictOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DistrictInclude<ExtArgs> | null
+  where?: Prisma.DistrictWhereInput
+}
+
+/**
+ * Place.location
+ */
+export type Place$locationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Location
+   */
+  select?: Prisma.LocationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Location
+   */
+  omit?: Prisma.LocationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LocationInclude<ExtArgs> | null
+  where?: Prisma.LocationWhereInput
+}
+
+/**
  * Place.parent
  */
 export type Place$parentArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2119,44 +2157,6 @@ export type Place$childrenArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.PlaceScalarFieldEnum | Prisma.PlaceScalarFieldEnum[]
-}
-
-/**
- * Place.district
- */
-export type Place$districtArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the District
-   */
-  select?: Prisma.DistrictSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the District
-   */
-  omit?: Prisma.DistrictOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.DistrictInclude<ExtArgs> | null
-  where?: Prisma.DistrictWhereInput
-}
-
-/**
- * Place.location
- */
-export type Place$locationArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Location
-   */
-  select?: Prisma.LocationSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Location
-   */
-  omit?: Prisma.LocationOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.LocationInclude<ExtArgs> | null
-  where?: Prisma.LocationWhereInput
 }
 
 /**

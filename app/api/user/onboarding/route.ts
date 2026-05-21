@@ -4,12 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isPointInNepal } from "@/lib/routing/geo";
 import { headers } from "next/headers";
-import { PrismaClient } from "@/app/generated/prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {

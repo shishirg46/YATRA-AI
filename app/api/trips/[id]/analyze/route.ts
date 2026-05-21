@@ -17,13 +17,10 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
-import { PrismaClient, Prisma }      from "@/app/generated/prisma/client";
-import { PrismaPg }                  from "@prisma/adapter-pg";
-import { Pool }                      from "pg";
+import { Prisma }                    from "@/app/generated/prisma/client";
+import { prisma }                    from "@/lib/prisma";
 import { analyzeGroupRoute, StopInput, MemberProfile, AlternativeStop } from "@/lib/analysis/group-risk";
-
-const pool   = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
+import { callAI } from "@/lib/ai/client";
 
 export async function POST(
   _req: NextRequest,
@@ -173,24 +170,18 @@ Respond ONLY with a JSON object (no markdown):
     topGroupTip:     "",
   };
 
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model:      "claude-sonnet-4-20250514",
-        max_tokens: 600,
-        system:     "You are a Nepal travel safety advisor. Always respond with valid JSON only.",
-        messages:   [{ role: "user", content: prompt }],
-      }),
-    });
-    if (res.ok) {
-      const data = await res.json() as { content?: { type: string; text: string }[] };
-      const text = data.content?.find((b) => b.type === "text")?.text ?? "";
-      const cleaned = text.replace(/```json|```/g, "").trim();
+  const raw = await callAI(prompt, {
+    system: "You are a Nepal travel safety advisor. Always respond with valid JSON only.",
+    maxTokens: 600,
+  });
+  if (raw) {
+    try {
+      const cleaned = raw.replace(/```json|```/g, "").trim();
       aiSummary = { ...aiSummary, ...JSON.parse(cleaned) };
+    } catch {
+      console.warn("[trips/analyze] AI JSON parse failed, raw:", raw.slice(0, 200));
     }
-  } catch { /* use defaults */ }
+  }
 
   analysis.aiSummary = aiSummary.groupVerdict;
 
