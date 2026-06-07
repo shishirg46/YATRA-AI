@@ -20,17 +20,24 @@ export function SafetyBadge({ level }: { level: Destination["safetyLevel"] }) {
   );
 }
 
+const SCORE_COLORS: Record<string, string> = {
+  SAFE: "#34d399",
+  CAUTION: "#f59e0b",
+  HIGH_RISK: "#fb923c",
+  EXTREME: "#f87171",
+};
+
 export function ScoreRing({ score }: { score: number }) {
-  const color = score >= 80 ? "#34d399" : score >= 60 ? "#f59e0b" : score >= 40 ? "#fb923c" : "#f87171";
+  const color = score >= 80 ? SCORE_COLORS.SAFE : score >= 60 ? SCORE_COLORS.CAUTION : score >= 40 ? SCORE_COLORS.HIGH_RISK : SCORE_COLORS.EXTREME;
   return (
-    <div className="relative w-14 h-14 flex-shrink-0">
-      <svg viewBox="0 0 56 56" className="w-full h-full -rotate-90">
-        <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="4"/>
-        <circle cx="28" cy="28" r="22" fill="none" stroke={color} strokeWidth="4"
-          strokeDasharray={`${(score/100)*138.2} 138.2`} strokeLinecap="round"/>
+    <div className="relative w-16 h-16 flex-shrink-0">
+      <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
+        <circle cx="32" cy="32" r="25" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="4.5"/>
+        <circle cx="32" cy="32" r="25" fill="none" stroke={color} strokeWidth="4.5"
+          strokeDasharray={`${(score/100)*157.1} 157.1`} strokeLinecap="round"/>
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="font-display font-bold text-sm text-white">{score}</span>
+        <span className="font-display font-bold text-base text-white">{score}</span>
       </div>
     </div>
   );

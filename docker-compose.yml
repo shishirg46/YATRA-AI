@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: yatra-postgres
+    environment:
+      POSTGRES_USER: yatra
+      POSTGRES_PASSWORD: yatra123
+      POSTGRES_DB: yatraai
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yatra -d yatraai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

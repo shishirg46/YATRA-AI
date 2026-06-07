@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: yatra
+          POSTGRES_PASSWORD: yatra123
+          POSTGRES_DB: yatraai
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://yatra:yatra123@localhost:5433/yatraai?schema=public
+      - run: npx tsc --noEmit
+        timeout-minutes: 5
+        env:
+          DATABASE_URL: postgresql://yatra:yatra123@localhost:5433/yatraai?schema=public
+      - run: npx vitest run
+        timeout-minutes: 3
+        env:
+          DATABASE_URL: postgresql://yatra:yatra123@localhost:5433/yatraai?schema=public
+      - run: npx next build
+        timeout-minutes: 10
+        env:
+          DATABASE_URL: postgresql://yatra:yatra123@localhost:5433/yatraai?schema=public

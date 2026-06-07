@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import {
-  AlertTriangle, Compass, Droplet, Eye, MapPin, Navigation, Route,
+  AlertTriangle, Compass, Droplet, Eye, Heart, MapPin, Navigation, Route,
   Thermometer, Wind, X, Mountain, TreePine, Landmark, Tent, Waves,
   Binoculars, Building2,
 } from "lucide-react";
@@ -140,6 +140,8 @@ export function DestinationCard({
   requestingLocation,
   onOpenManualLocation,
   shouldFetchRoute = true,
+  savedDestinationIds,
+  onToggleSave,
 }: {
   dest: Destination;
   index: number;
@@ -157,6 +159,8 @@ export function DestinationCard({
   requestingLocation?: boolean;
   onOpenManualLocation?: () => void;
   shouldFetchRoute?: boolean;
+  savedDestinationIds?: string[];
+  onToggleSave?: (destinationId: string, saved: boolean) => void;
 }) {
   const router = useRouter();
   const isNearby = homeProvince && dest.province === homeProvince;
@@ -170,6 +174,9 @@ export function DestinationCard({
   const [loadingPipelineRisk, setLoadingPipelineRisk] = useState(false);
   const [liveWeather, setLiveWeather] = useState<LiveWeather | null>(null);
   const [loadingLiveWeather, setLoadingLiveWeather] = useState(false);
+  const [isSaved, setIsSaved] = useState(
+    savedDestinationIds ? savedDestinationIds.includes(dest.id) : false
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -370,10 +377,17 @@ export function DestinationCard({
   };
   const catMeta = CATEGORY_META[dest.category] ?? null;
 
+  const borderAccent: Record<string, string> = {
+    SAFE: "border-l-emerald-400/40",
+    CAUTION: "border-l-amber-400/40",
+    HIGH_RISK: "border-l-orange-400/40",
+    EXTREME: "border-l-red-400/40",
+  };
+
   return (
     <>
       <div
-        className={`destination-card p-5 flex flex-col gap-3 ${highlighted ? "border-amber-400/20" : ""}`}
+        className={`destination-card p-5 flex flex-col gap-3 border-l-4 ${borderAccent[dest.safetyLevel] ?? "border-l-slate-600"} ${highlighted ? "border-amber-400/20" : ""}`}
         style={{ animation: `fadeUp .4s ease ${index * 0.03}s both` }}
       >
         {/* ── Header: name + badges + score ring ── */}
@@ -385,7 +399,7 @@ export function DestinationCard({
               )}
               <Link
                 onClick={() => trackBehavior("view_details")}
-                href={`/destinations/${encodeURIComponent(dest.name)}`}
+                href={`/destinations/${dest.name.replace(/ /g, '_')}`}
                 className="hover:text-amber-400 transition-colors"
               >
                 <h3 className="font-display font-bold text-white text-base leading-tight truncate">
@@ -409,7 +423,29 @@ export function DestinationCard({
               </span>
             </div>
           </div>
-          <ScoreRing score={dest.safetyScore} />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const next = !isSaved;
+                setIsSaved(next);
+                onToggleSave?.(dest.id, next);
+                fetch("/api/user/saved-destinations", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ destinationId: dest.id }),
+                }).catch(() => setIsSaved(!next));
+              }}
+              className={`p-1.5 rounded-lg transition-all hover:scale-110 ${
+                isSaved ? "text-rose-400" : "text-slate-600 hover:text-rose-400/70"
+              }`}
+              title={isSaved ? "Remove from saved" : "Save destination"}
+            >
+              <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
+            </button>
+            <ScoreRing score={dest.safetyScore} />
+          </div>
         </div>
 
         {/* ── Risk alert ── */}
@@ -533,7 +569,7 @@ export function DestinationCard({
             ) : null}
             <Link
               onClick={() => trackBehavior("view_details")}
-              href={`/destinations/${encodeURIComponent(dest.name)}`}
+              href={`/destinations/${dest.name.replace(/ /g, '_')}`}
               className="flex items-center gap-1 font-body text-xs text-slate-500 hover:text-amber-400 transition-colors"
             >
               <Eye size={11} /> Details
