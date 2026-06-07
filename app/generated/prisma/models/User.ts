@@ -32,6 +32,7 @@ export type UserMinAggregateOutputType = {
   email: string | null
   emailVerified: boolean | null
   image: string | null
+  phone: string | null
   role: $Enums.Role | null
   isActive: boolean | null
   homeLocationId: string | null
@@ -48,6 +49,7 @@ export type UserMaxAggregateOutputType = {
   email: string | null
   emailVerified: boolean | null
   image: string | null
+  phone: string | null
   role: $Enums.Role | null
   isActive: boolean | null
   homeLocationId: string | null
@@ -64,6 +66,7 @@ export type UserCountAggregateOutputType = {
   email: number
   emailVerified: number
   image: number
+  phone: number
   role: number
   isActive: number
   homeLocationId: number
@@ -82,6 +85,7 @@ export type UserMinAggregateInputType = {
   email?: true
   emailVerified?: true
   image?: true
+  phone?: true
   role?: true
   isActive?: true
   homeLocationId?: true
@@ -98,6 +102,7 @@ export type UserMaxAggregateInputType = {
   email?: true
   emailVerified?: true
   image?: true
+  phone?: true
   role?: true
   isActive?: true
   homeLocationId?: true
@@ -114,6 +119,7 @@ export type UserCountAggregateInputType = {
   email?: true
   emailVerified?: true
   image?: true
+  phone?: true
   role?: true
   isActive?: true
   homeLocationId?: true
@@ -203,6 +209,7 @@ export type UserGroupByOutputType = {
   email: string
   emailVerified: boolean
   image: string | null
+  phone: string | null
   role: $Enums.Role
   isActive: boolean
   homeLocationId: string | null
@@ -240,6 +247,7 @@ export type UserWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   image?: Prisma.StringNullableFilter<"User"> | string | null
+  phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   isActive?: Prisma.BoolFilter<"User"> | boolean
   homeLocationId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -261,6 +269,14 @@ export type UserWhereInput = {
   sessions?: Prisma.SessionListRelationFilter
   homeLocation?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
   savedLocation?: Prisma.XOR<Prisma.UserSavedLocationNullableScalarRelationFilter, Prisma.UserSavedLocationWhereInput> | null
+  savedDestinations?: Prisma.SavedDestinationListRelationFilter
+  emergencyContacts?: Prisma.EmergencyContactListRelationFilter
+  emergencyAlerts?: Prisma.EmergencyAlertListRelationFilter
+  locationShareSessions?: Prisma.LocationShareSessionListRelationFilter
+  communityReports?: Prisma.CommunityHazardReportListRelationFilter
+  moderatedReports?: Prisma.CommunityHazardReportListRelationFilter
+  privacy?: Prisma.XOR<Prisma.UserPrivacyNullableScalarRelationFilter, Prisma.UserPrivacyWhereInput> | null
+  tripPhotos?: Prisma.TripPhotoListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -271,6 +287,7 @@ export type UserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   homeLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,6 +309,14 @@ export type UserOrderByWithRelationInput = {
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   homeLocation?: Prisma.LocationOrderByWithRelationInput
   savedLocation?: Prisma.UserSavedLocationOrderByWithRelationInput
+  savedDestinations?: Prisma.SavedDestinationOrderByRelationAggregateInput
+  emergencyContacts?: Prisma.EmergencyContactOrderByRelationAggregateInput
+  emergencyAlerts?: Prisma.EmergencyAlertOrderByRelationAggregateInput
+  locationShareSessions?: Prisma.LocationShareSessionOrderByRelationAggregateInput
+  communityReports?: Prisma.CommunityHazardReportOrderByRelationAggregateInput
+  moderatedReports?: Prisma.CommunityHazardReportOrderByRelationAggregateInput
+  privacy?: Prisma.UserPrivacyOrderByWithRelationInput
+  tripPhotos?: Prisma.TripPhotoOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -305,6 +330,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   displayUsername?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   image?: Prisma.StringNullableFilter<"User"> | string | null
+  phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   isActive?: Prisma.BoolFilter<"User"> | boolean
   homeLocationId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -326,6 +352,14 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   sessions?: Prisma.SessionListRelationFilter
   homeLocation?: Prisma.XOR<Prisma.LocationNullableScalarRelationFilter, Prisma.LocationWhereInput> | null
   savedLocation?: Prisma.XOR<Prisma.UserSavedLocationNullableScalarRelationFilter, Prisma.UserSavedLocationWhereInput> | null
+  savedDestinations?: Prisma.SavedDestinationListRelationFilter
+  emergencyContacts?: Prisma.EmergencyContactListRelationFilter
+  emergencyAlerts?: Prisma.EmergencyAlertListRelationFilter
+  locationShareSessions?: Prisma.LocationShareSessionListRelationFilter
+  communityReports?: Prisma.CommunityHazardReportListRelationFilter
+  moderatedReports?: Prisma.CommunityHazardReportListRelationFilter
+  privacy?: Prisma.XOR<Prisma.UserPrivacyNullableScalarRelationFilter, Prisma.UserPrivacyWhereInput> | null
+  tripPhotos?: Prisma.TripPhotoListRelationFilter
 }, "id" | "username" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -336,6 +370,7 @@ export type UserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   image?: Prisma.SortOrderInput | Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   homeLocationId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -358,6 +393,7 @@ export type UserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   image?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  phone?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   isActive?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   homeLocationId?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
@@ -374,6 +410,7 @@ export type UserCreateInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -394,6 +431,14 @@ export type UserCreateInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -404,6 +449,7 @@ export type UserUncheckedCreateInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -424,6 +470,14 @@ export type UserUncheckedCreateInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -434,6 +488,7 @@ export type UserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -454,6 +509,14 @@ export type UserUpdateInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -464,6 +527,7 @@ export type UserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -484,6 +548,14 @@ export type UserUncheckedUpdateInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -494,6 +566,7 @@ export type UserCreateManyInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -510,6 +583,7 @@ export type UserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -525,6 +599,7 @@ export type UserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -541,6 +616,7 @@ export type UserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   role?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   homeLocationId?: Prisma.SortOrder
@@ -557,6 +633,7 @@ export type UserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   role?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   homeLocationId?: Prisma.SortOrder
@@ -573,6 +650,7 @@ export type UserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   emailVerified?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   role?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   homeLocationId?: Prisma.SortOrder
@@ -651,6 +729,48 @@ export type UserUpdateOneRequiredWithoutPreferenceNestedInput = {
   upsert?: Prisma.UserUpsertWithoutPreferenceInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPreferenceInput, Prisma.UserUpdateWithoutPreferenceInput>, Prisma.UserUncheckedUpdateWithoutPreferenceInput>
+}
+
+export type UserCreateNestedOneWithoutEmergencyContactsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutEmergencyContactsInput, Prisma.UserUncheckedCreateWithoutEmergencyContactsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutEmergencyContactsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutEmergencyContactsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutEmergencyContactsInput, Prisma.UserUncheckedCreateWithoutEmergencyContactsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutEmergencyContactsInput
+  upsert?: Prisma.UserUpsertWithoutEmergencyContactsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutEmergencyContactsInput, Prisma.UserUpdateWithoutEmergencyContactsInput>, Prisma.UserUncheckedUpdateWithoutEmergencyContactsInput>
+}
+
+export type UserCreateNestedOneWithoutEmergencyAlertsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutEmergencyAlertsInput, Prisma.UserUncheckedCreateWithoutEmergencyAlertsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutEmergencyAlertsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutEmergencyAlertsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutEmergencyAlertsInput, Prisma.UserUncheckedCreateWithoutEmergencyAlertsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutEmergencyAlertsInput
+  upsert?: Prisma.UserUpsertWithoutEmergencyAlertsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutEmergencyAlertsInput, Prisma.UserUpdateWithoutEmergencyAlertsInput>, Prisma.UserUncheckedUpdateWithoutEmergencyAlertsInput>
+}
+
+export type UserCreateNestedOneWithoutLocationShareSessionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLocationShareSessionsInput, Prisma.UserUncheckedCreateWithoutLocationShareSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLocationShareSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutLocationShareSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutLocationShareSessionsInput, Prisma.UserUncheckedCreateWithoutLocationShareSessionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutLocationShareSessionsInput
+  upsert?: Prisma.UserUpsertWithoutLocationShareSessionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutLocationShareSessionsInput, Prisma.UserUpdateWithoutLocationShareSessionsInput>, Prisma.UserUncheckedUpdateWithoutLocationShareSessionsInput>
 }
 
 export type UserCreateNestedOneWithoutBehaviorInput = {
@@ -779,6 +899,50 @@ export type UserUpdateOneRequiredWithoutSavedLocationNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSavedLocationInput, Prisma.UserUpdateWithoutSavedLocationInput>, Prisma.UserUncheckedUpdateWithoutSavedLocationInput>
 }
 
+export type UserCreateNestedOneWithoutSavedDestinationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSavedDestinationsInput, Prisma.UserUncheckedCreateWithoutSavedDestinationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSavedDestinationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSavedDestinationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSavedDestinationsInput, Prisma.UserUncheckedCreateWithoutSavedDestinationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSavedDestinationsInput
+  upsert?: Prisma.UserUpsertWithoutSavedDestinationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSavedDestinationsInput, Prisma.UserUpdateWithoutSavedDestinationsInput>, Prisma.UserUncheckedUpdateWithoutSavedDestinationsInput>
+}
+
+export type UserCreateNestedOneWithoutCommunityReportsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCommunityReportsInput, Prisma.UserUncheckedCreateWithoutCommunityReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCommunityReportsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutModeratedReportsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutModeratedReportsInput, Prisma.UserUncheckedCreateWithoutModeratedReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutModeratedReportsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutCommunityReportsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCommunityReportsInput, Prisma.UserUncheckedCreateWithoutCommunityReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCommunityReportsInput
+  upsert?: Prisma.UserUpsertWithoutCommunityReportsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCommunityReportsInput, Prisma.UserUpdateWithoutCommunityReportsInput>, Prisma.UserUncheckedUpdateWithoutCommunityReportsInput>
+}
+
+export type UserUpdateOneWithoutModeratedReportsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutModeratedReportsInput, Prisma.UserUncheckedCreateWithoutModeratedReportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutModeratedReportsInput
+  upsert?: Prisma.UserUpsertWithoutModeratedReportsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutModeratedReportsInput, Prisma.UserUpdateWithoutModeratedReportsInput>, Prisma.UserUncheckedUpdateWithoutModeratedReportsInput>
+}
+
 export type UserCreateNestedOneWithoutTravelPlansInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutTravelPlansInput, Prisma.UserUncheckedCreateWithoutTravelPlansInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutTravelPlansInput
@@ -865,6 +1029,34 @@ export type UserUpdateOneWithoutAuditLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
 }
 
+export type UserCreateNestedOneWithoutPrivacyInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPrivacyInput, Prisma.UserUncheckedCreateWithoutPrivacyInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPrivacyInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPrivacyNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPrivacyInput, Prisma.UserUncheckedCreateWithoutPrivacyInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPrivacyInput
+  upsert?: Prisma.UserUpsertWithoutPrivacyInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPrivacyInput, Prisma.UserUpdateWithoutPrivacyInput>, Prisma.UserUncheckedUpdateWithoutPrivacyInput>
+}
+
+export type UserCreateNestedOneWithoutTripPhotosInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTripPhotosInput, Prisma.UserUncheckedCreateWithoutTripPhotosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTripPhotosInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTripPhotosNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTripPhotosInput, Prisma.UserUncheckedCreateWithoutTripPhotosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTripPhotosInput
+  upsert?: Prisma.UserUpsertWithoutTripPhotosInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTripPhotosInput, Prisma.UserUpdateWithoutTripPhotosInput>, Prisma.UserUncheckedUpdateWithoutTripPhotosInput>
+}
+
 export type UserCreateWithoutHealthInput = {
   id?: string
   name: string
@@ -873,6 +1065,7 @@ export type UserCreateWithoutHealthInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -892,6 +1085,14 @@ export type UserCreateWithoutHealthInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHealthInput = {
@@ -902,6 +1103,7 @@ export type UserUncheckedCreateWithoutHealthInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -921,6 +1123,14 @@ export type UserUncheckedCreateWithoutHealthInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHealthInput = {
@@ -947,6 +1157,7 @@ export type UserUpdateWithoutHealthInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -966,6 +1177,14 @@ export type UserUpdateWithoutHealthInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHealthInput = {
@@ -976,6 +1195,7 @@ export type UserUncheckedUpdateWithoutHealthInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -995,6 +1215,14 @@ export type UserUncheckedUpdateWithoutHealthInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPreferenceInput = {
@@ -1005,6 +1233,7 @@ export type UserCreateWithoutPreferenceInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1024,6 +1253,14 @@ export type UserCreateWithoutPreferenceInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPreferenceInput = {
@@ -1034,6 +1271,7 @@ export type UserUncheckedCreateWithoutPreferenceInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1053,6 +1291,14 @@ export type UserUncheckedCreateWithoutPreferenceInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPreferenceInput = {
@@ -1079,6 +1325,7 @@ export type UserUpdateWithoutPreferenceInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1098,6 +1345,14 @@ export type UserUpdateWithoutPreferenceInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPreferenceInput = {
@@ -1108,6 +1363,7 @@ export type UserUncheckedUpdateWithoutPreferenceInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1127,6 +1383,518 @@ export type UserUncheckedUpdateWithoutPreferenceInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutEmergencyContactsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutEmergencyContactsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutEmergencyContactsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutEmergencyContactsInput, Prisma.UserUncheckedCreateWithoutEmergencyContactsInput>
+}
+
+export type UserUpsertWithoutEmergencyContactsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutEmergencyContactsInput, Prisma.UserUncheckedUpdateWithoutEmergencyContactsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutEmergencyContactsInput, Prisma.UserUncheckedCreateWithoutEmergencyContactsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutEmergencyContactsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutEmergencyContactsInput, Prisma.UserUncheckedUpdateWithoutEmergencyContactsInput>
+}
+
+export type UserUpdateWithoutEmergencyContactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutEmergencyContactsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutEmergencyAlertsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutEmergencyAlertsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutEmergencyAlertsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutEmergencyAlertsInput, Prisma.UserUncheckedCreateWithoutEmergencyAlertsInput>
+}
+
+export type UserUpsertWithoutEmergencyAlertsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutEmergencyAlertsInput, Prisma.UserUncheckedUpdateWithoutEmergencyAlertsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutEmergencyAlertsInput, Prisma.UserUncheckedCreateWithoutEmergencyAlertsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutEmergencyAlertsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutEmergencyAlertsInput, Prisma.UserUncheckedUpdateWithoutEmergencyAlertsInput>
+}
+
+export type UserUpdateWithoutEmergencyAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutEmergencyAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutLocationShareSessionsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutLocationShareSessionsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutLocationShareSessionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutLocationShareSessionsInput, Prisma.UserUncheckedCreateWithoutLocationShareSessionsInput>
+}
+
+export type UserUpsertWithoutLocationShareSessionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutLocationShareSessionsInput, Prisma.UserUncheckedUpdateWithoutLocationShareSessionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutLocationShareSessionsInput, Prisma.UserUncheckedCreateWithoutLocationShareSessionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutLocationShareSessionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutLocationShareSessionsInput, Prisma.UserUncheckedUpdateWithoutLocationShareSessionsInput>
+}
+
+export type UserUpdateWithoutLocationShareSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutLocationShareSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutBehaviorInput = {
@@ -1137,6 +1905,7 @@ export type UserCreateWithoutBehaviorInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1156,6 +1925,14 @@ export type UserCreateWithoutBehaviorInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBehaviorInput = {
@@ -1166,6 +1943,7 @@ export type UserUncheckedCreateWithoutBehaviorInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1185,6 +1963,14 @@ export type UserUncheckedCreateWithoutBehaviorInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBehaviorInput = {
@@ -1211,6 +1997,7 @@ export type UserUpdateWithoutBehaviorInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1230,6 +2017,14 @@ export type UserUpdateWithoutBehaviorInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBehaviorInput = {
@@ -1240,6 +2035,7 @@ export type UserUncheckedUpdateWithoutBehaviorInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1259,6 +2055,14 @@ export type UserUncheckedUpdateWithoutBehaviorInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReceivedRequestsInput = {
@@ -1269,6 +2073,7 @@ export type UserCreateWithoutReceivedRequestsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1288,6 +2093,14 @@ export type UserCreateWithoutReceivedRequestsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReceivedRequestsInput = {
@@ -1298,6 +2111,7 @@ export type UserUncheckedCreateWithoutReceivedRequestsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1317,6 +2131,14 @@ export type UserUncheckedCreateWithoutReceivedRequestsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReceivedRequestsInput = {
@@ -1332,6 +2154,7 @@ export type UserCreateWithoutSentRequestsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1351,6 +2174,14 @@ export type UserCreateWithoutSentRequestsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSentRequestsInput = {
@@ -1361,6 +2192,7 @@ export type UserUncheckedCreateWithoutSentRequestsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1380,6 +2212,14 @@ export type UserUncheckedCreateWithoutSentRequestsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSentRequestsInput = {
@@ -1406,6 +2246,7 @@ export type UserUpdateWithoutReceivedRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1425,6 +2266,14 @@ export type UserUpdateWithoutReceivedRequestsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedRequestsInput = {
@@ -1435,6 +2284,7 @@ export type UserUncheckedUpdateWithoutReceivedRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1454,6 +2304,14 @@ export type UserUncheckedUpdateWithoutReceivedRequestsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutSentRequestsInput = {
@@ -1475,6 +2333,7 @@ export type UserUpdateWithoutSentRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1494,6 +2353,14 @@ export type UserUpdateWithoutSentRequestsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentRequestsInput = {
@@ -1504,6 +2371,7 @@ export type UserUncheckedUpdateWithoutSentRequestsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1523,6 +2391,14 @@ export type UserUncheckedUpdateWithoutSentRequestsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSessionsInput = {
@@ -1533,6 +2409,7 @@ export type UserCreateWithoutSessionsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1552,6 +2429,14 @@ export type UserCreateWithoutSessionsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -1562,6 +2447,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1581,6 +2467,14 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -1607,6 +2501,7 @@ export type UserUpdateWithoutSessionsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1626,6 +2521,14 @@ export type UserUpdateWithoutSessionsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -1636,6 +2539,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1655,6 +2559,14 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -1665,6 +2577,7 @@ export type UserCreateWithoutAccountsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1684,6 +2597,14 @@ export type UserCreateWithoutAccountsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -1694,6 +2615,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1713,6 +2635,14 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -1739,6 +2669,7 @@ export type UserUpdateWithoutAccountsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1758,6 +2689,14 @@ export type UserUpdateWithoutAccountsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -1768,6 +2707,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1787,6 +2727,14 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutHomeLocationInput = {
@@ -1797,6 +2745,7 @@ export type UserCreateWithoutHomeLocationInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1816,6 +2765,14 @@ export type UserCreateWithoutHomeLocationInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutHomeLocationInput = {
@@ -1826,6 +2783,7 @@ export type UserUncheckedCreateWithoutHomeLocationInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1845,6 +2803,14 @@ export type UserUncheckedCreateWithoutHomeLocationInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutHomeLocationInput = {
@@ -1884,6 +2850,7 @@ export type UserScalarWhereInput = {
   email?: Prisma.StringFilter<"User"> | string
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   image?: Prisma.StringNullableFilter<"User"> | string | null
+  phone?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   isActive?: Prisma.BoolFilter<"User"> | boolean
   homeLocationId?: Prisma.StringNullableFilter<"User"> | string | null
@@ -1900,6 +2867,7 @@ export type UserCreateWithoutSavedLocationInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -1919,6 +2887,14 @@ export type UserCreateWithoutSavedLocationInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSavedLocationInput = {
@@ -1929,6 +2905,7 @@ export type UserUncheckedCreateWithoutSavedLocationInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -1948,6 +2925,14 @@ export type UserUncheckedCreateWithoutSavedLocationInput = {
   preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSavedLocationInput = {
@@ -1974,6 +2959,7 @@ export type UserUpdateWithoutSavedLocationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1993,6 +2979,14 @@ export type UserUpdateWithoutSavedLocationInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSavedLocationInput = {
@@ -2003,6 +2997,7 @@ export type UserUncheckedUpdateWithoutSavedLocationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2022,6 +3017,518 @@ export type UserUncheckedUpdateWithoutSavedLocationInput = {
   preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutSavedDestinationsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutSavedDestinationsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutSavedDestinationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSavedDestinationsInput, Prisma.UserUncheckedCreateWithoutSavedDestinationsInput>
+}
+
+export type UserUpsertWithoutSavedDestinationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSavedDestinationsInput, Prisma.UserUncheckedUpdateWithoutSavedDestinationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSavedDestinationsInput, Prisma.UserUncheckedCreateWithoutSavedDestinationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSavedDestinationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSavedDestinationsInput, Prisma.UserUncheckedUpdateWithoutSavedDestinationsInput>
+}
+
+export type UserUpdateWithoutSavedDestinationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSavedDestinationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutCommunityReportsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutCommunityReportsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutCommunityReportsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCommunityReportsInput, Prisma.UserUncheckedCreateWithoutCommunityReportsInput>
+}
+
+export type UserCreateWithoutModeratedReportsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutModeratedReportsInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutModeratedReportsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutModeratedReportsInput, Prisma.UserUncheckedCreateWithoutModeratedReportsInput>
+}
+
+export type UserUpsertWithoutCommunityReportsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCommunityReportsInput, Prisma.UserUncheckedUpdateWithoutCommunityReportsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCommunityReportsInput, Prisma.UserUncheckedCreateWithoutCommunityReportsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCommunityReportsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCommunityReportsInput, Prisma.UserUncheckedUpdateWithoutCommunityReportsInput>
+}
+
+export type UserUpdateWithoutCommunityReportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCommunityReportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserUpsertWithoutModeratedReportsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutModeratedReportsInput, Prisma.UserUncheckedUpdateWithoutModeratedReportsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutModeratedReportsInput, Prisma.UserUncheckedCreateWithoutModeratedReportsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutModeratedReportsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutModeratedReportsInput, Prisma.UserUncheckedUpdateWithoutModeratedReportsInput>
+}
+
+export type UserUpdateWithoutModeratedReportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutModeratedReportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTravelPlansInput = {
@@ -2032,6 +3539,7 @@ export type UserCreateWithoutTravelPlansInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2051,6 +3559,14 @@ export type UserCreateWithoutTravelPlansInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTravelPlansInput = {
@@ -2061,6 +3577,7 @@ export type UserUncheckedCreateWithoutTravelPlansInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2080,6 +3597,14 @@ export type UserUncheckedCreateWithoutTravelPlansInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTravelPlansInput = {
@@ -2106,6 +3631,7 @@ export type UserUpdateWithoutTravelPlansInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2125,6 +3651,14 @@ export type UserUpdateWithoutTravelPlansInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTravelPlansInput = {
@@ -2135,6 +3669,7 @@ export type UserUncheckedUpdateWithoutTravelPlansInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2154,6 +3689,14 @@ export type UserUncheckedUpdateWithoutTravelPlansInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutPlanMembershipsInput = {
@@ -2164,6 +3707,7 @@ export type UserCreateWithoutPlanMembershipsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2183,6 +3727,14 @@ export type UserCreateWithoutPlanMembershipsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutPlanMembershipsInput = {
@@ -2193,6 +3745,7 @@ export type UserUncheckedCreateWithoutPlanMembershipsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2212,6 +3765,14 @@ export type UserUncheckedCreateWithoutPlanMembershipsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutPlanMembershipsInput = {
@@ -2238,6 +3799,7 @@ export type UserUpdateWithoutPlanMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2257,6 +3819,14 @@ export type UserUpdateWithoutPlanMembershipsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPlanMembershipsInput = {
@@ -2267,6 +3837,7 @@ export type UserUncheckedUpdateWithoutPlanMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2286,6 +3857,14 @@ export type UserUncheckedUpdateWithoutPlanMembershipsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCreatedGroupsInput = {
@@ -2296,6 +3875,7 @@ export type UserCreateWithoutCreatedGroupsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2315,6 +3895,14 @@ export type UserCreateWithoutCreatedGroupsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCreatedGroupsInput = {
@@ -2325,6 +3913,7 @@ export type UserUncheckedCreateWithoutCreatedGroupsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2344,6 +3933,14 @@ export type UserUncheckedCreateWithoutCreatedGroupsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCreatedGroupsInput = {
@@ -2370,6 +3967,7 @@ export type UserUpdateWithoutCreatedGroupsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2389,6 +3987,14 @@ export type UserUpdateWithoutCreatedGroupsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
@@ -2399,6 +4005,7 @@ export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2418,6 +4025,14 @@ export type UserUncheckedUpdateWithoutCreatedGroupsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutGroupMembershipsInput = {
@@ -2428,6 +4043,7 @@ export type UserCreateWithoutGroupMembershipsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2447,6 +4063,14 @@ export type UserCreateWithoutGroupMembershipsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -2457,6 +4081,7 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2476,6 +4101,14 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -2502,6 +4135,7 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2521,6 +4155,14 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -2531,6 +4173,7 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2550,6 +4193,14 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -2560,6 +4211,7 @@ export type UserCreateWithoutNotificationsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2579,6 +4231,14 @@ export type UserCreateWithoutNotificationsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -2589,6 +4249,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2608,6 +4269,14 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -2634,6 +4303,7 @@ export type UserUpdateWithoutNotificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2653,6 +4323,14 @@ export type UserUpdateWithoutNotificationsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -2663,6 +4341,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2682,6 +4361,14 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -2692,6 +4379,7 @@ export type UserCreateWithoutAuditLogsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2711,6 +4399,14 @@ export type UserCreateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
   savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -2721,6 +4417,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   homeLocationId?: string | null
@@ -2740,6 +4437,14 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -2766,6 +4471,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2785,6 +4491,14 @@ export type UserUpdateWithoutAuditLogsInput = {
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -2795,6 +4509,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2814,6 +4529,350 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutPrivacyInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  tripPhotos?: Prisma.TripPhotoCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutPrivacyInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  tripPhotos?: Prisma.TripPhotoUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutPrivacyInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPrivacyInput, Prisma.UserUncheckedCreateWithoutPrivacyInput>
+}
+
+export type UserUpsertWithoutPrivacyInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPrivacyInput, Prisma.UserUncheckedUpdateWithoutPrivacyInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPrivacyInput, Prisma.UserUncheckedCreateWithoutPrivacyInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPrivacyInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPrivacyInput, Prisma.UserUncheckedUpdateWithoutPrivacyInput>
+}
+
+export type UserUpdateWithoutPrivacyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPrivacyInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutTripPhotosInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  homeLocation?: Prisma.LocationCreateNestedOneWithoutResidentsInput
+  savedLocation?: Prisma.UserSavedLocationCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyCreateNestedOneWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutTripPhotosInput = {
+  id?: string
+  name: string
+  username?: string | null
+  displayUsername?: string | null
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  phone?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  homeLocationId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  deletedAt?: Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  receivedRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutReceiverInput
+  sentRequests?: Prisma.FriendshipUncheckedCreateNestedManyWithoutRequesterInput
+  notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  createdGroups?: Prisma.TravelGroupUncheckedCreateNestedManyWithoutCreatedByInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedCreateNestedManyWithoutUserInput
+  travelPlans?: Prisma.TravelPlanUncheckedCreateNestedManyWithoutLeaderInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutUserInput
+  behavior?: Prisma.UserBehaviorUncheckedCreateNestedOneWithoutUserInput
+  health?: Prisma.UserHealthUncheckedCreateNestedOneWithoutUserInput
+  preference?: Prisma.UserPreferenceUncheckedCreateNestedOneWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedCreateNestedOneWithoutUserInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutUserInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedCreateNestedManyWithoutUserInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutUserInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutUserInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutUserInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedCreateNestedManyWithoutModeratorInput
+  privacy?: Prisma.UserPrivacyUncheckedCreateNestedOneWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutTripPhotosInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTripPhotosInput, Prisma.UserUncheckedCreateWithoutTripPhotosInput>
+}
+
+export type UserUpsertWithoutTripPhotosInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTripPhotosInput, Prisma.UserUncheckedUpdateWithoutTripPhotosInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTripPhotosInput, Prisma.UserUncheckedCreateWithoutTripPhotosInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTripPhotosInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTripPhotosInput, Prisma.UserUncheckedUpdateWithoutTripPhotosInput>
+}
+
+export type UserUpdateWithoutTripPhotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  homeLocation?: Prisma.LocationUpdateOneWithoutResidentsNestedInput
+  savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTripPhotosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  displayUsername?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  homeLocationId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  deletedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  receivedRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutReceiverNestedInput
+  sentRequests?: Prisma.FriendshipUncheckedUpdateManyWithoutRequesterNestedInput
+  notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  createdGroups?: Prisma.TravelGroupUncheckedUpdateManyWithoutCreatedByNestedInput
+  groupMemberships?: Prisma.TravelGroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  travelPlans?: Prisma.TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput
+  planMemberships?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutUserNestedInput
+  behavior?: Prisma.UserBehaviorUncheckedUpdateOneWithoutUserNestedInput
+  health?: Prisma.UserHealthUncheckedUpdateOneWithoutUserNestedInput
+  preference?: Prisma.UserPreferenceUncheckedUpdateOneWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
 }
 
 export type UserCreateManyHomeLocationInput = {
@@ -2824,6 +4883,7 @@ export type UserCreateManyHomeLocationInput = {
   email: string
   emailVerified?: boolean
   image?: string | null
+  phone?: string | null
   role?: $Enums.Role
   isActive?: boolean
   createdAt?: Date | string
@@ -2839,6 +4899,7 @@ export type UserUpdateWithoutHomeLocationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2858,6 +4919,14 @@ export type UserUpdateWithoutHomeLocationInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutHomeLocationInput = {
@@ -2868,6 +4937,7 @@ export type UserUncheckedUpdateWithoutHomeLocationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2887,6 +4957,14 @@ export type UserUncheckedUpdateWithoutHomeLocationInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   savedLocation?: Prisma.UserSavedLocationUncheckedUpdateOneWithoutUserNestedInput
+  savedDestinations?: Prisma.SavedDestinationUncheckedUpdateManyWithoutUserNestedInput
+  emergencyContacts?: Prisma.EmergencyContactUncheckedUpdateManyWithoutUserNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutUserNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutUserNestedInput
+  communityReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutUserNestedInput
+  moderatedReports?: Prisma.CommunityHazardReportUncheckedUpdateManyWithoutModeratorNestedInput
+  privacy?: Prisma.UserPrivacyUncheckedUpdateOneWithoutUserNestedInput
+  tripPhotos?: Prisma.TripPhotoUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutHomeLocationInput = {
@@ -2897,6 +4975,7 @@ export type UserUncheckedUpdateManyWithoutHomeLocationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2920,6 +4999,13 @@ export type UserCountOutputType = {
   planMemberships: number
   accounts: number
   sessions: number
+  savedDestinations: number
+  emergencyContacts: number
+  emergencyAlerts: number
+  locationShareSessions: number
+  communityReports: number
+  moderatedReports: number
+  tripPhotos: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2933,6 +5019,13 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   planMemberships?: boolean | UserCountOutputTypeCountPlanMembershipsArgs
   accounts?: boolean | UserCountOutputTypeCountAccountsArgs
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+  savedDestinations?: boolean | UserCountOutputTypeCountSavedDestinationsArgs
+  emergencyContacts?: boolean | UserCountOutputTypeCountEmergencyContactsArgs
+  emergencyAlerts?: boolean | UserCountOutputTypeCountEmergencyAlertsArgs
+  locationShareSessions?: boolean | UserCountOutputTypeCountLocationShareSessionsArgs
+  communityReports?: boolean | UserCountOutputTypeCountCommunityReportsArgs
+  moderatedReports?: boolean | UserCountOutputTypeCountModeratedReportsArgs
+  tripPhotos?: boolean | UserCountOutputTypeCountTripPhotosArgs
 }
 
 /**
@@ -3015,6 +5108,55 @@ export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.SessionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSavedDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SavedDestinationWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountEmergencyContactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmergencyContactWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountEmergencyAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmergencyAlertWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountLocationShareSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LocationShareSessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCommunityReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CommunityHazardReportWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountModeratedReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CommunityHazardReportWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTripPhotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TripPhotoWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3024,6 +5166,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   email?: boolean
   emailVerified?: boolean
   image?: boolean
+  phone?: boolean
   role?: boolean
   isActive?: boolean
   homeLocationId?: boolean
@@ -3045,6 +5188,14 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   homeLocation?: boolean | Prisma.User$homeLocationArgs<ExtArgs>
   savedLocation?: boolean | Prisma.User$savedLocationArgs<ExtArgs>
+  savedDestinations?: boolean | Prisma.User$savedDestinationsArgs<ExtArgs>
+  emergencyContacts?: boolean | Prisma.User$emergencyContactsArgs<ExtArgs>
+  emergencyAlerts?: boolean | Prisma.User$emergencyAlertsArgs<ExtArgs>
+  locationShareSessions?: boolean | Prisma.User$locationShareSessionsArgs<ExtArgs>
+  communityReports?: boolean | Prisma.User$communityReportsArgs<ExtArgs>
+  moderatedReports?: boolean | Prisma.User$moderatedReportsArgs<ExtArgs>
+  privacy?: boolean | Prisma.User$privacyArgs<ExtArgs>
+  tripPhotos?: boolean | Prisma.User$tripPhotosArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3056,6 +5207,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   emailVerified?: boolean
   image?: boolean
+  phone?: boolean
   role?: boolean
   isActive?: boolean
   homeLocationId?: boolean
@@ -3073,6 +5225,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   email?: boolean
   emailVerified?: boolean
   image?: boolean
+  phone?: boolean
   role?: boolean
   isActive?: boolean
   homeLocationId?: boolean
@@ -3090,6 +5243,7 @@ export type UserSelectScalar = {
   email?: boolean
   emailVerified?: boolean
   image?: boolean
+  phone?: boolean
   role?: boolean
   isActive?: boolean
   homeLocationId?: boolean
@@ -3098,7 +5252,7 @@ export type UserSelectScalar = {
   deletedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "username" | "displayUsername" | "email" | "emailVerified" | "image" | "role" | "isActive" | "homeLocationId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "username" | "displayUsername" | "email" | "emailVerified" | "image" | "phone" | "role" | "isActive" | "homeLocationId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   receivedRequests?: boolean | Prisma.User$receivedRequestsArgs<ExtArgs>
@@ -3115,6 +5269,14 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   homeLocation?: boolean | Prisma.User$homeLocationArgs<ExtArgs>
   savedLocation?: boolean | Prisma.User$savedLocationArgs<ExtArgs>
+  savedDestinations?: boolean | Prisma.User$savedDestinationsArgs<ExtArgs>
+  emergencyContacts?: boolean | Prisma.User$emergencyContactsArgs<ExtArgs>
+  emergencyAlerts?: boolean | Prisma.User$emergencyAlertsArgs<ExtArgs>
+  locationShareSessions?: boolean | Prisma.User$locationShareSessionsArgs<ExtArgs>
+  communityReports?: boolean | Prisma.User$communityReportsArgs<ExtArgs>
+  moderatedReports?: boolean | Prisma.User$moderatedReportsArgs<ExtArgs>
+  privacy?: boolean | Prisma.User$privacyArgs<ExtArgs>
+  tripPhotos?: boolean | Prisma.User$tripPhotosArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3142,6 +5304,14 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     homeLocation: Prisma.$LocationPayload<ExtArgs> | null
     savedLocation: Prisma.$UserSavedLocationPayload<ExtArgs> | null
+    savedDestinations: Prisma.$SavedDestinationPayload<ExtArgs>[]
+    emergencyContacts: Prisma.$EmergencyContactPayload<ExtArgs>[]
+    emergencyAlerts: Prisma.$EmergencyAlertPayload<ExtArgs>[]
+    locationShareSessions: Prisma.$LocationShareSessionPayload<ExtArgs>[]
+    communityReports: Prisma.$CommunityHazardReportPayload<ExtArgs>[]
+    moderatedReports: Prisma.$CommunityHazardReportPayload<ExtArgs>[]
+    privacy: Prisma.$UserPrivacyPayload<ExtArgs> | null
+    tripPhotos: Prisma.$TripPhotoPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -3151,6 +5321,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     email: string
     emailVerified: boolean
     image: string | null
+    phone: string | null
     role: $Enums.Role
     isActive: boolean
     homeLocationId: string | null
@@ -3566,6 +5737,14 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   homeLocation<T extends Prisma.User$homeLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$homeLocationArgs<ExtArgs>>): Prisma.Prisma__LocationClient<runtime.Types.Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   savedLocation<T extends Prisma.User$savedLocationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$savedLocationArgs<ExtArgs>>): Prisma.Prisma__UserSavedLocationClient<runtime.Types.Result.GetResult<Prisma.$UserSavedLocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  savedDestinations<T extends Prisma.User$savedDestinationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$savedDestinationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedDestinationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  emergencyContacts<T extends Prisma.User$emergencyContactsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$emergencyContactsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmergencyContactPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  emergencyAlerts<T extends Prisma.User$emergencyAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$emergencyAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmergencyAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  locationShareSessions<T extends Prisma.User$locationShareSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$locationShareSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LocationShareSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  communityReports<T extends Prisma.User$communityReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$communityReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityHazardReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  moderatedReports<T extends Prisma.User$moderatedReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$moderatedReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommunityHazardReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  privacy<T extends Prisma.User$privacyArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$privacyArgs<ExtArgs>>): Prisma.Prisma__UserPrivacyClient<runtime.Types.Result.GetResult<Prisma.$UserPrivacyPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  tripPhotos<T extends Prisma.User$tripPhotosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$tripPhotosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TripPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3602,6 +5781,7 @@ export interface UserFieldRefs {
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly image: Prisma.FieldRef<"User", 'String'>
+  readonly phone: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly isActive: Prisma.FieldRef<"User", 'Boolean'>
   readonly homeLocationId: Prisma.FieldRef<"User", 'String'>
@@ -4341,6 +6521,193 @@ export type User$savedLocationArgs<ExtArgs extends runtime.Types.Extensions.Inte
    */
   include?: Prisma.UserSavedLocationInclude<ExtArgs> | null
   where?: Prisma.UserSavedLocationWhereInput
+}
+
+/**
+ * User.savedDestinations
+ */
+export type User$savedDestinationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SavedDestination
+   */
+  select?: Prisma.SavedDestinationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SavedDestination
+   */
+  omit?: Prisma.SavedDestinationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SavedDestinationInclude<ExtArgs> | null
+  where?: Prisma.SavedDestinationWhereInput
+  orderBy?: Prisma.SavedDestinationOrderByWithRelationInput | Prisma.SavedDestinationOrderByWithRelationInput[]
+  cursor?: Prisma.SavedDestinationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SavedDestinationScalarFieldEnum | Prisma.SavedDestinationScalarFieldEnum[]
+}
+
+/**
+ * User.emergencyContacts
+ */
+export type User$emergencyContactsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EmergencyContact
+   */
+  select?: Prisma.EmergencyContactSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EmergencyContact
+   */
+  omit?: Prisma.EmergencyContactOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmergencyContactInclude<ExtArgs> | null
+  where?: Prisma.EmergencyContactWhereInput
+  orderBy?: Prisma.EmergencyContactOrderByWithRelationInput | Prisma.EmergencyContactOrderByWithRelationInput[]
+  cursor?: Prisma.EmergencyContactWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmergencyContactScalarFieldEnum | Prisma.EmergencyContactScalarFieldEnum[]
+}
+
+/**
+ * User.emergencyAlerts
+ */
+export type User$emergencyAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EmergencyAlert
+   */
+  select?: Prisma.EmergencyAlertSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EmergencyAlert
+   */
+  omit?: Prisma.EmergencyAlertOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmergencyAlertInclude<ExtArgs> | null
+  where?: Prisma.EmergencyAlertWhereInput
+  orderBy?: Prisma.EmergencyAlertOrderByWithRelationInput | Prisma.EmergencyAlertOrderByWithRelationInput[]
+  cursor?: Prisma.EmergencyAlertWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmergencyAlertScalarFieldEnum | Prisma.EmergencyAlertScalarFieldEnum[]
+}
+
+/**
+ * User.locationShareSessions
+ */
+export type User$locationShareSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LocationShareSession
+   */
+  select?: Prisma.LocationShareSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LocationShareSession
+   */
+  omit?: Prisma.LocationShareSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LocationShareSessionInclude<ExtArgs> | null
+  where?: Prisma.LocationShareSessionWhereInput
+  orderBy?: Prisma.LocationShareSessionOrderByWithRelationInput | Prisma.LocationShareSessionOrderByWithRelationInput[]
+  cursor?: Prisma.LocationShareSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LocationShareSessionScalarFieldEnum | Prisma.LocationShareSessionScalarFieldEnum[]
+}
+
+/**
+ * User.communityReports
+ */
+export type User$communityReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CommunityHazardReport
+   */
+  select?: Prisma.CommunityHazardReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CommunityHazardReport
+   */
+  omit?: Prisma.CommunityHazardReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CommunityHazardReportInclude<ExtArgs> | null
+  where?: Prisma.CommunityHazardReportWhereInput
+  orderBy?: Prisma.CommunityHazardReportOrderByWithRelationInput | Prisma.CommunityHazardReportOrderByWithRelationInput[]
+  cursor?: Prisma.CommunityHazardReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CommunityHazardReportScalarFieldEnum | Prisma.CommunityHazardReportScalarFieldEnum[]
+}
+
+/**
+ * User.moderatedReports
+ */
+export type User$moderatedReportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CommunityHazardReport
+   */
+  select?: Prisma.CommunityHazardReportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the CommunityHazardReport
+   */
+  omit?: Prisma.CommunityHazardReportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CommunityHazardReportInclude<ExtArgs> | null
+  where?: Prisma.CommunityHazardReportWhereInput
+  orderBy?: Prisma.CommunityHazardReportOrderByWithRelationInput | Prisma.CommunityHazardReportOrderByWithRelationInput[]
+  cursor?: Prisma.CommunityHazardReportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CommunityHazardReportScalarFieldEnum | Prisma.CommunityHazardReportScalarFieldEnum[]
+}
+
+/**
+ * User.privacy
+ */
+export type User$privacyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserPrivacy
+   */
+  select?: Prisma.UserPrivacySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserPrivacy
+   */
+  omit?: Prisma.UserPrivacyOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserPrivacyInclude<ExtArgs> | null
+  where?: Prisma.UserPrivacyWhereInput
+}
+
+/**
+ * User.tripPhotos
+ */
+export type User$tripPhotosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TripPhoto
+   */
+  select?: Prisma.TripPhotoSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TripPhoto
+   */
+  omit?: Prisma.TripPhotoOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TripPhotoInclude<ExtArgs> | null
+  where?: Prisma.TripPhotoWhereInput
+  orderBy?: Prisma.TripPhotoOrderByWithRelationInput | Prisma.TripPhotoOrderByWithRelationInput[]
+  cursor?: Prisma.TripPhotoWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TripPhotoScalarFieldEnum | Prisma.TripPhotoScalarFieldEnum[]
 }
 
 /**

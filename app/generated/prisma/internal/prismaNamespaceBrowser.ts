@@ -54,6 +54,9 @@ export const ModelName = {
   User: 'User',
   UserHealth: 'UserHealth',
   UserPreference: 'UserPreference',
+  EmergencyContact: 'EmergencyContact',
+  EmergencyAlert: 'EmergencyAlert',
+  LocationShareSession: 'LocationShareSession',
   UserBehavior: 'UserBehavior',
   Friendship: 'Friendship',
   Session: 'Session',
@@ -67,10 +70,12 @@ export const ModelName = {
   RouteNode: 'RouteNode',
   RouteEdge: 'RouteEdge',
   UserSavedLocation: 'UserSavedLocation',
+  SavedDestination: 'SavedDestination',
   RouteTemplate: 'RouteTemplate',
   RouteTemplatePoint: 'RouteTemplatePoint',
   WeatherData: 'WeatherData',
   HazardData: 'HazardData',
+  CommunityHazardReport: 'CommunityHazardReport',
   RiskAssessment: 'RiskAssessment',
   TravelPlan: 'TravelPlan',
   TravelStop: 'TravelStop',
@@ -79,7 +84,9 @@ export const ModelName = {
   TravelGroupMember: 'TravelGroupMember',
   Notification: 'Notification',
   AuditLog: 'AuditLog',
-  yatra_disaster_events: 'yatra_disaster_events'
+  yatra_disaster_events: 'yatra_disaster_events',
+  UserPrivacy: 'UserPrivacy',
+  TripPhoto: 'TripPhoto'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -106,6 +113,7 @@ export const UserScalarFieldEnum = {
   email: 'email',
   emailVerified: 'emailVerified',
   image: 'image',
+  phone: 'phone',
   role: 'role',
   isActive: 'isActive',
   homeLocationId: 'homeLocationId',
@@ -147,6 +155,52 @@ export const UserPreferenceScalarFieldEnum = {
 } as const
 
 export type UserPreferenceScalarFieldEnum = (typeof UserPreferenceScalarFieldEnum)[keyof typeof UserPreferenceScalarFieldEnum]
+
+
+export const EmergencyContactScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  phone: 'phone',
+  email: 'email',
+  relation: 'relation',
+  isPrimary: 'isPrimary',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmergencyContactScalarFieldEnum = (typeof EmergencyContactScalarFieldEnum)[keyof typeof EmergencyContactScalarFieldEnum]
+
+
+export const EmergencyAlertScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tripId: 'tripId',
+  status: 'status',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  message: 'message',
+  resolvedAt: 'resolvedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmergencyAlertScalarFieldEnum = (typeof EmergencyAlertScalarFieldEnum)[keyof typeof EmergencyAlertScalarFieldEnum]
+
+
+export const LocationShareSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  userName: 'userName',
+  tripId: 'tripId',
+  tripTitle: 'tripTitle',
+  shareLink: 'shareLink',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+} as const
+
+export type LocationShareSessionScalarFieldEnum = (typeof LocationShareSessionScalarFieldEnum)[keyof typeof LocationShareSessionScalarFieldEnum]
 
 
 export const UserBehaviorScalarFieldEnum = {
@@ -342,6 +396,19 @@ export const UserSavedLocationScalarFieldEnum = {
 export type UserSavedLocationScalarFieldEnum = (typeof UserSavedLocationScalarFieldEnum)[keyof typeof UserSavedLocationScalarFieldEnum]
 
 
+export const SavedDestinationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  destinationId: 'destinationId',
+  notes: 'notes',
+  order: 'order',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SavedDestinationScalarFieldEnum = (typeof SavedDestinationScalarFieldEnum)[keyof typeof SavedDestinationScalarFieldEnum]
+
+
 export const RouteTemplateScalarFieldEnum = {
   id: 'id',
   originLocationId: 'originLocationId',
@@ -403,6 +470,28 @@ export const HazardDataScalarFieldEnum = {
 export type HazardDataScalarFieldEnum = (typeof HazardDataScalarFieldEnum)[keyof typeof HazardDataScalarFieldEnum]
 
 
+export const CommunityHazardReportScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  hazardType: 'hazardType',
+  severity: 'severity',
+  title: 'title',
+  description: 'description',
+  lat: 'lat',
+  lng: 'lng',
+  locationId: 'locationId',
+  imageUrl: 'imageUrl',
+  status: 'status',
+  moderatedBy: 'moderatedBy',
+  moderatedAt: 'moderatedAt',
+  rejectionReason: 'rejectionReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommunityHazardReportScalarFieldEnum = (typeof CommunityHazardReportScalarFieldEnum)[keyof typeof CommunityHazardReportScalarFieldEnum]
+
+
 export const RiskAssessmentScalarFieldEnum = {
   id: 'id',
   locationId: 'locationId',
@@ -430,6 +519,8 @@ export const TravelPlanScalarFieldEnum = {
   endDate: 'endDate',
   budgetNPR: 'budgetNPR',
   groupRiskResult: 'groupRiskResult',
+  startNotifiedAt: 'startNotifiedAt',
+  endNotifiedAt: 'endNotifiedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -525,6 +616,34 @@ export const Yatra_disaster_eventsScalarFieldEnum = {
 } as const
 
 export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
+
+
+export const UserPrivacyScalarFieldEnum = {
+  userId: 'userId',
+  whoCanSeeName: 'whoCanSeeName',
+  whoCanSeeUsername: 'whoCanSeeUsername',
+  whoCanSeeLocation: 'whoCanSeeLocation',
+  whoCanSeeEmail: 'whoCanSeeEmail',
+  whoCanSeeTrips: 'whoCanSeeTrips',
+  whoCanSeePhotos: 'whoCanSeePhotos'
+} as const
+
+export type UserPrivacyScalarFieldEnum = (typeof UserPrivacyScalarFieldEnum)[keyof typeof UserPrivacyScalarFieldEnum]
+
+
+export const TripPhotoScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  imageUrl: 'imageUrl',
+  tripId: 'tripId',
+  caption: 'caption',
+  location: 'location',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  createdAt: 'createdAt'
+} as const
+
+export type TripPhotoScalarFieldEnum = (typeof TripPhotoScalarFieldEnum)[keyof typeof TripPhotoScalarFieldEnum]
 
 
 export const SortOrder = {

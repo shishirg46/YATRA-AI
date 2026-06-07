@@ -43,6 +43,8 @@ export type TravelPlanMinAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   budgetNPR: number | null
+  startNotifiedAt: Date | null
+  endNotifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +58,8 @@ export type TravelPlanMaxAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   budgetNPR: number | null
+  startNotifiedAt: Date | null
+  endNotifiedAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -70,6 +74,8 @@ export type TravelPlanCountAggregateOutputType = {
   endDate: number
   budgetNPR: number
   groupRiskResult: number
+  startNotifiedAt: number
+  endNotifiedAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -93,6 +99,8 @@ export type TravelPlanMinAggregateInputType = {
   startDate?: true
   endDate?: true
   budgetNPR?: true
+  startNotifiedAt?: true
+  endNotifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +114,8 @@ export type TravelPlanMaxAggregateInputType = {
   startDate?: true
   endDate?: true
   budgetNPR?: true
+  startNotifiedAt?: true
+  endNotifiedAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -120,6 +130,8 @@ export type TravelPlanCountAggregateInputType = {
   endDate?: true
   budgetNPR?: true
   groupRiskResult?: true
+  startNotifiedAt?: true
+  endNotifiedAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -221,6 +233,8 @@ export type TravelPlanGroupByOutputType = {
   endDate: Date
   budgetNPR: number | null
   groupRiskResult: runtime.JsonValue | null
+  startNotifiedAt: Date | null
+  endNotifiedAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: TravelPlanCountAggregateOutputType | null
@@ -258,11 +272,15 @@ export type TravelPlanWhereInput = {
   endDate?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   budgetNPR?: Prisma.FloatNullableFilter<"TravelPlan"> | number | null
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
+  startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   members?: Prisma.TravelPlanMemberListRelationFilter
   stops?: Prisma.TravelStopListRelationFilter
+  emergencyAlerts?: Prisma.EmergencyAlertListRelationFilter
+  locationShareSessions?: Prisma.LocationShareSessionListRelationFilter
 }
 
 export type TravelPlanOrderByWithRelationInput = {
@@ -275,11 +293,15 @@ export type TravelPlanOrderByWithRelationInput = {
   endDate?: Prisma.SortOrder
   budgetNPR?: Prisma.SortOrderInput | Prisma.SortOrder
   groupRiskResult?: Prisma.SortOrderInput | Prisma.SortOrder
+  startNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  endNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   leader?: Prisma.UserOrderByWithRelationInput
   members?: Prisma.TravelPlanMemberOrderByRelationAggregateInput
   stops?: Prisma.TravelStopOrderByRelationAggregateInput
+  emergencyAlerts?: Prisma.EmergencyAlertOrderByRelationAggregateInput
+  locationShareSessions?: Prisma.LocationShareSessionOrderByRelationAggregateInput
 }
 
 export type TravelPlanWhereUniqueInput = Prisma.AtLeast<{
@@ -295,11 +317,15 @@ export type TravelPlanWhereUniqueInput = Prisma.AtLeast<{
   endDate?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   budgetNPR?: Prisma.FloatNullableFilter<"TravelPlan"> | number | null
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
+  startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   members?: Prisma.TravelPlanMemberListRelationFilter
   stops?: Prisma.TravelStopListRelationFilter
+  emergencyAlerts?: Prisma.EmergencyAlertListRelationFilter
+  locationShareSessions?: Prisma.LocationShareSessionListRelationFilter
 }, "id">
 
 export type TravelPlanOrderByWithAggregationInput = {
@@ -312,6 +338,8 @@ export type TravelPlanOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrder
   budgetNPR?: Prisma.SortOrderInput | Prisma.SortOrder
   groupRiskResult?: Prisma.SortOrderInput | Prisma.SortOrder
+  startNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  endNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TravelPlanCountOrderByAggregateInput
@@ -334,6 +362,8 @@ export type TravelPlanScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeWithAggregatesFilter<"TravelPlan"> | Date | string
   budgetNPR?: Prisma.FloatNullableWithAggregatesFilter<"TravelPlan"> | number | null
   groupRiskResult?: Prisma.JsonNullableWithAggregatesFilter<"TravelPlan">
+  startNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
+  endNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TravelPlan"> | Date | string
 }
@@ -347,11 +377,15 @@ export type TravelPlanCreateInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
   stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanUncheckedCreateInput = {
@@ -364,10 +398,14 @@ export type TravelPlanUncheckedCreateInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
   stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanUpdateInput = {
@@ -379,11 +417,15 @@ export type TravelPlanUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
   stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanUncheckedUpdateInput = {
@@ -396,10 +438,14 @@ export type TravelPlanUncheckedUpdateInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
   stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanCreateManyInput = {
@@ -412,6 +458,8 @@ export type TravelPlanCreateManyInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -425,6 +473,8 @@ export type TravelPlanUpdateManyMutationInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -439,6 +489,8 @@ export type TravelPlanUncheckedUpdateManyInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -453,6 +505,11 @@ export type TravelPlanOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type TravelPlanNullableScalarRelationFilter = {
+  is?: Prisma.TravelPlanWhereInput | null
+  isNot?: Prisma.TravelPlanWhereInput | null
+}
+
 export type TravelPlanCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
@@ -463,6 +520,8 @@ export type TravelPlanCountOrderByAggregateInput = {
   endDate?: Prisma.SortOrder
   budgetNPR?: Prisma.SortOrder
   groupRiskResult?: Prisma.SortOrder
+  startNotifiedAt?: Prisma.SortOrder
+  endNotifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -480,6 +539,8 @@ export type TravelPlanMaxOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   budgetNPR?: Prisma.SortOrder
+  startNotifiedAt?: Prisma.SortOrder
+  endNotifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -493,6 +554,8 @@ export type TravelPlanMinOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   budgetNPR?: Prisma.SortOrder
+  startNotifiedAt?: Prisma.SortOrder
+  endNotifiedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -548,6 +611,38 @@ export type TravelPlanUncheckedUpdateManyWithoutLeaderNestedInput = {
   deleteMany?: Prisma.TravelPlanScalarWhereInput | Prisma.TravelPlanScalarWhereInput[]
 }
 
+export type TravelPlanCreateNestedOneWithoutEmergencyAlertsInput = {
+  create?: Prisma.XOR<Prisma.TravelPlanCreateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedCreateWithoutEmergencyAlertsInput>
+  connectOrCreate?: Prisma.TravelPlanCreateOrConnectWithoutEmergencyAlertsInput
+  connect?: Prisma.TravelPlanWhereUniqueInput
+}
+
+export type TravelPlanUpdateOneWithoutEmergencyAlertsNestedInput = {
+  create?: Prisma.XOR<Prisma.TravelPlanCreateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedCreateWithoutEmergencyAlertsInput>
+  connectOrCreate?: Prisma.TravelPlanCreateOrConnectWithoutEmergencyAlertsInput
+  upsert?: Prisma.TravelPlanUpsertWithoutEmergencyAlertsInput
+  disconnect?: Prisma.TravelPlanWhereInput | boolean
+  delete?: Prisma.TravelPlanWhereInput | boolean
+  connect?: Prisma.TravelPlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TravelPlanUpdateToOneWithWhereWithoutEmergencyAlertsInput, Prisma.TravelPlanUpdateWithoutEmergencyAlertsInput>, Prisma.TravelPlanUncheckedUpdateWithoutEmergencyAlertsInput>
+}
+
+export type TravelPlanCreateNestedOneWithoutLocationShareSessionsInput = {
+  create?: Prisma.XOR<Prisma.TravelPlanCreateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedCreateWithoutLocationShareSessionsInput>
+  connectOrCreate?: Prisma.TravelPlanCreateOrConnectWithoutLocationShareSessionsInput
+  connect?: Prisma.TravelPlanWhereUniqueInput
+}
+
+export type TravelPlanUpdateOneWithoutLocationShareSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.TravelPlanCreateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedCreateWithoutLocationShareSessionsInput>
+  connectOrCreate?: Prisma.TravelPlanCreateOrConnectWithoutLocationShareSessionsInput
+  upsert?: Prisma.TravelPlanUpsertWithoutLocationShareSessionsInput
+  disconnect?: Prisma.TravelPlanWhereInput | boolean
+  delete?: Prisma.TravelPlanWhereInput | boolean
+  connect?: Prisma.TravelPlanWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TravelPlanUpdateToOneWithWhereWithoutLocationShareSessionsInput, Prisma.TravelPlanUpdateWithoutLocationShareSessionsInput>, Prisma.TravelPlanUncheckedUpdateWithoutLocationShareSessionsInput>
+}
+
 export type EnumTravelStatusFieldUpdateOperationsInput = {
   set?: $Enums.TravelStatus
 }
@@ -589,10 +684,14 @@ export type TravelPlanCreateWithoutLeaderInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
   stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanUncheckedCreateWithoutLeaderInput = {
@@ -604,10 +703,14 @@ export type TravelPlanUncheckedCreateWithoutLeaderInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
   stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanCreateOrConnectWithoutLeaderInput = {
@@ -649,8 +752,194 @@ export type TravelPlanScalarWhereInput = {
   endDate?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   budgetNPR?: Prisma.FloatNullableFilter<"TravelPlan"> | number | null
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
+  startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
+}
+
+export type TravelPlanCreateWithoutEmergencyAlertsInput = {
+  id?: string
+  title: string
+  tripType?: $Enums.AssessmentType
+  status?: $Enums.TravelStatus
+  startDate: Date | string
+  endDate: Date | string
+  budgetNPR?: number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
+  members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutTripInput
+}
+
+export type TravelPlanUncheckedCreateWithoutEmergencyAlertsInput = {
+  id?: string
+  title: string
+  leaderId: string
+  tripType?: $Enums.AssessmentType
+  status?: $Enums.TravelStatus
+  startDate: Date | string
+  endDate: Date | string
+  budgetNPR?: number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutTripInput
+}
+
+export type TravelPlanCreateOrConnectWithoutEmergencyAlertsInput = {
+  where: Prisma.TravelPlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.TravelPlanCreateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedCreateWithoutEmergencyAlertsInput>
+}
+
+export type TravelPlanUpsertWithoutEmergencyAlertsInput = {
+  update: Prisma.XOR<Prisma.TravelPlanUpdateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedUpdateWithoutEmergencyAlertsInput>
+  create: Prisma.XOR<Prisma.TravelPlanCreateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedCreateWithoutEmergencyAlertsInput>
+  where?: Prisma.TravelPlanWhereInput
+}
+
+export type TravelPlanUpdateToOneWithWhereWithoutEmergencyAlertsInput = {
+  where?: Prisma.TravelPlanWhereInput
+  data: Prisma.XOR<Prisma.TravelPlanUpdateWithoutEmergencyAlertsInput, Prisma.TravelPlanUncheckedUpdateWithoutEmergencyAlertsInput>
+}
+
+export type TravelPlanUpdateWithoutEmergencyAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  tripType?: Prisma.EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
+  status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
+  members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutTripNestedInput
+}
+
+export type TravelPlanUncheckedUpdateWithoutEmergencyAlertsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  leaderId?: Prisma.StringFieldUpdateOperationsInput | string
+  tripType?: Prisma.EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
+  status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutTripNestedInput
+}
+
+export type TravelPlanCreateWithoutLocationShareSessionsInput = {
+  id?: string
+  title: string
+  tripType?: $Enums.AssessmentType
+  status?: $Enums.TravelStatus
+  startDate: Date | string
+  endDate: Date | string
+  budgetNPR?: number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
+  members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutTripInput
+}
+
+export type TravelPlanUncheckedCreateWithoutLocationShareSessionsInput = {
+  id?: string
+  title: string
+  leaderId: string
+  tripType?: $Enums.AssessmentType
+  status?: $Enums.TravelStatus
+  startDate: Date | string
+  endDate: Date | string
+  budgetNPR?: number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
+  stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutTripInput
+}
+
+export type TravelPlanCreateOrConnectWithoutLocationShareSessionsInput = {
+  where: Prisma.TravelPlanWhereUniqueInput
+  create: Prisma.XOR<Prisma.TravelPlanCreateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedCreateWithoutLocationShareSessionsInput>
+}
+
+export type TravelPlanUpsertWithoutLocationShareSessionsInput = {
+  update: Prisma.XOR<Prisma.TravelPlanUpdateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedUpdateWithoutLocationShareSessionsInput>
+  create: Prisma.XOR<Prisma.TravelPlanCreateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedCreateWithoutLocationShareSessionsInput>
+  where?: Prisma.TravelPlanWhereInput
+}
+
+export type TravelPlanUpdateToOneWithWhereWithoutLocationShareSessionsInput = {
+  where?: Prisma.TravelPlanWhereInput
+  data: Prisma.XOR<Prisma.TravelPlanUpdateWithoutLocationShareSessionsInput, Prisma.TravelPlanUncheckedUpdateWithoutLocationShareSessionsInput>
+}
+
+export type TravelPlanUpdateWithoutLocationShareSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  tripType?: Prisma.EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
+  status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
+  members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutTripNestedInput
+}
+
+export type TravelPlanUncheckedUpdateWithoutLocationShareSessionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  leaderId?: Prisma.StringFieldUpdateOperationsInput | string
+  tripType?: Prisma.EnumAssessmentTypeFieldUpdateOperationsInput | $Enums.AssessmentType
+  status?: Prisma.EnumTravelStatusFieldUpdateOperationsInput | $Enums.TravelStatus
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
+  stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanCreateWithoutStopsInput = {
@@ -662,10 +951,14 @@ export type TravelPlanCreateWithoutStopsInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanUncheckedCreateWithoutStopsInput = {
@@ -678,9 +971,13 @@ export type TravelPlanUncheckedCreateWithoutStopsInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanCreateOrConnectWithoutStopsInput = {
@@ -708,10 +1005,14 @@ export type TravelPlanUpdateWithoutStopsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanUncheckedUpdateWithoutStopsInput = {
@@ -724,9 +1025,13 @@ export type TravelPlanUncheckedUpdateWithoutStopsInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanCreateWithoutMembersInput = {
@@ -738,10 +1043,14 @@ export type TravelPlanCreateWithoutMembersInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
   stops?: Prisma.TravelStopCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanUncheckedCreateWithoutMembersInput = {
@@ -754,9 +1063,13 @@ export type TravelPlanUncheckedCreateWithoutMembersInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedCreateNestedManyWithoutTripInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedCreateNestedManyWithoutTripInput
 }
 
 export type TravelPlanCreateOrConnectWithoutMembersInput = {
@@ -784,10 +1097,14 @@ export type TravelPlanUpdateWithoutMembersInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
   stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanUncheckedUpdateWithoutMembersInput = {
@@ -800,9 +1117,13 @@ export type TravelPlanUncheckedUpdateWithoutMembersInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanCreateManyLeaderInput = {
@@ -814,6 +1135,8 @@ export type TravelPlanCreateManyLeaderInput = {
   endDate: Date | string
   budgetNPR?: number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Date | string | null
+  endNotifiedAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -827,10 +1150,14 @@ export type TravelPlanUpdateWithoutLeaderInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
   stops?: Prisma.TravelStopUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanUncheckedUpdateWithoutLeaderInput = {
@@ -842,10 +1169,14 @@ export type TravelPlanUncheckedUpdateWithoutLeaderInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
   stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
+  emergencyAlerts?: Prisma.EmergencyAlertUncheckedUpdateManyWithoutTripNestedInput
+  locationShareSessions?: Prisma.LocationShareSessionUncheckedUpdateManyWithoutTripNestedInput
 }
 
 export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
@@ -857,6 +1188,8 @@ export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   budgetNPR?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -869,11 +1202,15 @@ export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
 export type TravelPlanCountOutputType = {
   members: number
   stops: number
+  emergencyAlerts: number
+  locationShareSessions: number
 }
 
 export type TravelPlanCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | TravelPlanCountOutputTypeCountMembersArgs
   stops?: boolean | TravelPlanCountOutputTypeCountStopsArgs
+  emergencyAlerts?: boolean | TravelPlanCountOutputTypeCountEmergencyAlertsArgs
+  locationShareSessions?: boolean | TravelPlanCountOutputTypeCountLocationShareSessionsArgs
 }
 
 /**
@@ -900,6 +1237,20 @@ export type TravelPlanCountOutputTypeCountStopsArgs<ExtArgs extends runtime.Type
   where?: Prisma.TravelStopWhereInput
 }
 
+/**
+ * TravelPlanCountOutputType without action
+ */
+export type TravelPlanCountOutputTypeCountEmergencyAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmergencyAlertWhereInput
+}
+
+/**
+ * TravelPlanCountOutputType without action
+ */
+export type TravelPlanCountOutputTypeCountLocationShareSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.LocationShareSessionWhereInput
+}
+
 
 export type TravelPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -911,11 +1262,15 @@ export type TravelPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   endDate?: boolean
   budgetNPR?: boolean
   groupRiskResult?: boolean
+  startNotifiedAt?: boolean
+  endNotifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   members?: boolean | Prisma.TravelPlan$membersArgs<ExtArgs>
   stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
+  emergencyAlerts?: boolean | Prisma.TravelPlan$emergencyAlertsArgs<ExtArgs>
+  locationShareSessions?: boolean | Prisma.TravelPlan$locationShareSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.TravelPlanCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["travelPlan"]>
 
@@ -929,6 +1284,8 @@ export type TravelPlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   endDate?: boolean
   budgetNPR?: boolean
   groupRiskResult?: boolean
+  startNotifiedAt?: boolean
+  endNotifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -944,6 +1301,8 @@ export type TravelPlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   endDate?: boolean
   budgetNPR?: boolean
   groupRiskResult?: boolean
+  startNotifiedAt?: boolean
+  endNotifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -959,15 +1318,19 @@ export type TravelPlanSelectScalar = {
   endDate?: boolean
   budgetNPR?: boolean
   groupRiskResult?: boolean
+  startNotifiedAt?: boolean
+  endNotifiedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TravelPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "leaderId" | "tripType" | "status" | "startDate" | "endDate" | "budgetNPR" | "groupRiskResult" | "createdAt" | "updatedAt", ExtArgs["result"]["travelPlan"]>
+export type TravelPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "leaderId" | "tripType" | "status" | "startDate" | "endDate" | "budgetNPR" | "groupRiskResult" | "startNotifiedAt" | "endNotifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["travelPlan"]>
 export type TravelPlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   members?: boolean | Prisma.TravelPlan$membersArgs<ExtArgs>
   stops?: boolean | Prisma.TravelPlan$stopsArgs<ExtArgs>
+  emergencyAlerts?: boolean | Prisma.TravelPlan$emergencyAlertsArgs<ExtArgs>
+  locationShareSessions?: boolean | Prisma.TravelPlan$locationShareSessionsArgs<ExtArgs>
   _count?: boolean | Prisma.TravelPlanCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TravelPlanIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -983,6 +1346,8 @@ export type $TravelPlanPayload<ExtArgs extends runtime.Types.Extensions.Internal
     leader: Prisma.$UserPayload<ExtArgs>
     members: Prisma.$TravelPlanMemberPayload<ExtArgs>[]
     stops: Prisma.$TravelStopPayload<ExtArgs>[]
+    emergencyAlerts: Prisma.$EmergencyAlertPayload<ExtArgs>[]
+    locationShareSessions: Prisma.$LocationShareSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -994,6 +1359,8 @@ export type $TravelPlanPayload<ExtArgs extends runtime.Types.Extensions.Internal
     endDate: Date
     budgetNPR: number | null
     groupRiskResult: runtime.JsonValue | null
+    startNotifiedAt: Date | null
+    endNotifiedAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["travelPlan"]>
@@ -1393,6 +1760,8 @@ export interface Prisma__TravelPlanClient<T, Null = never, ExtArgs extends runti
   leader<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   members<T extends Prisma.TravelPlan$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelPlanMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stops<T extends Prisma.TravelPlan$stopsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$stopsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TravelStopPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  emergencyAlerts<T extends Prisma.TravelPlan$emergencyAlertsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$emergencyAlertsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmergencyAlertPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  locationShareSessions<T extends Prisma.TravelPlan$locationShareSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TravelPlan$locationShareSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LocationShareSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1431,6 +1800,8 @@ export interface TravelPlanFieldRefs {
   readonly endDate: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly budgetNPR: Prisma.FieldRef<"TravelPlan", 'Float'>
   readonly groupRiskResult: Prisma.FieldRef<"TravelPlan", 'Json'>
+  readonly startNotifiedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
+  readonly endNotifiedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
 }
@@ -1879,6 +2250,54 @@ export type TravelPlan$stopsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.TravelStopScalarFieldEnum | Prisma.TravelStopScalarFieldEnum[]
+}
+
+/**
+ * TravelPlan.emergencyAlerts
+ */
+export type TravelPlan$emergencyAlertsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EmergencyAlert
+   */
+  select?: Prisma.EmergencyAlertSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EmergencyAlert
+   */
+  omit?: Prisma.EmergencyAlertOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmergencyAlertInclude<ExtArgs> | null
+  where?: Prisma.EmergencyAlertWhereInput
+  orderBy?: Prisma.EmergencyAlertOrderByWithRelationInput | Prisma.EmergencyAlertOrderByWithRelationInput[]
+  cursor?: Prisma.EmergencyAlertWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmergencyAlertScalarFieldEnum | Prisma.EmergencyAlertScalarFieldEnum[]
+}
+
+/**
+ * TravelPlan.locationShareSessions
+ */
+export type TravelPlan$locationShareSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LocationShareSession
+   */
+  select?: Prisma.LocationShareSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the LocationShareSession
+   */
+  omit?: Prisma.LocationShareSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.LocationShareSessionInclude<ExtArgs> | null
+  where?: Prisma.LocationShareSessionWhereInput
+  orderBy?: Prisma.LocationShareSessionOrderByWithRelationInput | Prisma.LocationShareSessionOrderByWithRelationInput[]
+  cursor?: Prisma.LocationShareSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.LocationShareSessionScalarFieldEnum | Prisma.LocationShareSessionScalarFieldEnum[]
 }
 
 /**

@@ -33,6 +33,21 @@ export type UserHealth = Prisma.UserHealthModel
  */
 export type UserPreference = Prisma.UserPreferenceModel
 /**
+ * Model EmergencyContact
+ * 
+ */
+export type EmergencyContact = Prisma.EmergencyContactModel
+/**
+ * Model EmergencyAlert
+ * 
+ */
+export type EmergencyAlert = Prisma.EmergencyAlertModel
+/**
+ * Model LocationShareSession
+ * 
+ */
+export type LocationShareSession = Prisma.LocationShareSessionModel
+/**
  * Model UserBehavior
  * 
  */
@@ -98,6 +113,11 @@ export type RouteEdge = Prisma.RouteEdgeModel
  */
 export type UserSavedLocation = Prisma.UserSavedLocationModel
 /**
+ * Model SavedDestination
+ * 
+ */
+export type SavedDestination = Prisma.SavedDestinationModel
+/**
  * Model RouteTemplate
  * 
  */
@@ -117,6 +137,11 @@ export type WeatherData = Prisma.WeatherDataModel
  * 
  */
 export type HazardData = Prisma.HazardDataModel
+/**
+ * Model CommunityHazardReport
+ * 
+ */
+export type CommunityHazardReport = Prisma.CommunityHazardReportModel
 /**
  * Model RiskAssessment
  * 
@@ -162,3 +187,13 @@ export type AuditLog = Prisma.AuditLogModel
  * 
  */
 export type yatra_disaster_events = Prisma.yatra_disaster_eventsModel
+/**
+ * Model UserPrivacy
+ * 
+ */
+export type UserPrivacy = Prisma.UserPrivacyModel
+/**
+ * Model TripPhoto
+ * 
+ */
+export type TripPhoto = Prisma.TripPhotoModel

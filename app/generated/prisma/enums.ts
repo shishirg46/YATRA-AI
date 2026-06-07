@@ -9,6 +9,16 @@
 * 🟢 You can import this file directly.
 */
 
+export const EmergencyStatus = {
+  ACTIVE: 'ACTIVE',
+  RESPONDED: 'RESPONDED',
+  RESOLVED: 'RESOLVED',
+  FALSE_ALARM: 'FALSE_ALARM'
+} as const
+
+export type EmergencyStatus = (typeof EmergencyStatus)[keyof typeof EmergencyStatus]
+
+
 export const Role = {
   USER: 'USER',
   ADMIN: 'ADMIN',
@@ -124,3 +134,37 @@ export const DestinationSource = {
 } as const
 
 export type DestinationSource = (typeof DestinationSource)[keyof typeof DestinationSource]
+
+
+export const HazardReportStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED'
+} as const
+
+export type HazardReportStatus = (typeof HazardReportStatus)[keyof typeof HazardReportStatus]
+
+
+export const HazardReportType = {
+  ROAD_BLOCKAGE: 'ROAD_BLOCKAGE',
+  FLOOD: 'FLOOD',
+  LANDSLIDE: 'LANDSLIDE',
+  EARTHQUAKE: 'EARTHQUAKE',
+  FIRE: 'FIRE',
+  STORM: 'STORM',
+  WILDFIRE: 'WILDFIRE',
+  ACCIDENT: 'ACCIDENT',
+  OTHER: 'OTHER'
+} as const
+
+export type HazardReportType = (typeof HazardReportType)[keyof typeof HazardReportType]
+
+
+export const ReportSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  CRITICAL: 'CRITICAL'
+} as const
+
+export type ReportSeverity = (typeof ReportSeverity)[keyof typeof ReportSeverity]

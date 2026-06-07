@@ -16,6 +16,7 @@ model User {
   email            String              @unique
   emailVerified    Boolean             @default(false)
   image            String?
+  phone            String?
   role             Role                @default(USER)
   isActive         Boolean             @default(true)
   homeLocationId   String?
@@ -37,6 +38,14 @@ model User {
   sessions         Session[]
   homeLocation     Location?           @relation("HomeLocation", fields: [homeLocationId], references: [id])
   savedLocation    UserSavedLocation?
+  savedDestinations SavedDestination[]
+  emergencyContacts    EmergencyContact[]
+  emergencyAlerts      EmergencyAlert[]
+  locationShareSessions LocationShareSession[]
+  communityReports  CommunityHazardReport[] @relation("CommunityReports")
+  moderatedReports  CommunityHazardReport[] @relation("ModeratedReports")
+  privacy           UserPrivacy?
+  tripPhotos        TripPhoto[]
 
   @@index([email])
   @@index([username])
@@ -69,6 +78,59 @@ model UserPreference {
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyContact {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  phone     String
+  email     String?
+  relation  String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("emergency_contact")
+}
+
+model EmergencyAlert {
+  id              String          @id @default(uuid())
+  userId          String
+  tripId          String?
+  status          EmergencyStatus @default(ACTIVE)
+  latitude        Float?
+  longitude       Float?
+  message         String?
+  resolvedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip            TravelPlan?     @relation(fields: [tripId], references: [id])
+
+  @@index([userId, status])
+  @@index([status])
+  @@map("emergency_alert")
+}
+
+model LocationShareSession {
+  id        String    @id @default(uuid())
+  userId    String
+  userName  String
+  tripId    String?
+  tripTitle String?
+  shareLink String    @unique
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trip      TravelPlan? @relation(fields: [tripId], references: [id])
+
+  @@index([userId])
+  @@index([shareLink])
+  @@map("location_share_session")
 }
 
 model UserBehavior {
@@ -170,6 +232,7 @@ model Destination {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   sourceLastFetch    DateTime?
+  savedByUsers       SavedDestination[]
 
   @@unique([name, district, province])
   @@index([normalizedName])
@@ -220,6 +283,7 @@ model Location {
   weatherData       WeatherData[]
   place             Place?
   residents         User[]               @relation("HomeLocation")
+  communityReports  CommunityHazardReport[]
 
   @@unique([name, districtId])
   @@index([latitude, longitude])
@@ -302,6 +366,22 @@ model UserSavedLocation {
   @@map("user_saved_location")
 }
 
+model SavedDestination {
+  id            String      @id @default(cuid())
+  userId        String
+  destinationId String
+  notes         String?
+  order         Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, destinationId])
+  @@index([userId])
+  @@map("saved_destination")
+}
+
 model RouteTemplate {
   id                    String               @id @default(uuid())
   originLocationId      String
@@ -369,6 +449,34 @@ model HazardData {
   @@index([locationId, recordedAt])
 }
 
+model CommunityHazardReport {
+  id              String             @id @default(uuid())
+  userId          String
+  hazardType      HazardReportType
+  severity        ReportSeverity
+  title           String
+  description     String?
+  lat             Float
+  lng             Float
+  locationId      String?
+  imageUrl        String?
+  status          HazardReportStatus @default(PENDING)
+  moderatedBy     String?
+  moderatedAt     DateTime?
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  user       User      @relation("CommunityReports", fields: [userId], references: [id], onDelete: Cascade)
+  moderator  User?     @relation("ModeratedReports", fields: [moderatedBy], references: [id])
+  location   Location? @relation(fields: [locationId], references: [id])
+
+  @@index([status])
+  @@index([userId])
+  @@index([lat, lng])
+  @@map("community_hazard_report")
+}
+
 model RiskAssessment {
   id              String         @id @default(uuid())
   locationId      String
@@ -396,11 +504,15 @@ model TravelPlan {
   endDate         DateTime
   budgetNPR       Float?
   groupRiskResult Json?
+  startNotifiedAt DateTime?
+  endNotifiedAt   DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
-  leader          User               @relation("TripLeader", fields: [leaderId], references: [id], onDelete: Cascade)
-  members         TravelPlanMember[]
-  stops           TravelStop[]
+  leader              User               @relation("TripLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  members             TravelPlanMember[]
+  stops               TravelStop[]
+  emergencyAlerts     EmergencyAlert[]
+  locationShareSessions LocationShareSession[]
 
   @@index([leaderId])
 }
@@ -505,6 +617,13 @@ model yatra_disaster_events {
   @@index([type], map: "idx_disaster_events_type")
 }
 
+enum EmergencyStatus {
+  ACTIVE
+  RESPONDED
+  RESOLVED
+  FALSE_ALARM
+}
+
 enum Role {
   USER
   ADMIN
@@ -590,4 +709,58 @@ enum DestinationSource {
   MANUAL
   LOCAL_KNOWLEDGE
   HISTORICAL
+}
+
+enum HazardReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum HazardReportType {
+  ROAD_BLOCKAGE
+  FLOOD
+  LANDSLIDE
+  EARTHQUAKE
+  FIRE
+  STORM
+  WILDFIRE
+  ACCIDENT
+  OTHER
+}
+
+enum ReportSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model UserPrivacy {
+  userId            String @id
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  whoCanSeeName     String @default("everyone")
+  whoCanSeeUsername String @default("everyone")
+  whoCanSeeLocation String @default("everyone")
+  whoCanSeeEmail    String @default("nobody")
+  whoCanSeeTrips    String @default("everyone")
+  whoCanSeePhotos   String @default("everyone")
+
+  @@map("user_privacy")
+}
+
+model TripPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  tripId    String?
+  caption   String?
+  location  String?
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("trip_photo")
 }

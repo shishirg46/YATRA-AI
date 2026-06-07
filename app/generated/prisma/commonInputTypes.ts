@@ -236,6 +236,23 @@ export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
 }
 
+export type EnumEmergencyStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmergencyStatus | Prisma.EnumEmergencyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel> | $Enums.EmergencyStatus
+}
+
+export type EnumEmergencyStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmergencyStatus | Prisma.EnumEmergencyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEmergencyStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmergencyStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel>
+}
+
 export type JsonFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -458,6 +475,57 @@ export type IntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedIntFilter<$PrismaModel>
   _max?: Prisma.NestedIntFilter<$PrismaModel>
+}
+
+export type EnumHazardReportTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportType | Prisma.EnumHazardReportTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel> | $Enums.HazardReportType
+}
+
+export type EnumReportSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReportSeverity | Prisma.EnumReportSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel> | $Enums.ReportSeverity
+}
+
+export type EnumHazardReportStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportStatus | Prisma.EnumHazardReportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel> | $Enums.HazardReportStatus
+}
+
+export type EnumHazardReportTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportType | Prisma.EnumHazardReportTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportTypeWithAggregatesFilter<$PrismaModel> | $Enums.HazardReportType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel>
+}
+
+export type EnumReportSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReportSeverity | Prisma.EnumReportSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReportSeverityWithAggregatesFilter<$PrismaModel> | $Enums.ReportSeverity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel>
+}
+
+export type EnumHazardReportStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportStatus | Prisma.EnumHazardReportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportStatusWithAggregatesFilter<$PrismaModel> | $Enums.HazardReportStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel>
 }
 
 export type EnumAssessmentTypeFilter<$PrismaModel = never> = {
@@ -779,6 +847,23 @@ export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedIntNullableFilter<$PrismaModel>
 }
 
+export type NestedEnumEmergencyStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmergencyStatus | Prisma.EnumEmergencyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel> | $Enums.EmergencyStatus
+}
+
+export type NestedEnumEmergencyStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmergencyStatus | Prisma.EnumEmergencyStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.EmergencyStatus[] | Prisma.ListEnumEmergencyStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumEmergencyStatusWithAggregatesFilter<$PrismaModel> | $Enums.EmergencyStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmergencyStatusFilter<$PrismaModel>
+}
+
 export type NestedJsonFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -936,6 +1021,57 @@ export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedIntFilter<$PrismaModel>
   _max?: Prisma.NestedIntFilter<$PrismaModel>
+}
+
+export type NestedEnumHazardReportTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportType | Prisma.EnumHazardReportTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel> | $Enums.HazardReportType
+}
+
+export type NestedEnumReportSeverityFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReportSeverity | Prisma.EnumReportSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel> | $Enums.ReportSeverity
+}
+
+export type NestedEnumHazardReportStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportStatus | Prisma.EnumHazardReportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel> | $Enums.HazardReportStatus
+}
+
+export type NestedEnumHazardReportTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportType | Prisma.EnumHazardReportTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportType[] | Prisma.ListEnumHazardReportTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportTypeWithAggregatesFilter<$PrismaModel> | $Enums.HazardReportType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHazardReportTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumReportSeverityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ReportSeverity | Prisma.EnumReportSeverityFieldRefInput<$PrismaModel>
+  in?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ReportSeverity[] | Prisma.ListEnumReportSeverityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumReportSeverityWithAggregatesFilter<$PrismaModel> | $Enums.ReportSeverity
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumReportSeverityFilter<$PrismaModel>
+}
+
+export type NestedEnumHazardReportStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.HazardReportStatus | Prisma.EnumHazardReportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.HazardReportStatus[] | Prisma.ListEnumHazardReportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumHazardReportStatusWithAggregatesFilter<$PrismaModel> | $Enums.HazardReportStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumHazardReportStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumAssessmentTypeFilter<$PrismaModel = never> = {
