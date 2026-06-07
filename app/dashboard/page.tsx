@@ -17,14 +17,15 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect }  from "react";
+import { useState, useEffect, useRef }  from "react";
 import { useRouter }            from "next/navigation";
 import Link                     from "next/link";
 import Image                    from "next/image";
 import {
   Mountain, XCircle, RefreshCw,
   Search, X, User, Bell, Users, MapPin,
-  ChevronLeft, ChevronRight, Navigation, Loader2, Download
+  ChevronLeft, ChevronRight, Navigation, Loader2, Download,
+  Map, LayoutGrid, ArrowRight, Menu, NotebookPen, Settings,
 } from "lucide-react";
 import { Button }          from "@/components/ui/button";
 import { authClient }      from "@/lib/auth-client";
@@ -34,12 +35,19 @@ import { DashboardData, Destination, DestinationSummary, UserProfile, HazardNoti
 import { NotificationPanel } from "./_components/NotificationPanel";
 import { FriendsSidebar }    from "./_components/FriendsSidebar";
 import { DestinationCard }   from "./_components/DestinationCard";
-import { ProfileDrawer }     from "./_components/ProfileDrawer";
+
 import { LocationPicker }    from "./_components/LocationPicker";
+import { ReportHazardButton }     from "./_components/ReportHazardButton";
+import { TripActionModal }        from "./_components/TripActionModal";
+import { RecommendationsCarousel } from "./_components/RecommendationsCarousel";
+import { SafetyMap } from "./_components/SafetyMap";
+import { FirstRunCoachmarks } from "./_components/FirstRunCoachmarks";
 import { AppShell }            from "@/components/app-shell";
+import { LocationShareButton } from "@/components/location-share-button";
 import { useResolvedOrigin } from "@/lib/hooks/use-resolved-origin";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE          = 12;
+const DASHBOARD_CARD_LIMIT = 6;
 
 // ── Pagination bar ────────────────────────────────────────────────────────────
 
@@ -96,9 +104,9 @@ export default function DashboardPage() {
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
   const [loggingOut, setLoggingOut]   = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen]     = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
+  const [actionNotif, setActionNotif] = useState<HazardNotif | null>(null);
   const [search, setSearch]           = useState("");
   const [filter, setFilter]           = useState<string>("ALL");
   const [notifications, setNotifs]    = useState<HazardNotif[]>([]);
@@ -109,6 +117,7 @@ export default function DashboardPage() {
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [destinationSummary, setDestinationSummary] = useState<DestinationSummary | null>(null);
+  const [showMap, setShowMap] = useState(false);
   const [visibleRouteCards, setVisibleRouteCards] = useState(5);
   const FILTER_OPTIONS = [
     { value: "ALL", label: "All Destinations" },
@@ -116,11 +125,14 @@ export default function DashboardPage() {
     { value: "SAFE", label: "Safe" },
     { value: "CAUTION", label: "Caution" },
     { value: "HIGH_RISK", label: "High Risk & Extreme" },
+    { value: "SAVED", label: "Saved" },
     { value: "NEARBY", label: "Nearby" },
   ];
   const [fetchingOsm, setFetchingOsm] = useState(false);
   const [osmFetchResult, setOsmFetchResult] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [pickingLocation, setPickingLocation] = useState(false);
+  const watchIdRef = useRef<number | null>(null);
   const {
     origin: resolvedOrigin,
     resolving: resolvingOrigin,
@@ -144,54 +156,45 @@ export default function DashboardPage() {
     const executeGeoRequest = () => {
       setLocating(true);
       setLocationError(null);
-      
+
       let bestPos: GeolocationPosition | null = null;
-      let watchId: number | null = null;
 
       const stopWatching = () => {
-        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+        if (watchIdRef.current !== null) {
+          navigator.geolocation.clearWatch(watchIdRef.current);
+          watchIdRef.current = null;
+        }
         setLocating(false);
       };
 
-      const resolveAndSave = async (latitude: number, longitude: number, accuracy: number) => {
+      const resolveLocation = async (latitude: number, longitude: number, accuracy: number) => {
         const resolved = await resolveFromGps(latitude, longitude, accuracy);
-        if (resolved) {
-          fetch("/api/user/location", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ placeName: resolved.name, lat: latitude, lon: longitude, accuracy }),
-          }).catch(() => {});
+        if (!resolved) {
+          setLocationError("Could not resolve your location.");
         }
       };
 
       const timeoutId = setTimeout(() => {
         stopWatching();
         if (bestPos) {
-          const { latitude, longitude, accuracy } = bestPos.coords;
-          if (accuracy > 300) {
-             setLocationError(`Could not get accurate location (best: ${Math.round(accuracy)}m). Using approximate coordinates.`);
-          }
-          void resolveAndSave(latitude, longitude, accuracy);
+          void resolveLocation(bestPos.coords.latitude, bestPos.coords.longitude, bestPos.coords.accuracy);
         } else {
           setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
         }
       }, 12000);
 
-      watchId = navigator.geolocation.watchPosition(
+      watchIdRef.current = navigator.geolocation.watchPosition(
         (pos) => {
           if (!bestPos || pos.coords.accuracy < bestPos.coords.accuracy) {
             bestPos = pos;
           }
-          // If accuracy is good enough (< 40m), stop early
-          if (pos.coords.accuracy < 40) {
+          if (pos.coords.accuracy < 80) {
             clearTimeout(timeoutId);
             stopWatching();
-            void resolveAndSave(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+            void resolveLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
           }
         },
         (err) => {
-          // If we already have a best position, we ignore errors and wait for timeout
           if (!bestPos) {
             clearTimeout(timeoutId);
             stopWatching();
@@ -222,7 +225,7 @@ export default function DashboardPage() {
 
   // Do not auto-request on mount; request only from explicit user action.
 
-  // Watch permission changes; auto-refresh once location access becomes granted.
+  // Watch permission changes; auto-detect once location access becomes granted.
   useEffect(() => {
     if (typeof navigator === "undefined" || !("permissions" in navigator)) return;
     let mounted = true;
@@ -234,7 +237,6 @@ export default function DashboardPage() {
         if (!mounted) return;
         if (status.state === "granted") {
           requestUserLocation();
-          window.location.reload();
         }
       };
     }).catch(() => {});
@@ -256,14 +258,42 @@ export default function DashboardPage() {
     }).catch(() => {});
   }, []);
 
+  // Clean up watchPosition on unmount
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+    };
+  }, []);
+
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   useEffect(() => { fetchDashboard(); checkAndRefreshData(); fetchDestinationSummary(); }, []);
+
+  // Auto re-fetch dashboard when origin changes (GPS resolve, manual pick, cached load)
+  const originKeyRef = useRef("");
   useEffect(() => {
-    void loadSavedHome();
+    const key = resolvedOrigin ? `${resolvedOrigin.lat.toFixed(4)}_${resolvedOrigin.lon.toFixed(4)}` : "";
+    if (!key) return;
+    if (key === originKeyRef.current) return;
+    originKeyRef.current = key;
+    const timer = setTimeout(() => { fetchDashboard(); }, 800);
+    return () => clearTimeout(timer);
+  }, [resolvedOrigin]);
+
+  useEffect(() => {
+    void loadSavedHome().then((home) => {
+      if (!home && navigator.geolocation) {
+        requestUserLocation();
+      }
+    });
   }, [loadSavedHome]);
   useEffect(() => {
     fetchNotifications();
+    // Check for trip lifecycle triggers
+    fetch("/api/user/trips/check-status", { method: "POST", credentials: "include" }).catch(() => {});
     const iv = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(iv);
   }, []);
@@ -299,7 +329,13 @@ export default function DashboardPage() {
   async function fetchDashboard() {
     setLoading(true); setError(null);
     try {
-      const res  = await fetch("/api/dashboard", { credentials: "include" });
+      const params = new URLSearchParams();
+      if (resolvedOrigin) {
+        params.set("originLat", String(resolvedOrigin.lat));
+        params.set("originLon", String(resolvedOrigin.lon));
+      }
+      const qs = params.toString();
+      const res  = await fetch(`/api/dashboard${qs ? `?${qs}` : ""}`, { credentials: "include" });
       const json = await res.json();
       if (!res.ok) {
         if (res.status === 401) { router.push("/sign-in"); return; }
@@ -350,11 +386,7 @@ export default function DashboardPage() {
   // Only show important hazard notifications
   function filterHazardNotifs(notifs: HazardNotif[]): HazardNotif[] {
     return notifs.filter(n =>
-      n.type === "FLOOD" ||
-      n.type === "LANDSLIDE" ||
-      n.type === "EARTHQUAKE" ||
-      n.type === "STORM" ||
-      (n.severity === "CRITICAL" && n.type !== "FIRE")
+      n.type === "FLOOD" || n.type === "LANDSLIDE" || n.type === "EARTHQUAKE"
     );
   }
 
@@ -385,6 +417,24 @@ export default function DashboardPage() {
     setNotifs((p) => p.map((n) => ({ ...n, read: true })));
     fetch("/api/notifications/read-all", { method: "POST", credentials: "include" }).catch(() => {});
   }
+  async function handleTripAction(notif: HazardNotif, action: string, newDate?: string) {
+    if (!notif.planId) return;
+    const res = await fetch(`/api/trips/${notif.planId}/action`, {
+      method: "PATCH", credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, newDate }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Action failed");
+    }
+    // Mark the notif as read & dismiss modal
+    markRead(notif.id);
+    setActionNotif(null);
+    // Refetch notifications to pull updated state
+    fetchNotifications();
+  }
+
   async function handleLogout() {
     setLoggingOut(true);
     await authClient.signOut();
@@ -422,6 +472,16 @@ export default function DashboardPage() {
     // Risk tolerance check
     if (pref.riskTolerance === "LOW" && (dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME")) return -9999;
     if (pref.riskTolerance === "MEDIUM" && dest.safetyLevel === "EXTREME") return -9999;
+
+    // 1b. ROUTE RISK — distance matters, even for safe destinations
+    if (dest.routeRisk) {
+      if (dest.routeRisk.routeRiskLevel === "SAFE") score += 100;
+      else if (dest.routeRisk.routeRiskLevel === "CAUTION") score += 40;
+      else if (dest.routeRisk.routeRiskLevel === "HIGH_RISK") score -= 120;
+      else score -= 400;
+      if (pref.riskTolerance === "LOW" && (dest.routeRisk.routeRiskLevel === "HIGH_RISK" || dest.routeRisk.routeRiskLevel === "EXTREME")) return -9999;
+      if (pref.riskTolerance === "MEDIUM" && dest.routeRisk.routeRiskLevel === "EXTREME") return -9999;
+    }
 
     // 2. PROXIMITY — nearby destinations get major boost
     if (pref.locationLat && pref.locationLng && dest.latitude && dest.longitude) {
@@ -493,6 +553,7 @@ export default function DashboardPage() {
   // Merge live SSE score updates into base dashboard data
   const all      = mergeLiveScores(data?.destinations ?? []) as Destination[];
 
+  const savedIds = data?.user?.savedDestinationIds ?? [];
   const filtered = all.filter((d) => {
     const q = search.toLowerCase();
     if (!d.name.toLowerCase().includes(q) && !d.district.toLowerCase().includes(q) && !d.province.toLowerCase().includes(q)) return false;
@@ -500,6 +561,7 @@ export default function DashboardPage() {
     if (filter === "SAFE") return d.safetyLevel === "SAFE";
     if (filter === "CAUTION") return d.safetyLevel === "CAUTION";
     if (filter === "HIGH_RISK") return d.safetyLevel === "HIGH_RISK" || d.safetyLevel === "EXTREME";
+    if (filter === "SAVED") return savedIds.includes(d.id);
     if (filter === "NEARBY") {
       if (!userData?.homeLocation?.province) return false;
       return d.province === userData.homeLocation.province;
@@ -510,8 +572,10 @@ export default function DashboardPage() {
   // Sort by personalized priority score instead of just safety
   const sortedAndRanked = [...filtered].sort((a, b) => calculateScore(b, userData) - calculateScore(a, userData));
 
-  const totalPages = Math.ceil(sortedAndRanked.length / PAGE_SIZE);
-  const paginated  = sortedAndRanked.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages      = Math.ceil(sortedAndRanked.length / PAGE_SIZE);
+  const paginated       = sortedAndRanked.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const dashboardCards  = sortedAndRanked.slice(0, DASHBOARD_CARD_LIMIT);
+  const totalCardsShown = sortedAndRanked.length > DASHBOARD_CARD_LIMIT ? DASHBOARD_CARD_LIMIT : sortedAndRanked.length;
   // Recompute stats from live-merged data
   const stats      = {
     total:    all.length,
@@ -527,10 +591,21 @@ export default function DashboardPage() {
   // ── Loading / Error ──────────────────────────────────────────────────────────
 
   if (loading) return (
-    <div className="yatra-page flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <Mountain className="text-amber-400 mx-auto mb-4 animate-pulse" size={40} />
-        <p className="font-body text-slate-400 text-sm">Loading your dashboard…</p>
+    <div className="yatra-page min-h-screen p-6 md:p-10">
+      {/* skeleton header */}
+      <div className="mb-8 animate-pulse">
+        <div className="h-3 w-24 bg-slate-800 rounded mb-2" />
+        <div className="h-8 w-48 bg-slate-800 rounded" />
+      </div>
+      {/* skeleton stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6 animate-pulse">
+        {[...Array(5)].map((_, i) => <div key={i} className="h-20 bg-slate-800/60 rounded-2xl" />)}
+      </div>
+      {/* skeleton grid */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-48 bg-slate-800/40 rounded-2xl border border-slate-700/30" />
+        ))}
       </div>
     </div>
   );
@@ -550,91 +625,126 @@ export default function DashboardPage() {
   const { user: rawUser } = data;
   const user = { ...rawUser, ...userData, image: userImage };
 
+  const centerContent = (
+    <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border ${connected ? "bg-emerald-400/10 border-emerald-400/20" : "bg-slate-700/30 border-slate-600/30"}`}>
+      <span className="relative flex h-2 w-2">
+        {connected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
+        <span className={`relative inline-flex rounded-full h-2 w-2 ${connected ? "bg-emerald-400" : "bg-slate-500"}`} />
+      </span>
+      <span className={`text-xs font-body ${connected ? "text-emerald-400" : "text-slate-500"}`}>
+        {connected ? "Live" : realtimeStatus === "connecting" ? "Connecting…" : "Reconnecting…"}
+      </span>
+      {lastUpdate && connected && (
+        <span className="text-xs font-body text-slate-600 hidden lg:block">
+          · updated {new Date(lastUpdate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+        </span>
+      )}
+    </div>
+  );
+
   const navActions = (
     <>
-      <div className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border shrink-0 ${connected ? "bg-emerald-400/10 border-emerald-400/20" : "bg-slate-700/30 border-slate-600/30"}`}>
-        <span className="relative flex h-2 w-2">
-          {connected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />}
-          <span className={`relative inline-flex rounded-full h-2 w-2 ${connected ? "bg-emerald-400" : "bg-slate-500"}`} />
-        </span>
-        <span className={`text-xs font-body ${connected ? "text-emerald-400" : "text-slate-500"}`}>
-          {connected ? "Live" : realtimeStatus === "connecting" ? "Connecting…" : "Reconnecting…"}
-        </span>
-        {lastUpdate && connected && (
-          <span className="text-xs font-body text-slate-600 hidden lg:block">
-            · updated {new Date(lastUpdate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-          </span>
-        )}
-      </div>
-      <Link href="/plan" className="hidden md:inline-flex yatra-cta">
-        <Mountain size={14} />
-        Plan a Trip
-      </Link>
       {user.role === "ADMIN" && (
         <Link href="/admin" className="hidden md:inline-flex yatra-cta-ghost">
           Admin Panel
         </Link>
       )}
-      <Link href="/trips" className="hidden md:inline-flex yatra-cta-ghost">
-        <Users size={14} />
-        Your Plans
-      </Link>
+      <div className="relative hidden md:block">
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={() => setMenuOpen((v) => !v)}
+          title="Menu"
+        >
+          <Menu size={16} className="text-slate-400" />
+        </button>
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-full mt-2 w-auto whitespace-nowrap z-50 rounded-xl border border-slate-700/50 bg-background backdrop-blur-xl shadow-2xl overflow-hidden">
+              <div className="p-1.5 space-y-0.5">
+                <Link href="/profile" onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all font-body">
+                  {userImage ? (
+                    <Image src={userImage} alt="" width={20} height={20}
+                      className="w-5 h-5 rounded-full object-cover border border-slate-600" unoptimized={userImage.startsWith("data:")} />
+                  ) : (
+                    <div className="w-5 h-5 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
+                      <span className="text-amber-400 text-[10px] font-bold">{user.name?.[0]?.toUpperCase()}</span>
+                    </div>
+                  )}
+                  Profile
+                </Link>
+                <Link href="/plan" onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all font-body"
+                >
+                  <Mountain size={15} /> Plan a Trip
+                </Link>
+                <Link href="/trips" onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all font-body"
+                >
+                  <NotebookPen size={15} /> Your Plans
+                </Link>
+                <Link href="/settings" onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-slate-300 hover:text-white hover:bg-slate-800/80 transition-all font-body"
+                >
+                  <Settings size={15} /> Settings
+                </Link>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
       <button type="button" className="icon-btn" onClick={() => setFriendsOpen(true)} title="Travel network">
         <Users size={16} className="text-slate-400" />
       </button>
       <button
         type="button"
         className="icon-btn"
-        onClick={() => { setNotifOpen((v) => !v); setProfileOpen(false); }}
+        onClick={() => setNotifOpen((v) => !v)}
         title="Hazard alerts"
       >
         <Bell size={16} className={unreadCount > 0 ? "text-amber-400" : "text-slate-400"} />
         {unreadCount > 0 && <span className="badge">{unreadCount > 9 ? "9+" : unreadCount}</span>}
       </button>
-      <button type="button" className="user-btn" onClick={() => { setProfileOpen(true); setNotifOpen(false); }}>
-        {userImage ? (
-          <Image src={userImage} alt={user.name} width={28} height={28} className="w-7 h-7 rounded-full object-cover border border-slate-600" unoptimized={userImage.startsWith("data:")} />
-        ) : (
-          <div className="w-7 h-7 rounded-full bg-amber-400/20 border border-amber-400/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-amber-400 text-xs font-bold font-display">{user.name?.[0]?.toUpperCase()}</span>
-          </div>
-        )}
-        <span className="font-body text-sm text-slate-300 max-w-[100px] truncate hidden sm:block">{user.name}</span>
-        <User size={13} className="text-slate-500 hidden sm:block" />
-      </button>
+
     </>
   );
 
   return (
-    <AppShell active="dashboard" actions={navActions}>
+    <AppShell active="dashboard" actions={navActions} center={centerContent}>
       {/* Overlays */}
       <FriendsSidebar open={friendsOpen} onClose={() => setFriendsOpen(false)} />
-      <ProfileDrawer
-        user={user}
-        open={profileOpen}
-        onClose={() => setProfileOpen(false)}
-        onLogout={handleLogout}
-        loggingOut={loggingOut}
-        onAvatarUploaded={(url) => setUserImage(url)}
-        onProfileUpdated={(patch) => setUserData((prev) => ({ ...(prev ?? rawUser), ...patch }))}
-      />
+      <FirstRunCoachmarks />
       <NotificationPanel
         open={notifOpen} onClose={() => setNotifOpen(false)}
         notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead}
+        onNotificationClick={(n) => { setNotifOpen(false); setActionNotif(n); }}
       />
+      {actionNotif && (
+        <TripActionModal
+          notif={actionNotif}
+          onClose={() => setActionNotif(null)}
+          onAction={(a, d) => handleTripAction(actionNotif, a, d)}
+        />
+      )}
 
         {/* Welcome */}
         <div className="mb-8" style={{ animation: "fadeUp .6s ease both" }}>
-          <p className="font-body text-slate-500 text-sm mb-1">Welcome back,</p>
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-white">
-            <button onClick={() => setProfileOpen(true)} className="hover:opacity-80 transition-opacity">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-body text-muted-foreground text-sm">Welcome back,</span>
+            <span className="text-border text-xs">·</span>
+            <span className="font-body text-muted-foreground/60 text-xs">नमस्ते</span>
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-foreground">
+            <Link href="/profile" className="hover:opacity-80 transition-opacity">
               <em className="shimmer-text not-italic">{user.name?.split(" ")[0]}</em>
-            </button>
+            </Link>
           </h1>
           {user.homeLocation && (
             <div className="flex items-center gap-1.5 mt-2">
-              <MapPin size={13} className="text-amber-400" />
-              <span className="font-body text-sm text-slate-400">{user.homeLocation.district}, {user.homeLocation.province} Province</span>
+              <MapPin size={13} className="text-accent" />
+              <span className="font-body text-sm text-muted-foreground">{user.homeLocation.district}, {user.homeLocation.province}</span>
             </div>
           )}
         </div>
@@ -652,22 +762,22 @@ export default function DashboardPage() {
             />
           )}
 
-          <div className="stat-card p-3 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${userLocation ? "bg-amber-500/10" : "bg-slate-800"}`}>
-                <Navigation size={18} className={userLocation ? "text-amber-400" : "text-slate-500"} />
+          <div className="stat-card p-3">
+            <div className="flex items-center gap-3 mb-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${userLocation ? "bg-primary/10" : "bg-muted"}`}>
+                <Navigation size={18} className={userLocation ? "text-primary" : "text-muted-foreground"} />
               </div>
               <div>
-                <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest font-bold">Current Origin</p>
+                <p className="font-body text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Current Origin</p>
                 <div className="flex items-center gap-2">
-                  <p className="font-display font-bold text-white">
+                  <p className="font-display font-bold text-foreground">
                     {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
                   </p>
                   {(resolvingOrigin || locating) && (
-                    <span className="text-[10px] bg-slate-800 text-amber-400 px-1.5 py-0.5 rounded border border-amber-500/20">Resolving…</span>
+                    <span className="text-[10px] bg-muted text-accent px-1.5 py-0.5 rounded border border-accent/20">Resolving…</span>
                   )}
                   {userLocation && !resolvingOrigin && (
-                    <span className="text-[10px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded border border-white/5">
+                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded border border-border">
                       {resolvedOrigin?.routeNodeName ? `Hub: ${resolvedOrigin.routeNodeName}` : "Snapped"}
                     </span>
                   )}
@@ -675,22 +785,25 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={requestUserLocation}
-                disabled={locating}
-                className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-all text-xs font-body font-medium flex items-center gap-1.5"
-              >
-                {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
-                {locating ? "Locating..." : "Auto-Detect"}
-              </button>
-              <button
-                onClick={() => setPickingLocation(true)}
-                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all text-xs font-body font-medium flex items-center gap-1.5 border border-white/5"
-              >
-                <Search size={12} />
-                Set Manually
-              </button>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={requestUserLocation}
+                  disabled={locating}
+                  className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-all text-xs font-body font-medium flex items-center gap-1.5"
+                >
+                  {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+                  {locating ? "Locating..." : "Auto-Detect"}
+                </button>
+                <button
+                  onClick={() => setPickingLocation(true)}
+                  className="px-3 py-1.5 rounded-lg bg-muted hover:bg-accent/10 text-foreground transition-all text-xs font-body font-medium flex items-center gap-1.5 border border-border"
+                >
+                  <Search size={12} />
+                  Set Manually
+                </button>
+              </div>
+              <LocationShareButton />
             </div>
           </div>
         </div>
@@ -698,17 +811,17 @@ export default function DashboardPage() {
         {/* Stats — each card filters on click */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-2" style={{ animation: "fadeUp .6s .1s ease both" }}>
           {[
-            { label: "Total",     value: stats.total,    color: "text-slate-300",   dot: "bg-slate-500",   f: "ALL"       },
-            { label: "Safe",      value: stats.safe,     color: "text-emerald-400", dot: "bg-emerald-400", f: "SAFE"      },
-            { label: "Caution",   value: stats.caution,  color: "text-amber-400",   dot: "bg-amber-400",   f: "CAUTION"   },
-            { label: "High Risk", value: stats.highRisk, color: "text-orange-400",  dot: "bg-orange-400",  f: "HIGH_RISK" },
-            { label: "Extreme",   value: stats.extreme,  color: "text-red-400",     dot: "bg-red-400",     f: "EXTREME"   },
+            { label: "Total",     value: stats.total,    color: "text-foreground",    dot: "bg-muted-foreground", f: "ALL"       },
+            { label: "Safe",      value: stats.safe,     color: "text-emerald-500",   dot: "bg-emerald-500",     f: "SAFE"      },
+            { label: "Caution",   value: stats.caution,  color: "text-accent",        dot: "bg-saffron",          f: "CAUTION"   },
+            { label: "High Risk", value: stats.highRisk, color: "text-orange-500",    dot: "bg-orange-500",       f: "HIGH_RISK" },
+            { label: "Extreme",   value: stats.extreme,  color: "text-destructive",   dot: "bg-destructive",      f: "EXTREME"   },
           ].map((s) => (
             <button key={s.label} onClick={() => setFilter(s.f as typeof filter)}
-              className={`stat-card px-4 py-4 text-left transition-all hover:border-amber-400/20 ${filter === s.f ? "border-amber-400/40 bg-amber-400/5" : ""}`}>
+              className={`stat-card px-4 py-4 text-left transition-all hover:border-accent/20 ${filter === s.f ? "border-accent/40 bg-accent/5" : ""}`}>
               <div className="flex items-center gap-2 mb-1">
                 <span className={`w-2 h-2 rounded-full ${s.dot}`} />
-                <span className="font-body text-xs text-slate-500 uppercase tracking-widest">{s.label}</span>
+                <span className="font-body text-xs text-muted-foreground uppercase tracking-widest">{s.label}</span>
               </div>
               <div className={`font-display text-2xl font-bold ${s.color}`}>{s.value}</div>
             </button>
@@ -719,21 +832,21 @@ export default function DashboardPage() {
             {destinationSummary.topUnverified.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm text-amber-300">⚠️</span>
-                  <h3 className="font-display text-base font-semibold text-white">Unverified destinations</h3>
+                  <span className="text-sm text-accent">⚠️</span>
+                  <h3 className="font-display text-base font-semibold text-foreground">Unverified destinations</h3>
                 </div>
                 <div className="grid gap-3 md:grid-cols-2">
                   {destinationSummary.topUnverified.map((dest) => (
-                    <div key={dest.id} className="stat-card p-4 border border-slate-700/50 bg-slate-900/70">
+                    <div key={dest.id} className="stat-card p-4">
                       <div className="flex items-center justify-between gap-2 mb-2">
                         <div>
-                          <p className="font-semibold text-white truncate">{dest.name}</p>
-                          <p className="font-body text-xs text-slate-500">{dest.district}, {dest.province}</p>
+                          <p className="font-semibold text-foreground truncate">{dest.name}</p>
+                          <p className="font-body text-xs text-muted-foreground">{dest.district}, {dest.province}</p>
                         </div>
-                        <span className="text-xs text-slate-400">{dest.category}</span>
+                        <span className="text-xs text-muted-foreground">{dest.category}</span>
                       </div>
-                      <p className="font-body text-xs text-slate-400">Quality: {dest.dataQualityScore != null ? `${Math.round(dest.dataQualityScore)} / 100` : "Unknown"}</p>
-                      <p className="font-body text-xs text-slate-400 mt-1">Route accessible: {dest.routeAccessible ? "Yes" : "No"}</p>
+                      <p className="font-body text-xs text-muted-foreground">Quality: {dest.dataQualityScore != null ? `${Math.round(dest.dataQualityScore)} / 100` : "Unknown"}</p>
+                      <p className="font-body text-xs text-muted-foreground mt-1">Route accessible: {dest.routeAccessible ? "Yes" : "No"}</p>
                     </div>
                   ))}
                 </div>
@@ -762,16 +875,26 @@ export default function DashboardPage() {
           <p className="mb-4 font-body text-xs text-sky-300/90">{resolvedOrigin.note}</p>
         )}
 
-        {/* Recommended — top 3 personalized picks, shown on All & Recommended views */}
-        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && recommended.length > 0 && (
+        {/* AI-powered recommendations carousel */}
+        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && data?.recommendations && (
+          <RecommendationsCarousel
+            recommendations={data.recommendations.recommendations}
+            summary={data.recommendations.summary}
+            aiUsed={data.recommendations.aiUsed}
+            savedIds={savedIds}
+          />
+        )}
+
+        {/* Algorithmic recommendations fallback — top 3 personalized picks */}
+        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && !data?.recommendations && recommended.length > 0 && (
           <div className="mb-8" style={{ animation: "fadeUp .6s .15s ease both" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-lg">✨</span>
-                <h2 className="font-display text-lg font-bold text-white">Recommended for you</h2>
+                <span className="text-lg">🏔️</span>
+                <h2 className="font-display text-lg font-bold text-foreground">Recommended for you</h2>
               </div>
-              <div className="flex-1 h-px bg-slate-800" />
-              <span className="font-body text-xs text-slate-500">Based on your profile + current conditions</span>
+              <div className="flex-1 h-px bg-border" />
+              <span className="font-body text-xs text-muted-foreground">Based on your profile + current conditions</span>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
               {recommended.map((dest, i) => (
@@ -793,6 +916,7 @@ export default function DashboardPage() {
                   requestingLocation={locating}
                   onOpenManualLocation={() => setPickingLocation(true)}
                   shouldFetchRoute
+                  savedDestinationIds={savedIds}
                 />
               ))}
             </div>
@@ -810,37 +934,53 @@ export default function DashboardPage() {
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="px-3 py-2.5 text-sm rounded-xl bg-slate-800/80 border border-slate-700/50 text-white font-body focus:outline-none focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/10 transition-all"
+            className="px-3 py-2.5 text-sm rounded-xl bg-muted border border-border text-foreground font-body focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/10 transition-all"
           >
             {FILTER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-slate-800 text-white">
+              <option key={opt.value} value={opt.value} className="bg-background text-foreground">
                 {opt.label}
               </option>
             ))}
           </select>
+          <button
+            onClick={() => setShowMap(!showMap)}
+            className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl border font-body transition-all ${
+              showMap
+                ? "bg-primary/10 border-primary/30 text-primary"
+                : "bg-muted border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground"
+            }`}
+            title={showMap ? "Grid view" : "Map view"}
+          >
+            {showMap ? <LayoutGrid size={15} /> : <Map size={15} />}
+            {showMap ? "Grid" : "Map"}
+          </button>
         </div>
 
         {/* Count row + OSM fetch */}
         <div className="flex items-center justify-between mb-4">
-          <p className="font-body text-xs text-slate-600">
-            {stats.total === 0 ? "Run POST /api/assess to populate safety scores"
+          <p className="font-body text-xs text-muted-foreground">
+            {stats.total === 0 ? "No safety data yet — check back soon"
               : sortedAndRanked.length === 0 ? "No destinations match"
-              : `Showing ${(page - 1) * PAGE_SIZE + 1}–${Math.min(page * PAGE_SIZE, sortedAndRanked.length)} of ${sortedAndRanked.length}`}
+              : `Showing ${totalCardsShown} of ${sortedAndRanked.length} destinations`}
           </p>
           <div className="flex items-center gap-3">
-            {osmFetchResult && (
-              <span className="font-body text-xs text-sky-300">{osmFetchResult}</span>
+            {data?.user?.role === "ADMIN" && (
+              <>
+                {osmFetchResult && (
+                  <span className="font-body text-xs text-accent">{osmFetchResult}</span>
+                )}
+                <button
+                  onClick={handleFetchFromOsm}
+                  disabled={fetchingOsm}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all bg-muted hover:bg-muted/80 text-muted-foreground border border-border disabled:opacity-50"
+                >
+                  {fetchingOsm ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
+                  {fetchingOsm ? "Fetching..." : "Fetch from OSM"}
+                </button>
+              </>
             )}
-            <button
-              onClick={handleFetchFromOsm}
-              disabled={fetchingOsm}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-body font-medium transition-all bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-50"
-            >
-              {fetchingOsm ? <Loader2 size={12} className="animate-spin" /> : <Download size={12} />}
-              {fetchingOsm ? "Fetching..." : "Fetch from OSM"}
-            </button>
             {filter !== "ALL" && (
-              <button onClick={() => setFilter("ALL")} className="font-body text-xs text-amber-400 hover:text-amber-300 transition-colors">Clear filter ×</button>
+              <button onClick={() => setFilter("ALL")} className="font-body text-xs text-accent hover:text-accent/80 transition-colors">Clear filter ×</button>
             )}
           </div>
         </div>
@@ -848,36 +988,41 @@ export default function DashboardPage() {
         {/* Empty states */}
         {stats.total === 0 && (
           <div className="text-center py-20 destination-card max-w-md mx-auto">
-            <Mountain size={40} className="text-slate-700 mx-auto mb-4" />
-            <h3 className="font-display text-xl text-slate-400 mb-2">No safety data yet</h3>
-            <p className="font-body text-slate-500 text-sm mb-5 px-4">Run the assess job to score all 261 destinations.</p>
-            <code className="block font-mono text-xs bg-slate-800 text-amber-400 px-3 py-2 rounded-lg mx-6">POST /api/assess</code>
+            <Mountain size={40} className="text-muted-foreground/30 mx-auto mb-4" />
+            <h3 className="font-display text-xl text-muted-foreground mb-2">No safety data yet</h3>
+            <p className="font-body text-muted-foreground text-sm mb-5 px-4">Destinations are being scored. Check back soon or trigger a refresh from the admin panel.</p>
           </div>
         )}
         {stats.total > 0 && sortedAndRanked.length === 0 && (
           <div className="text-center py-16">
-            <Search size={32} className="text-slate-700 mx-auto mb-3" />
-            <p className="font-body text-slate-500">No destinations match your search.</p>
+            <Search size={32} className="text-muted-foreground/30 mx-auto mb-3" />
+            <p className="font-body text-muted-foreground">No destinations match your search.</p>
           </div>
         )}
 
         {/* Filter heading */}
-          {filter !== "ALL" && paginated.length > 0 && (
-          <h2 className="font-display text-base font-bold text-white mb-4">
-            {filter === "RECOMMENDED" && "✨ Recommended for you"}
+          {filter !== "ALL" && dashboardCards.length > 0 && (
+          <h2 className="font-display text-base font-bold text-foreground mb-4">
+            {filter === "RECOMMENDED" && "🏔️ Recommended for you"}
             {filter === "SAFE" && "✅ Safe destinations"}
             {filter === "CAUTION" && "⚠️ Caution — travel with care"}
             {filter === "HIGH_RISK" && "🚨 High risk — avoid if possible"}
             {filter === "EXTREME" && "❌ Extreme — do not travel"}
             {filter === "NEARBY" && "📍 Nearby destinations"}
+            {filter === "SAVED" && "♥ Saved destinations"}
           </h2>
         )}
 
-        {/* Destinations grid (paginated) */}
-        {paginated.length > 0 && (
+        {/* Map view */}
+        {showMap && stats.total > 0 && (
+          <SafetyMap destinations={sortedAndRanked} />
+        )}
+
+        {/* Destinations grid (limited to 6 on dashboard) */}
+        {!showMap && dashboardCards.length > 0 && (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginated.map((dest, i) => (
+              {dashboardCards.map((dest, i) => (
                 <DestinationCard
                   key={dest.id}
                   dest={dest}
@@ -896,18 +1041,27 @@ export default function DashboardPage() {
                   requestingLocation={locating}
                   onOpenManualLocation={() => setPickingLocation(true)}
                   shouldFetchRoute={i < visibleRouteCards}
+                  savedDestinationIds={savedIds}
                 />
               ))}
             </div>
-            <Pagination
-              current={page}
-              total={totalPages}
-              onChange={(p) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-            />
+            {sortedAndRanked.length > DASHBOARD_CARD_LIMIT && (
+              <div className="flex justify-center mt-6">
+                <Link
+                  href="/explore"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-muted/60 text-sm text-muted-foreground hover:text-foreground hover:border-accent/30 hover:bg-accent/5 transition-all font-body font-medium"
+                >
+                  Show all {sortedAndRanked.length} destinations <ArrowRight size={14} />
+                </Link>
+              </div>
+            )}
           </>
         )}
 
-      <div className="absolute bottom-0 inset-x-0 h-20 mountain-wave bg-gradient-to-b from-slate-800/10 to-slate-900/30 pointer-events-none z-0" />
+      <div className="fixed bottom-24 right-6 z-50">
+        <ReportHazardButton fab />
+      </div>
+      <div className="absolute bottom-0 inset-x-0 h-20 mountain-divider opacity-5 pointer-events-none z-0" />
     </AppShell>
   );
 }

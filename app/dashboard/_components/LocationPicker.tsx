@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Search, MapPin, X, Loader2, Navigation } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { Search, MapPin, X, Loader2, Navigation, Map } from "lucide-react";
 import { OverlayPortal } from "@/components/overlay-portal";
 import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 
@@ -20,10 +21,24 @@ interface LocationPickerProps {
   initialQuery?: string;
 }
 
+type Tab = "search" | "map";
+
+const NEPAL_CENTER: [number, number] = [28.2, 84.0];
+
+const MapPickerInner = dynamic(
+  () => import("./MapPicker"),
+  { ssr: false, loading: () => (
+    <div className="h-64 w-full bg-slate-800 rounded-lg flex items-center justify-center">
+      <Loader2 size={20} className="text-amber-400 animate-spin" />
+    </div>
+  )}
+);
+
 export function LocationPicker({ onSelect, onClose, initialQuery = "" }: LocationPickerProps) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
+  const [tab, setTab] = useState<Tab>("search");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useBodyScrollLock(true);
@@ -40,6 +55,7 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  // Search destinations + Nominatim fallback
   useEffect(() => {
     if (query.length < 2) {
       setResults([]);
@@ -48,21 +64,63 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
 
     const timer = setTimeout(async () => {
       setLoading(true);
+      const combined: LocationResult[] = [];
       try {
-        const res = await fetch(`/api/destinations/search?q=${encodeURIComponent(query)}`);
-        if (res.ok) {
-          const data = await res.json();
-          setResults(data);
+        const destRes = await fetch(`/api/destinations/search?q=${encodeURIComponent(query)}`);
+        if (destRes.ok) {
+          const data = await destRes.json();
+          if (Array.isArray(data)) {
+            combined.push(...data);
+          }
         }
-      } catch (err) {
-        console.error("Search error:", err);
-      } finally {
-        setLoading(false);
-      }
+      } catch {}
+      try {
+        if (combined.length < 5) {
+          const nomRes = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ", Nepal")}&format=json&limit=5&countrycodes=np`
+          );
+          if (nomRes.ok) {
+            const data = await nomRes.json();
+            for (const item of data) {
+              const lat = parseFloat(item.lat);
+              const lon = parseFloat(item.lon);
+              if (!isFinite(lat) || !isFinite(lon)) continue;
+              const addr = item.address || {};
+              combined.push({
+                id: `nominatim-${item.osm_id || lat}-${lon}`,
+                name: item.display_name?.split(",")[0] || item.name || query,
+                district: addr.county || addr.state_district || addr.state || "Nepal",
+                province: addr.state || "Nepal",
+                latitude: lat,
+                longitude: lon,
+              });
+            }
+          }
+        }
+      } catch {}
+      const seen = new Set<string>();
+      setResults(combined.filter((r) => {
+        const key = `${r.latitude.toFixed(3)}-${r.longitude.toFixed(3)}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }));
+      setLoading(false);
     }, 300);
 
     return () => clearTimeout(timer);
   }, [query]);
+
+  const handleMapSelect = useCallback((lat: number, lng: number, name: string) => {
+    onSelect({
+      id: `map-picker-${lat}-${lng}`,
+      name,
+      district: "Selected location",
+      province: "Nepal",
+      latitude: lat,
+      longitude: lng,
+    });
+  }, [onSelect]);
 
   return (
     <OverlayPortal>
@@ -74,66 +132,105 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
         className="fixed inset-x-4 top-20 z-[110] mx-auto w-full max-w-lg"
       >
         <div className="bg-slate-900 border border-amber-500/30 rounded-xl shadow-2xl overflow-hidden backdrop-blur-xl">
-          <div className="flex items-center gap-2 p-3 border-b border-white/10">
-            <Search size={16} className="text-amber-400 shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Search city, town, or chowk in Nepal..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
-            />
-            {query && (
-              <button onClick={() => setQuery("")} className="p-1 hover:bg-white/5 rounded-md text-slate-500 hover:text-white transition-colors">
-                <X size={14} />
-              </button>
-            )}
-            <button onClick={onClose} className="text-xs font-body font-semibold text-slate-400 hover:text-white px-2 py-1">
-              Cancel
+          {/* Tabs */}
+          <div className="flex border-b border-white/10">
+            <button
+              type="button"
+              onClick={() => setTab("search")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-body font-medium transition-colors ${
+                tab === "search"
+                  ? "text-amber-400 border-b-2 border-amber-400"
+                  : "text-slate-500 hover:text-white"
+              }`}
+            >
+              <Search size={14} />
+              Search
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab("map")}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-body font-medium transition-colors ${
+                tab === "map"
+                  ? "text-amber-400 border-b-2 border-amber-400"
+                  : "text-slate-500 hover:text-white"
+              }`}
+            >
+              <Map size={14} />
+              Pick on Map
             </button>
           </div>
 
-          <div className="max-h-64 overflow-y-auto py-1 scrollbar-hide">
-            {loading && (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 size={20} className="text-amber-400 animate-spin" />
+          {tab === "search" ? (
+            <>
+              <div className="flex items-center gap-2 p-3 border-b border-white/10">
+                <Search size={16} className="text-amber-400 shrink-0" />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search city, town, or chowk in Nepal..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-slate-500"
+                />
+                {query && (
+                  <button onClick={() => setQuery("")} className="p-1 hover:bg-white/5 rounded-md text-slate-500 hover:text-white transition-colors">
+                    <X size={14} />
+                  </button>
+                )}
+                <button onClick={onClose} className="text-xs font-body font-semibold text-slate-400 hover:text-white px-2 py-1">
+                  Cancel
+                </button>
               </div>
-            )}
 
-            {!loading && query.length >= 2 && results.length === 0 && (
-              <div className="py-8 text-center">
-                <p className="text-sm text-slate-500 font-body">No places found matching &quot;{query}&quot;</p>
+              <div className="max-h-64 overflow-y-auto py-1 scrollbar-hide">
+                {loading && (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 size={20} className="text-amber-400 animate-spin" />
+                  </div>
+                )}
+
+                {!loading && query.length >= 2 && results.length === 0 && (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-slate-500 font-body">No places found matching &quot;{query}&quot;</p>
+                  </div>
+                )}
+
+                {!loading && results.map((res) => (
+                  <button
+                    key={res.id}
+                    type="button"
+                    onClick={() => onSelect(res)}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/10 text-left transition-colors border-b border-white/5 last:border-0 group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                      <MapPin size={14} className="text-slate-400 group-hover:text-amber-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-white truncate">{res.name}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{res.district}, {res.province}</p>
+                    </div>
+                    <Navigation size={12} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+
+                {query.length < 2 && (
+                  <div className="px-4 py-6 text-center">
+                    <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 mb-3">
+                      <Search size={18} className="text-slate-500" />
+                    </div>
+                    <p className="text-xs text-slate-400 font-body max-w-[200px] mx-auto">Type at least 2 characters to search for locations in Nepal.</p>
+                  </div>
+                )}
               </div>
-            )}
-
-            {!loading && results.map((res) => (
-              <button
-                key={res.id}
-                type="button"
-                onClick={() => onSelect(res)}
-                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-amber-500/10 text-left transition-colors border-b border-white/5 last:border-0 group"
-              >
-                <div className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center shrink-0 group-hover:bg-amber-500/20 transition-colors">
-                  <MapPin size={14} className="text-slate-400 group-hover:text-amber-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-white truncate">{res.name}</p>
-                  <p className="text-[11px] text-slate-500 truncate">{res.district}, {res.province} Province</p>
-                </div>
-                <Navigation size={12} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </>
+          ) : (
+            <div className="p-2">
+              <MapPickerInner onSelect={handleMapSelect} />
+              <button onClick={onClose} className="w-full mt-2 text-xs font-body font-semibold text-slate-400 hover:text-white px-2 py-2 text-center">
+                Cancel
               </button>
-            ))}
-
-            {query.length < 2 && (
-              <div className="px-4 py-6 text-center">
-                <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 mb-3">
-                  <Search size={18} className="text-slate-500" />
-                </div>
-                <p className="text-xs text-slate-400 font-body max-w-[200px] mx-auto">Type at least 2 characters to search for locations in Nepal.</p>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </OverlayPortal>
