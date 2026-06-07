@@ -108,6 +108,7 @@ export function computeSafetyScore(
   assessmentType: string,
   dataSource:     string,
   location?:      LocationContext,
+  riskTolerance?: "LOW" | "MEDIUM" | "HIGH",
 ): ScoreResult {
 
   const penalties:   Record<string, number> = {};
@@ -278,14 +279,26 @@ export function computeSafetyScore(
     reasoning.push("Diabetes — remote high-altitude areas weighted higher (insulin management risk)");
   }
 
-  // ── F. COMPUTE FINAL SCORE ────────────────────────────────────────────────
+  // ── F. RISK TOLERANCE ADJUSTMENT ──────────────────────────────────────────
+
+  if (riskTolerance === "LOW") {
+    const m = 1.3;
+    Object.keys(penalties).forEach((k) => { penalties[k] *= m; });
+    reasoning.push("Low risk tolerance — penalties weighted ×1.3");
+  } else if (riskTolerance === "HIGH") {
+    const m = 0.8;
+    Object.keys(penalties).forEach((k) => { penalties[k] *= m; });
+    reasoning.push("High risk tolerance — penalties weighted ×0.8");
+  }
+
+  // ── G. COMPUTE FINAL SCORE ────────────────────────────────────────────────
 
   let totalPenalty = Object.values(penalties).reduce((s, p) => s + p, 0);
   totalPenalty = Math.min(totalPenalty, 100);
   const safetyScore  = Math.max(0, Math.round(100 - totalPenalty));
   const safetyLevel  = scoreToLevel(safetyScore);
 
-  // ── G. REASONING STRINGS ──────────────────────────────────────────────────
+  // ── H. REASONING STRINGS ──────────────────────────────────────────────────
 
   if (penalties.rainfall    > 5)  reasoning.push(`Heavy rainfall (${weather.rainfall}mm/h) — road conditions affected`);
   if (penalties.flood       > 10) reasoning.push(`Elevated flood risk (index: ${hazard.floodIndex.toFixed(2)})`);

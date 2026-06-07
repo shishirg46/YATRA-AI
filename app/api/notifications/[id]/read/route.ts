@@ -8,8 +8,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
 import { prisma }                    from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(
+async function readNotificationHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -26,3 +27,5 @@ export async function POST(
 
   return NextResponse.json({ success: true });
 }
+
+export const POST = withRateLimit(readNotificationHandler, { max: 10, windowSeconds: 60 });

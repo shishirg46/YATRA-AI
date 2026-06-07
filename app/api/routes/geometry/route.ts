@@ -8,6 +8,7 @@ import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
 import { buildSegmentedRoute, toMapPayload } from "@/lib/routing/route-service";
 import { fetchRouteGeometry } from "@/lib/routing/openroute-service";
 import type { RouteInstruction, VehicleProfile } from "@/lib/routing/types";
+import { withRateLimit } from "@/lib/rate-limit";
 
 function isValidLatLon(lat: number, lon: number): boolean {
   return Number.isFinite(lat) && Number.isFinite(lon) && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
@@ -50,7 +51,7 @@ async function openRouteServiceFallback(
   };
 }
 
-export async function POST(req: NextRequest) {
+async function getRouteGeometryHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     const body = await req.json();
@@ -161,3 +162,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message }, { status });
   }
 }
+
+export const POST = withRateLimit(getRouteGeometryHandler, { max: 20, windowSeconds: 60 });

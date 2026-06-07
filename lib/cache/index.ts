@@ -98,6 +98,20 @@ export const analysisCache = new InMemoryCache();
 
 // ─── Background cleanup ───────────────────────────────────────────────────────
 
+function sweepStale(store: Map<string, CacheEntry<unknown>>, tagIndex: Map<string, Set<string>>) {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now > entry.expiresAt) {
+      store.delete(key);
+      for (const tag of entry.tags) tagIndex.get(tag)?.delete(key);
+    }
+  }
+}
+
 setInterval(() => {
-  // no-op — InMemoryCache.get() already evicts expired entries
+  sweepStale(routeCache["store"], routeCache["tagIndex"]);
+  sweepStale(weatherCache2["store"], weatherCache2["tagIndex"]);
+  sweepStale(aiCache["store"], aiCache["tagIndex"]);
+  sweepStale(geoNameCache["store"], geoNameCache["tagIndex"]);
+  sweepStale(analysisCache["store"], analysisCache["tagIndex"]);
 }, 60_000);

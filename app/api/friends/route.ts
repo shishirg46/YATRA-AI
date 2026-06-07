@@ -12,8 +12,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+async function getFriendsHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json([], { status: 401 });
 
@@ -61,3 +62,5 @@ export async function GET() {
 
   return NextResponse.json(friends);
 }
+
+export const GET = withRateLimit(getFriendsHandler, { max: 30, windowSeconds: 60 });

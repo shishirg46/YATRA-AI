@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
 type InsightSource = { name: string; url: string; snippet: string };
 type InsightPhoto = { url: string; thumbUrl?: string; title?: string; sourceUrl: string };
@@ -25,7 +26,7 @@ function shorten(text: string, max = 260): string {
   return t.length > max ? `${t.slice(0, max - 1)}…` : t;
 }
 
-export async function GET(
+async function getInsightsHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -156,3 +157,4 @@ export async function GET(
   });
 }
 
+export const GET = withRateLimit(getInsightsHandler, { max: 20, windowSeconds: 60 });

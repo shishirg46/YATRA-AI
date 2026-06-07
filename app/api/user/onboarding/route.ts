@@ -5,8 +5,9 @@ import { auth } from "@/lib/auth";
 import { isPointInNepal } from "@/lib/routing/geo";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest) {
+async function onboardingHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
@@ -132,3 +133,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Failed to save profile." }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(onboardingHandler, { max: 10, windowSeconds: 60 });

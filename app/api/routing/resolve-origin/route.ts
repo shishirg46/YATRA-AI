@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest) {
+async function resolveOriginHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     const body = await req.json();
@@ -39,3 +40,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message }, { status: 400 });
   }
 }
+
+export const POST = withRateLimit(resolveOriginHandler, { max: 20, windowSeconds: 60 });

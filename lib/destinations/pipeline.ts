@@ -1,6 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { DestinationCategory } from "@/app/generated/prisma/client";
 
+const HAVERSINE_SQL = (latCol: string, lonCol: string, latParam: string, lonParam: string) =>
+  `6371 * 2 * ASIN(SQRT(
+    POWER(SIN(((${latParam}) - ${latCol}) * PI() / 360), 2) +
+    COS((${latParam}) * PI() / 180) * COS(${latCol} * PI() / 180) *
+    POWER(SIN(((${lonParam}) - ${lonCol}) * PI() / 360), 2)
+  )) AS "distanceKm"`;
+
+function haversineWhere(
+  latCol: string,
+  lonCol: string,
+  latParam: string,
+  lonParam: string,
+  maxKm: number
+): string {
+  const deg = maxKm / 111;
+  return `${latCol} BETWEEN ${latParam} - ${deg} AND ${latParam} + ${deg}
+    AND ${lonCol} BETWEEN ${lonParam} - ${deg} AND ${lonParam} + ${deg}
+    AND ${latCol} IS NOT NULL AND ${lonCol} IS NOT NULL`;
+}
+
 export async function getQualityDestinations(filters?: {
   category?: DestinationCategory;
   minTier?: number;
@@ -29,14 +49,13 @@ export async function getNearbyDestinations(lat: number, lon: number, radiusKm =
   const rows = await prisma.$queryRawUnsafe<
     Array<Record<string, unknown> & { distanceKm: number }>
   >(
-    `SELECT *, ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) / 1000 AS "distanceKm"
+    `SELECT *,
+            ${HAVERSINE_SQL("latitude", "longitude", String(lat), String(lon))}
      FROM "destination"
-     WHERE geom IS NOT NULL
-       AND ST_DWithin(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
+     WHERE ${haversineWhere("latitude", "longitude", String(lat), String(lon), radiusKm)}
        AND "destinationTier" >= 2
-     ORDER BY geom <-> ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
-     LIMIT $4`,
-    lon, lat, radiusKm * 1000, limit
+     ORDER BY "distanceKm"
+     LIMIT ${limit}`
   );
   return rows;
 }
@@ -55,5 +74,3 @@ export async function getPopularDestinations(
     take: limit,
   });
 }
-
-

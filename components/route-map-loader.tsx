@@ -34,6 +34,13 @@ interface RouteMapLoaderProps {
   height?: string;
   perSegmentRouting?: boolean;
   dynamicOsmRouting?: boolean;
+  alternatives?: Array<{
+    polyline: Array<{ lat: number; lon: number }>;
+    distance: number;
+    duration: number;
+  }>;
+  selectedRouteIndex?: number;
+  onRouteSelect?: (index: number) => void;
 }
 
 export default function RouteMapLoader({
@@ -53,6 +60,9 @@ export default function RouteMapLoader({
   height,
   perSegmentRouting = true,
   dynamicOsmRouting = true,
+  alternatives,
+  selectedRouteIndex = 0,
+  onRouteSelect,
 }: RouteMapLoaderProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -225,6 +235,9 @@ export default function RouteMapLoader({
         userLocation={userMarker}
         segmentRoutes={segmentRoutes}
         onSegmentClick={(segment) => setSelectedSegment(segment)}
+        alternatives={alternatives}
+        selectedRouteIndex={selectedRouteIndex}
+        onRouteSelect={onRouteSelect}
       />
 
       {selectedSegment && (

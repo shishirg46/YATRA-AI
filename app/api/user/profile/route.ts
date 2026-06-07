@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function PATCH(req: NextRequest) {
+async function updateProfileHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -100,3 +101,5 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ message: "Failed to update profile." }, { status: 500 });
   }
 }
+
+export const PATCH = withRateLimit(updateProfileHandler, { max: 10, windowSeconds: 60 });

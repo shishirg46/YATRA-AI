@@ -10,8 +10,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+async function getStatsHandler() {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
@@ -109,3 +110,5 @@ export async function GET() {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getStatsHandler, { max: 60, windowSeconds: 60 });

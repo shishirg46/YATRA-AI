@@ -1,7 +1,7 @@
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
 import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
-import { fetchHistoricalWeather } from "@/lib/collectors/historical-weather";
+import { ensureRecentRealtimeData } from "@/lib/disaster-pipeline";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
@@ -10,11 +10,8 @@ import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-serv
 import { createRouteBuffer } from "@/lib/routing/route-buffer";
 import { findPlacesAlongRoute } from "@/lib/routing/places-along-route";
 import { rankPlacesForRoute } from "@/lib/routing/route-ranking";
-import { routeCache, makeRouteCacheKey } from "@/lib/routing/route-cache";
-import {
-  findNearestLocation,
-  findNearestLocationsBatch,
-} from "@/lib/routing/spatial";
+import { findNearestLocation } from "@/lib/routing/spatial";
+import { snapToNearestRoad } from "@/lib/routing/osrm-nearest";
 import type {
   BuiltRoute,
   VehicleProfile,
@@ -137,6 +134,8 @@ export async function generateRouteIntelligence(
   departureDate: string,
   options?: { destinationId?: string; vehicle?: VehicleProfile }
 ): Promise<RouteIntelligenceResult> {
+  ensureRecentRealtimeData().catch(() => {});
+
   const vehicle = options?.vehicle ?? "car";
 
   let resolvedDest = destination;
@@ -207,7 +206,23 @@ export async function generateRouteIntelligence(
 
   if (routes.length === 0) {
     const storedRoutes = await fetchStoredRoutes(origin, resolvedDest);
-    const roadRoutes = storedRoutes.length > 0 ? [] : await fetchRoadRoutesFallback(origin, resolvedDest, vehicle);
+    let roadRoutes: Route[] = [];
+
+    if (storedRoutes.length === 0) {
+      roadRoutes = await fetchRoadRoutesFallback(origin, resolvedDest, vehicle);
+
+      if (roadRoutes.length === 0) {
+        const snapped = await snapToNearestRoad(resolvedDest.lat, resolvedDest.lon);
+        if (snapped && (snapped.distance > 100 || resolvedDest.lat !== snapped.lat || resolvedDest.lon !== snapped.lon)) {
+          const snappedDest = { lat: snapped.lat, lon: snapped.lon, name: snapped.name };
+          roadRoutes = await fetchRoadRoutesFallback(origin, snappedDest, vehicle);
+          if (roadRoutes.length > 0) {
+            resolvedDest = snappedDest;
+          }
+        }
+      }
+    }
+
     routes = storedRoutes.length > 0 ? storedRoutes : roadRoutes;
 
     if (routes.length === 0) {
@@ -530,7 +545,7 @@ function getRegionFromCoords(lat: number, lon: number): string | null {
 
 // ── Fallback Route ──────────────────────────────────────────────────────────
 
-function generateFallbackRoute(origin: GeoPoint, destination: GeoPoint): Route {
+export function generateFallbackRoute(origin: GeoPoint, destination: GeoPoint): Route {
   const waypoints: RouteWaypoint[] = [
     { lat: origin.lat, lon: origin.lon, distanceFromStart: 0 },
     { lat: (origin.lat + destination.lat) / 2, lon: (origin.lon + destination.lon) / 2, distanceFromStart: 50000 },

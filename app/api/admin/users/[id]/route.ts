@@ -3,9 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, handleAdminError } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import { Role } from "@/app/generated/prisma/enums"; // adjust to your actual generated path
+import { Role } from "@/app/generated/prisma/enums";
+import { withRateLimit } from "@/lib/rate-limit";
 
-// Define which roles can be assigned/deleted by which admin tiers
 const ROLE_HIERARCHY: Record<string, number> = {
   USER: 1,
   ANALYST: 2,
@@ -17,7 +17,7 @@ function canManage(actorRole: string, targetRole: string): boolean {
   return (ROLE_HIERARCHY[actorRole] ?? 0) > (ROLE_HIERARCHY[targetRole] ?? 0);
 }
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function getUserHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await verifyAdmin();
     const { id } = await params;
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchUserHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await verifyAdmin();
     const { id } = await params;
@@ -137,7 +137,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteUserHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await verifyAdmin();
     const { id } = await params;
@@ -179,3 +179,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return handleAdminError(err);
   }
 }
+
+export const GET = withRateLimit(getUserHandler, { max: 60, windowSeconds: 60 });
+export const PATCH = withRateLimit(patchUserHandler, { max: 30, windowSeconds: 60 });
+export const DELETE = withRateLimit(deleteUserHandler, { max: 30, windowSeconds: 60 });

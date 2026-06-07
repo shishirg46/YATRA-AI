@@ -4,9 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // PATCH /api/friends/[id] — accept or decline a friend request
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchFriendHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -59,7 +60,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 // DELETE /api/friends/[id] — remove a friend
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteFriendHandler(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -80,3 +81,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export const PATCH = withRateLimit(patchFriendHandler, { max: 10, windowSeconds: 60 });
+export const DELETE = withRateLimit(deleteFriendHandler, { max: 10, windowSeconds: 60 });

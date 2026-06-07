@@ -20,12 +20,14 @@ export type ResolvedOriginState = {
 const STORAGE_KEY = "yatra_resolved_origin";
 
 function saveToStorage(origin: ResolvedOriginState) {
+  if (typeof window === "undefined") return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(origin));
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 function loadFromStorage(): ResolvedOriginState | null {
+  if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
@@ -36,9 +38,10 @@ function loadFromStorage(): ResolvedOriginState | null {
 }
 
 function clearStorage() {
+  if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(STORAGE_KEY);
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 export function useResolvedOrigin() {
@@ -81,6 +84,15 @@ export function useResolvedOrigin() {
         };
 
         saveOrigin(resolved);
+
+        // Persist to DB (fire-and-forget)
+        fetch("/api/user/location", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ placeName: resolved.name, lat, lon, accuracy }),
+        }).catch(() => {});
+
         return resolved;
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Location resolution failed";
@@ -95,22 +107,8 @@ export function useResolvedOrigin() {
 
   const resolveFromManual = useCallback(
     async (placeName: string, lat: number, lon: number) => {
-      setResolving(true);
-      setError(null);
-      try {
-        await fetch("/api/user/location", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ placeName, lat, lon }),
-        });
-
-        return resolveFromGps(lat, lon, undefined, placeName);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "Failed to save location";
-        setError(msg);
-        return null;
-      }
+      // resolveFromGps handles both resolution and persistence
+      return resolveFromGps(lat, lon, undefined, placeName);
     },
     [resolveFromGps]
   );
@@ -140,7 +138,8 @@ export function useResolvedOrigin() {
       };
       saveOrigin(resolved);
       return resolved;
-    } catch {
+    } catch (err) {
+      console.warn("[origin] loadSavedHome failed:", err);
       return null;
     } finally {
       setResolving(false);

@@ -150,11 +150,7 @@ export function createSegmentPopup(segment: RouteSegmentInfo): string {
         ${segment.temperature !== undefined ? `<div>Temp: ${segment.temperature}°C</div>` : ""}
         ${segment.rainfall !== undefined ? `<div>Rainfall: ${segment.rainfall}mm</div>` : ""}
       </div>
-      <div style="margin-top: 8px; margin-bottom: 8px;">
-        <a href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${segment.startLat},${segment.startLon}" target="_blank" style="display: inline-block; padding: 4px 8px; background: #ea4335; color: white; border-radius: 4px; text-decoration: none; font-size: 11px; font-weight: bold;">
-          View Street View
-        </a>
-      </div>
+
       <div style="padding-top: 6px; border-top: 1px solid #eee;">
         <div style="font-size: 11px; color: #666; margin-bottom: 3px;">
           <strong>Risk:</strong>

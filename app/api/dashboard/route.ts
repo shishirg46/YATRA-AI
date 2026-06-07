@@ -20,7 +20,11 @@ import { NextRequest, NextResponse }  from "next/server";
 import { auth }          from "@/lib/auth";
 import { headers, cookies }       from "next/headers";
 import { prisma }        from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 import { computeSafetyScore, buildHealthFlags, WeatherInput, HazardInput, LocationContext } from "@/lib/scoring/safety";
+import { computeRouteRisk } from "@/lib/scoring/route-risk";
+import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
+import { fetchHazard } from "@/lib/collectors/hazard";
 import type { DestinationCategory } from "@/app/generated/prisma/client";
 
 // Prisma stores JSON columns as JsonValue — we cast through unknown to our types
@@ -37,9 +41,23 @@ function getWeatherMeta(snapshot: unknown) {
   };
 }
 
-const UNRELIABLE_CATEGORIES: DestinationCategory[] = ["CHOWK", "MUNICIPALITY", "OTHER"];
+const UNRELIABLE_CATEGORIES: DestinationCategory[] = ["CHOWK", "MUNICIPALITY"];
 
-export async function GET(request?: NextRequest) {
+function estimatedWeather(alt: number | null, isMonsoon: boolean): WeatherInput {
+  const altitude = alt ?? 0;
+  const temp = Math.round((25 - altitude * 0.0065) * 10) / 10;
+  const windBase = 2 + (altitude / 1000) * 1.5;
+  const rainfall = isMonsoon ? Math.min(altitude * 0.005 + 2, 25) : 0.5;
+  return {
+    temperature: Math.max(-10, temp),
+    humidity: isMonsoon ? 80 : 50,
+    rainfall,
+    windSpeed: Math.min(Math.round(windBase * 10) / 10, 20),
+    pressure: 1013,
+  };
+}
+
+async function getDashboardHandler(request?: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     const showAll = request?.nextUrl.searchParams.get("categories") === "all";
@@ -47,8 +65,8 @@ export async function GET(request?: NextRequest) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user, profile notification, and health in parallel
-    const [user, userHealth] = await Promise.all([
+    // Fetch user, profile notification, health, and saved destinations in parallel
+    const [user, userHealth, userSaved] = await Promise.all([
       prisma.user.findUnique({
         where:   { id: session.user.id },
         include: {
@@ -69,7 +87,13 @@ export async function GET(request?: NextRequest) {
           bloodType:         true,
         },
       }),
+      prisma.savedDestination.findMany({
+        where:  { userId: session.user.id },
+        select: { destinationId: true },
+      }),
     ]);
+
+    const savedDestinationIds = userSaved.map((s) => s.destinationId);
 
     const cookieStore = await cookies();
     const isSigningUp = cookieStore.get("is_signing_up")?.value === "true";
@@ -84,16 +108,47 @@ export async function GET(request?: NextRequest) {
       return NextResponse.json({ message: "Profile incomplete", needsOnboarding: true }, { status: 403 });
     }
 
-    // Combine travel purposes + health flags for personalised scoring
-    const healthFlags     = userHealth ? buildHealthFlags(userHealth) : [];
-    const scoringPurposes = healthFlags; // Removed travelPurposes from health flag mix since it's now in preference
+    const healthFlags = userHealth ? buildHealthFlags(userHealth) : [];
+    const userPrefs = user?.preference;
+    const purposes: string[] = [...healthFlags];
 
-    // Fetch destination records from the database
-    // By default exclude unreliable categories (CHOWK, MUNICIPALITY, OTHER)
+    if (
+      userPrefs?.interests?.includes("trekking") ||
+      userPrefs?.travelStyle?.includes("trekking")
+    ) {
+      purposes.push("TREKKING");
+    }
+    if (userPrefs?.travelStyle?.includes("solo")) {
+      purposes.push("SOLO");
+    }
+    if (
+      userPrefs?.interests?.includes("cultural") ||
+      userPrefs?.interests?.includes("heritage") ||
+      userPrefs?.travelStyle?.includes("cultural")
+    ) {
+      purposes.push("TOURISM");
+    }
+    const riskTolerance = userPrefs?.riskTolerance === "LOW" || userPrefs?.riskTolerance === "HIGH"
+      ? userPrefs.riskTolerance as "LOW" | "HIGH"
+      : "MEDIUM";
+
+    const currentMonth = new Date().getMonth() + 1;
+    const isMonsoon = currentMonth >= 6 && currentMonth <= 9;
+
+    const neutralHazard: HazardInput = {
+      floodIndex: isMonsoon ? 0.15 : 0,
+      landslideIndex: 0,
+      earthquakeIndex: 0,
+      heatIndex: 0,
+      airQuality: 0,
+    };
+
     const destinations = await prisma.destination.findMany({
-      where: showAll ? {} : {
-        category: { notIn: UNRELIABLE_CATEGORIES },
-      },
+      where: showAll
+        ? {}
+        : {
+            category: { notIn: UNRELIABLE_CATEGORIES },
+          },
       orderBy: [
         { verified: "desc" },
         { dataQualityScore: "desc" },
@@ -101,45 +156,179 @@ export async function GET(request?: NextRequest) {
       ],
     });
 
+    // Dynamic origin from request params (frontend GPS / manual pick).
+    // Fallback chain: request params → DB preference → DB home location.
+    const reqOriginLat = parseFloat(request?.nextUrl.searchParams.get("originLat") ?? "");
+    const reqOriginLon = parseFloat(request?.nextUrl.searchParams.get("originLon") ?? "");
+    const reqOriginDist = request?.nextUrl.searchParams.get("originDistrict") ?? undefined;
+    const hasReqOrigin = Number.isFinite(reqOriginLat) && Number.isFinite(reqOriginLon);
+
+    const homeLat = hasReqOrigin
+      ? reqOriginLat
+      : (user?.preference?.locationLat ?? user?.homeLocation?.latitude ?? null);
+    const homeLon = hasReqOrigin
+      ? reqOriginLon
+      : (user?.preference?.locationLng ?? user?.homeLocation?.longitude ?? null);
+    const homeAlt = user?.homeLocation?.altitude ?? null;
+    const originDistrict = hasReqOrigin
+      ? (reqOriginDist ?? null)
+      : (user?.homeLocation?.district?.name ?? null);
+    const hasHome = homeLat !== null && homeLon !== null;
+
+    // Fetch real-time hazard data for the user's origin area (skipped for dynamic
+    // request origins unless the frontend also supplies the district name).
+    let originHazard = null;
+    if (originDistrict && homeLat && homeLon) {
+      try {
+        const result = await Promise.race([
+          fetchHazard(originDistrict, homeLat, homeLon),
+          new Promise<null>((_, reject) =>
+            setTimeout(() => reject(new Error("hazard fetch timeout")), 6000)
+          ),
+        ]);
+        originHazard = result;
+      } catch {
+        // Timeout or failure — continue without real-time data
+      }
+    }
+
+    // Query DB for cached hazard data per destination district (from latest assessment run)
+    const latestHazardByDistrict = new Map<string, { floodIndex: number; landslideIndex: number; earthquakeIndex: number; heatIndex: number; airQuality: number }>();
+    try {
+      const hazardRows = await prisma.$queryRaw<Array<{
+        district: string;
+        floodIndex: number | null;
+        landslideIndex: number | null;
+        airQuality: number | null;
+      }>>`
+        SELECT DISTINCT ON (d.name)
+          d.name AS district,
+          h."floodIndex",
+          h."landslideIndex",
+          h."airQuality"
+        FROM "HazardData" h
+        JOIN "Location" l ON l.id = h."locationId"
+        JOIN "District" d ON d.id = l."districtId"
+        WHERE h."floodIndex" IS NOT NULL
+        ORDER BY d.name, h."recordedAt" DESC
+      `;
+      for (const row of hazardRows) {
+        if (row.district) {
+          latestHazardByDistrict.set(row.district.toLowerCase(), {
+            floodIndex: row.floodIndex ?? 0,
+            landslideIndex: row.landslideIndex ?? 0,
+            earthquakeIndex: 0,
+            heatIndex: 0,
+            airQuality: row.airQuality ?? 0,
+          });
+        }
+      }
+    } catch {
+      // DB query failure — continue without district hazard data
+    }
+
+    // ── Disaster event counts per district (historic 5yr + recent 30d) ──
+    const { historicDisasters, recentDisasters } = await fetchDisasterCounts(prisma);
+
+    // Build corridor district lookup: each destination acts as a coordinate→district anchor
+    const corridorDistrictLookup = buildCorridorLookup(
+      destinations.map((d) => ({ lat: d.latitude, lon: d.longitude, district: d.district })),
+    );
+
     const mappedDestinations = destinations.map((dest) => {
-      const qualityScore = dest.dataQualityScore ?? 50;
       const isVerified = dest.verified ?? false;
       const routeAccessible = dest.routeAccessible ?? false;
-      const safetyLevel = isVerified ? "SAFE" : routeAccessible ? "CAUTION" : "HIGH_RISK";
-      const safetyScore = Math.max(0, Math.min(100, qualityScore));
-      const reasoning = [
-        dest.description ?? "Destination loaded from source data.",
-        isVerified ? "Verified destination" : "Verification pending",
-        routeAccessible ? "Route accessible" : "Route accessibility not confirmed",
+
+      const alt = dest.altitude ?? null;
+      const locationCtx: LocationContext = {
+        altitude: alt,
+        districtName: dest.district,
+        locationName: dest.name,
+      };
+
+      const score = computeSafetyScore(
+        estimatedWeather(alt, isMonsoon),
+        neutralHazard,
+        purposes,
+        "SOLO",
+        "fallback-estimated",
+        locationCtx,
+        riskTolerance,
+      );
+
+      const staticReasoning: string[] = [];
+      if (dest.description) {
+        staticReasoning.push(dest.description);
+      }
+      staticReasoning.push(
+        isVerified ? "Verified destination" : "Verification pending"
+      );
+      staticReasoning.push(
+        routeAccessible ? "Route accessible" : "Route accessibility not confirmed"
+      );
+
+      const allReasoning = [
+        ...score.decisionTrace.reasoning,
+        ...staticReasoning.filter(
+          (r) => !score.decisionTrace.reasoning.some((sr) => sr.includes(r))
+        ),
       ];
 
+      const routeRisk = hasHome
+        ? computeRouteRisk({
+            originLat: homeLat!,
+            originLon: homeLon!,
+            originAlt: homeAlt,
+            originDistrict: originDistrict ?? undefined,
+            destLat: dest.latitude,
+            destLon: dest.longitude,
+            destAlt: alt,
+            destDistrict: dest.district,
+            isMonsoon,
+            currentMonth,
+            purposes,
+            originHazard: originHazard ?? undefined,
+            destHazard: latestHazardByDistrict.get(dest.district.toLowerCase()) ?? undefined,
+            corridorDistrictLookup,
+            historicDisasters,
+            recentDisasters,
+          })
+        : null;
+
       return {
-        id:          dest.id,
-        name:        dest.name,
-        district:    dest.district,
-        province:    dest.province,
-        category:    dest.category,
-        latitude:    dest.latitude,
-        longitude:   dest.longitude,
-        altitude:    dest.altitude ?? null,
-        safetyScore,
-        safetyLevel: safetyLevel as "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME",
-        confidence:  null,
-        reasoning,
-        weather:     null,
-        hazard:      null,
-        assessedAt:  dest.sourceLastFetch?.toISOString() ?? dest.updatedAt.toISOString(),
-        verified:    dest.verified,
+        id: dest.id,
+        name: dest.name,
+        district: dest.district,
+        province: dest.province,
+        category: dest.category,
+        latitude: dest.latitude,
+        longitude: dest.longitude,
+        altitude: dest.altitude ?? null,
+        safetyScore: score.safetyScore,
+        safetyLevel: score.safetyLevel,
+        confidence: score.confidence,
+        reasoning: allReasoning,
+        routeRisk,
+        weather: null,
+        hazard: null,
+        assessedAt: new Date().toISOString(),
+        verified: dest.verified,
         routeAccessible: dest.routeAccessible,
         dataQualityScore: dest.dataQualityScore,
       };
     });
 
-    // Sort destinations so verified, accessible, and higher quality appear first
+    // Sort — verified/accessible first, then combine safety score and route risk
     mappedDestinations.sort((a, b) => {
       if ((a.verified ? 1 : 0) !== (b.verified ? 1 : 0)) return (b.verified ? 1 : 0) - (a.verified ? 1 : 0);
       if ((a.routeAccessible ? 1 : 0) !== (b.routeAccessible ? 1 : 0)) return (b.routeAccessible ? 1 : 0) - (a.routeAccessible ? 1 : 0);
-      return (b.safetyScore ?? 0) - (a.safetyScore ?? 0);
+      const aRec = a.routeRisk
+        ? Math.round(a.safetyScore * 0.6 + a.routeRisk.routeRiskScore * 0.4)
+        : a.safetyScore;
+      const bRec = b.routeRisk
+        ? Math.round(b.safetyScore * 0.6 + b.routeRisk.routeRiskScore * 0.4)
+        : b.safetyScore;
+      return bRec - aRec;
     });
 
     const stats = {
@@ -148,6 +337,12 @@ export async function GET(request?: NextRequest) {
       caution:  mappedDestinations.filter((d) => d.safetyLevel === "CAUTION").length,
       highRisk: mappedDestinations.filter((d) => d.safetyLevel === "HIGH_RISK").length,
       extreme:  mappedDestinations.filter((d) => d.safetyLevel === "EXTREME").length,
+      routeRisk: {
+        safe:     mappedDestinations.filter((d) => d.routeRisk?.routeRiskLevel === "SAFE").length,
+        caution:  mappedDestinations.filter((d) => d.routeRisk?.routeRiskLevel === "CAUTION").length,
+        highRisk: mappedDestinations.filter((d) => d.routeRisk?.routeRiskLevel === "HIGH_RISK").length,
+        extreme:  mappedDestinations.filter((d) => d.routeRisk?.routeRiskLevel === "EXTREME").length,
+      },
     };
 
     return NextResponse.json({
@@ -162,10 +357,14 @@ export async function GET(request?: NextRequest) {
           name:     user.homeLocation.name,
           district: user.homeLocation.district.name,
           province: user.homeLocation.district.province.name,
+          latitude: user.homeLocation.latitude,
+          longitude: user.homeLocation.longitude,
+          altitude: user.homeLocation.altitude,
         } : null,
         preference: user?.preference ?? null,
         behavior: user?.behavior ?? null,
         health: userHealth ?? null,
+        savedDestinationIds,
       },
       destinations: mappedDestinations,
       stats,
@@ -176,3 +375,5 @@ export async function GET(request?: NextRequest) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getDashboardHandler, { max: 20, windowSeconds: 60 });

@@ -1,7 +1,7 @@
 import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
 import { resolveDestination } from "@/lib/routing/place-resolver";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
-import { assessRouteSegment } from "@/lib/analysis/group-risk";
+import { generateRouteIntelligence } from "@/lib/route-intelligence";
 
 export type OriginLocation = {
   id?: string;
@@ -55,15 +55,15 @@ export async function resolveOriginAndRoute(
       .filter(Boolean)
       .join("; ");
 
-    const districtRow = home?.district ?? location;
+    const districtRow = home?.district ?? null;
     effectiveHome = {
       id: resolved.place.id ?? home?.id,
       name: resolved.place.name,
       latitude: resolved.place.lat,
       longitude: resolved.place.lon,
       altitude: home?.altitude ?? null,
-      district: districtRow as { name: string; province: { name: string } },
-    } as OriginLocation;
+      district: districtRow ?? { name: location.name, province: { name: "Bagmati" } },
+    };
   } catch {
     if (home) {
       effectiveHome = home as OriginLocation;
@@ -84,30 +84,64 @@ export async function assessRoute(
   const lonDiff = effectiveHome.longitude - location.longitude;
   if (latDiff * latDiff + lonDiff * lonDiff < 1e-10) return null;
 
-  return assessRouteSegment(
-    {
-      locationId: effectiveHome.id ?? `origin:${effectiveHome.latitude.toFixed(5)},${effectiveHome.longitude.toFixed(5)}`,
-      locationName: effectiveHome.name,
-      district: effectiveHome.district.name,
-      province: effectiveHome.district.province.name,
-      lat: effectiveHome.latitude,
-      lon: effectiveHome.longitude,
-      altitude: effectiveHome.altitude,
-      arrivalDate: travelDate,
-      departureDate: travelDate,
-    },
-    {
-      locationId: location.id,
-      locationName: location.name,
-      district: location.district.name,
-      province: location.district.province.name,
-      lat: location.latitude,
-      lon: location.longitude,
-      altitude: location.altitude,
-      arrivalDate: travelDate,
-      departureDate: travelDate,
-    },
-  ).catch(() => null);
+  try {
+    const result = await generateRouteIntelligence(
+      { lat: effectiveHome.latitude, lon: effectiveHome.longitude, name: effectiveHome.name },
+      { lat: location.latitude, lon: location.longitude, name: location.name },
+      travelDate,
+      { destinationId: location.id },
+    );
+
+    if (!result.bestRoute) return null;
+
+    const highRiskSegments = result.bestRoute.segments.filter(
+      (s) => s.riskLevel === "HIGH" || s.riskLevel === "EXTREME"
+    );
+    const segmentAlerts = highRiskSegments
+      .map((s) => s.hazards.join(", "))
+      .filter(Boolean);
+
+    const reason = segmentAlerts.length > 0
+      ? `Route hazards detected on ${highRiskSegments.length} of ${result.bestRoute.segments.length} segments: ${segmentAlerts.join("; ")}`
+      : `All ${result.bestRoute.segments.length} route segments appear favorable.`;
+
+    const first = result.bestRoute.segments[0];
+    const last = result.bestRoute.segments[result.bestRoute.segments.length - 1];
+
+    return {
+      from: first?.startPoint.name || effectiveHome.name,
+      to: last?.endPoint.name || location.name,
+      date: travelDate,
+      risk: result.bestRoute.riskLevel === "EXTREME" ? "HIGH" : result.bestRoute.riskLevel as "LOW" | "MEDIUM" | "HIGH",
+      reason,
+      segments: result.bestRoute.segments.map((s) => ({
+        from: s.startPoint.name || "unknown",
+        to: s.endPoint.name || "unknown",
+        distanceKm: s.distance,
+        riskLevel: s.riskLevel,
+        riskScore: s.riskScore,
+        hazards: s.hazards,
+        realtime: s.realtime ? {
+          floodIndex: s.realtime.floodIndex,
+          landslideIndex: s.realtime.landslideIndex,
+          earthquakeIndex: s.realtime.earthquakeIndex,
+          airQuality: s.realtime.airQuality,
+          rainfall: s.realtime.rainfall,
+          windSpeed: s.realtime.windSpeed,
+        } : null,
+        historical: s.historical ? {
+          floodRisk: s.historical.floodRisk,
+          landslideRisk: s.historical.landslideRisk,
+        } : null,
+        alerts: s.evidence?.historical?.notableEvents || [],
+      })),
+      totalDistanceKm: result.bestRoute.distance,
+      totalDurationHours: result.bestRoute.duration,
+      sources: ["bipad", "usgs", "openstreetmap", "openweather"],
+    };
+  } catch {
+    return null;
+  }
 }
 
 export const FALLBACK_HOME = {

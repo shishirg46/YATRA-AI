@@ -12,8 +12,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
 import { prisma }                    from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(
+async function inviteTripHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -68,3 +69,5 @@ export async function POST(
 
   return NextResponse.json(member, { status: 201 });
 }
+
+export const POST = withRateLimit(inviteTripHandler, { max: 10, windowSeconds: 60 });

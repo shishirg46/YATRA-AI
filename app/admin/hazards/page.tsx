@@ -8,6 +8,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { 
   ChevronLeft, Search, Filter, AlertTriangle, Trash2, Edit, Check, X,
@@ -328,12 +329,17 @@ export default function AdminHazardsPage() {
           </p>
         </div>
 
-        <Button
-          onClick={openAddForm}
-          className="bg-amber-400 text-slate-950 hover:bg-amber-500 font-semibold font-body flex items-center gap-1.5"
-        >
-          <Plus size={16} /> Log Hazard Entry
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href="/admin/hazards/reports" className="px-4 py-2 rounded-lg border border-slate-700/50 text-slate-300 hover:text-white hover:border-slate-500 transition-all font-body text-sm flex items-center gap-1.5">
+            <AlertTriangle size={14} /> Community Reports
+          </Link>
+          <Button
+            onClick={openAddForm}
+            className="bg-amber-400 text-slate-950 hover:bg-amber-500 font-semibold font-body flex items-center gap-1.5"
+          >
+            <Plus size={16} /> Log Hazard Entry
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -682,7 +688,7 @@ export default function AdminHazardsPage() {
               </div>
               {image && (
                 <div className="mt-2 relative inline-block rounded overflow-hidden border border-slate-800">
-                  <img src={image} alt="Preview" className="h-20 object-cover rounded" />
+                  <Image src={image} alt="Preview" width={200} height={80} className="h-20 object-cover rounded" unoptimized />
                   <button
                     type="button"
                     onClick={() => setImage("")}
@@ -772,7 +778,7 @@ export default function AdminHazardsPage() {
                   const meta = getHazardMetadata(viewedHazard.source);
                   return meta.image ? (
                     <div className="rounded overflow-hidden border border-slate-800 bg-slate-900/60 max-h-48 flex items-center justify-center">
-                      <img src={meta.image} alt="Hazard scene proof" className="max-h-48 object-contain" />
+                      <Image src={meta.image} alt="Hazard scene proof" width={400} height={300} className="max-h-48 object-contain" unoptimized />
                     </div>
                   ) : null;
                 })()}

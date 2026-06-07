@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyRole, handleAdminError } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(req: NextRequest) {
+async function getAnalyticsHandler(req: NextRequest) {
   try {
     await verifyRole(["ADMIN", "ANALYST"]);
 
@@ -132,3 +133,5 @@ export async function GET(req: NextRequest) {
     return handleAdminError(err);
   }
 }
+
+export const GET = withRateLimit(getAnalyticsHandler, { max: 60, windowSeconds: 60 });

@@ -8,6 +8,7 @@
 import { useState, useEffect } from "react";
 import Link                    from "next/link";
 import { useRouter }           from "next/navigation";
+import { toast } from "sonner";
 import {
   Mountain, MapPin, Calendar, Users, User, Plus,
   CheckCircle2, X, Clock, AlertTriangle, Shield,
@@ -156,7 +157,7 @@ export default function TripsPage() {
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState<string | null>(null);
   const [responding, setResponding] = useState<string | null>(null);
-  const [tab, setTab] = useState<"led" | "joined" | "pending">("led");
+  const [tab, setTab] = useState<"led" | "joined" | "pending" | "past">("led");
 
   useEffect(() => { load(); }, []);
 
@@ -177,17 +178,24 @@ export default function TripsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      if (res.ok) await load();
-    } catch { /* silent */ } finally { setResponding(null); }
+      if (res.ok) { await load(); toast.success(action === "accept" ? "Invitation accepted!" : "Invitation declined."); }
+      else toast.error("Failed to respond to invitation.");
+    } catch { toast.error("Failed to respond to invitation."); } finally { setResponding(null); }
   }
 
+  const pastTrips = (data?.led ?? []).concat(data?.joined ?? []).filter((p) => p.status === "COMPLETED");
   const tabs = [
-    { id: "led",     label: "My Trips",   count: data?.led.length ?? 0 },
-    { id: "joined",  label: "Joined",     count: data?.joined.length ?? 0 },
+    { id: "led",     label: "My Trips",    count: data?.led.length ?? 0 },
+    { id: "joined",  label: "Joined",      count: data?.joined.length ?? 0 },
     { id: "pending", label: "Invitations", count: data?.pending.length ?? 0 },
+    { id: "past",    label: "Past Trips",  count: pastTrips.length },
   ] as const;
 
-  const currentPlans = tab === "led" ? (data?.led ?? []) : tab === "joined" ? (data?.joined ?? []) : (data?.pending ?? []);
+  const currentPlans = tab === "past"
+    ? pastTrips
+    : tab === "led" ? (data?.led ?? [])
+    : tab === "joined" ? (data?.joined ?? [])
+    : (data?.pending ?? []);
 
   return (
     <AppShell
@@ -256,6 +264,11 @@ export default function TripsPage() {
               <>
                 <Users size={36} className="text-slate-700 mx-auto mb-3" />
                 <p className="font-body text-slate-500">You haven&apos;t joined any group trips yet</p>
+              </>
+            ) : tab === "past" ? (
+              <>
+                <Clock size={36} className="text-slate-700 mx-auto mb-3" />
+                <p className="font-body text-slate-500">No completed trips yet</p>
               </>
             ) : (
               <>

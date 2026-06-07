@@ -37,6 +37,15 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 const memoryCache = new Map<string, { expiresAt: number; value: PlaceDetailsResponse }>();
 const CACHE_TTL_MS = 1000 * 60 * 60 * 12;
+const cacheSweep = setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of memoryCache) {
+    if (now > entry.expiresAt) memoryCache.delete(key);
+  }
+}, 300_000);
+if (typeof cacheSweep === "number" && process.env.NODE_ENV === "test") {
+  clearInterval(cacheSweep);
+}
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -154,6 +163,24 @@ function setMemoryCache(key: string, value: PlaceDetailsResponse): void {
   memoryCache.set(key, { expiresAt: Date.now() + CACHE_TTL_MS, value });
 }
 
+const CATEGORY_IMAGES: Record<string, string> = {
+  MOUNTAIN: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Mount_Everest_as_seen_from_Drukair2.jpg/1280px-Mount_Everest_as_seen_from_Drukair2.jpg",
+  TREKKING_VILLAGE: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Annapurna_South_View_from_Ghandruk.jpg/1280px-Annapurna_South_View_from_Ghandruk.jpg",
+  LAKE: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Fewa_Taal.JPG/1280px-Fewa_Taal.JPG",
+  TEMPLE: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Patan_Temple.jpg/1280px-Patan_Temple.jpg",
+  FOREST: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Shivapuri_Nagarjun_National_Park.jpg/1280px-Shivapuri_Nagarjun_National_Park.jpg",
+  WATERFALL: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Davis_Falls_Nepal.jpg/1280px-Davis_Falls_Nepal.jpg",
+  RIVERSIDE: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Kali_Gandaki_River.jpg/1280px-Kali_Gandaki_River.jpg",
+  VIEWPOINT: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Sarangkot_Pokhara_view.jpg/1280px-Sarangkot_Pokhara_view.jpg",
+  HILL: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Nagarkot_hill_view.jpg/1280px-Nagarkot_hill_view.jpg",
+  CAMP: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Trekking_camp_in_Nepal.jpg/1280px-Trekking_camp_in_Nepal.jpg",
+  TOURIST_ATTRACTION: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Patan_Durbar_Square.jpg/1280px-Patan_Durbar_Square.jpg",
+  MUNICIPALITY: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/Kathmandu_downtown.jpg/1280px-Kathmandu_downtown.jpg",
+  CHOWK: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Asan_Tole_Kathmandu.jpg/1280px-Asan_Tole_Kathmandu.jpg",
+  MOUNTAIN_SETTLEMENT: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Mustang_village.jpg/1280px-Mustang_village.jpg",
+  OTHER: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Nepal_mountains.jpg/1280px-Nepal_mountains.jpg",
+};
+
 export async function enrichPlaceDetails(placeName: string): Promise<PlaceDetailsResponse> {
   const trimmedName = placeName.trim();
   const normalized = normalizeName(trimmedName);
@@ -166,8 +193,11 @@ export async function enrichPlaceDetails(placeName: string): Promise<PlaceDetail
     orderBy: [{ verified: "desc" }, { dataQualityScore: "desc" }],
   });
 
+  const isPlaceholder = (url: string) =>
+    url.includes("cloudinary.com/demo/") || url.includes("samples/landscapes/");
+
   const existingImages = (existing?.tags ?? []).filter((t) => t.startsWith("gallery:")).map((t) => t.slice(8));
-  if (existing?.image && existing?.description) {
+  if (existing?.image && existing?.description && !isPlaceholder(existing.image)) {
     const cached: PlaceDetailsResponse = {
       name: existing.name,
       description: existing.description,
@@ -220,10 +250,12 @@ export async function enrichPlaceDetails(placeName: string): Promise<PlaceDetail
     if (!summaryText && osm.description) source = "osm";
   }
 
+  const fallbackName = existing?.name || trimmedName;
   const description =
     summaryText ||
-    `Travel destination in Nepal. Detailed source summary is not available yet for ${trimmedName}.`;
-  const image = primaryImage || "https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/v1/samples/landscapes/nature-mountains";
+    `Travel destination in Nepal. Detailed source summary is not available yet for ${fallbackName}.`;
+  const categoryDefault = existing?.category ? CATEGORY_IMAGES[existing.category] || CATEGORY_IMAGES.OTHER : CATEGORY_IMAGES.OTHER;
+  const image = primaryImage || categoryDefault;
 
   const response: PlaceDetailsResponse = {
     name: wikiSummary?.title || existing?.name || trimmedName,
@@ -235,6 +267,11 @@ export async function enrichPlaceDetails(placeName: string): Promise<PlaceDetail
     source,
   };
 
+  // If name appears URL-encoded (contains %), use the fallbackName instead
+  if (response.name.includes('%')) {
+    response.name = fallbackName;
+  }
+
   if (existing) {
     const tags = Array.from(new Set([...(existing.tags ?? []).filter((t) => !t.startsWith("gallery:")), ...gallery.map((g) => `gallery:${g}`)]));
     await prisma.destination.update({
@@ -245,7 +282,7 @@ export async function enrichPlaceDetails(placeName: string): Promise<PlaceDetail
         sourceLastFetch: new Date(),
         tags,
       },
-    }).catch(() => {});
+    }).catch((err) => console.error("[placeDetails] Failed to update destination:", err));
   }
 
   setMemoryCache(normalized, response);

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, handleAdminError } from "@/lib/admin-auth";
 import { v2 as cloudinary } from "cloudinary";
+import { withRateLimit } from "@/lib/rate-limit";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -25,7 +26,7 @@ function uploadBuffer(
   });
 }
 
-export async function POST(req: NextRequest) {
+async function uploadHandler(req: NextRequest) {
   try {
     await verifyAdmin();
     
@@ -56,3 +57,5 @@ export async function POST(req: NextRequest) {
     return handleAdminError(err);
   }
 }
+
+export const POST = withRateLimit(uploadHandler, { max: 30, windowSeconds: 60 });

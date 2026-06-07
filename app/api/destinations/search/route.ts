@@ -12,8 +12,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
 import { prisma }                    from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(req: NextRequest) {
+async function searchDestinationsHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json([], { status: 401 });
 
@@ -47,3 +48,5 @@ export async function GET(req: NextRequest) {
     }))
   );
 }
+
+export const GET = withRateLimit(searchDestinationsHandler, { max: 30, windowSeconds: 60 });

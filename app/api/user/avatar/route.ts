@@ -43,6 +43,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // Configure Cloudinary once at module load — reads from .env.local
 cloudinary.config({
@@ -74,7 +75,7 @@ function uploadBuffer(
   });
 }
 
-export async function POST(req: NextRequest) {
+async function uploadAvatarHandler(req: NextRequest) {
   // ── 1. Authenticate ─────────────────────────────────────────────────────────
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
@@ -132,3 +133,5 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export const POST = withRateLimit(uploadAvatarHandler, { max: 10, windowSeconds: 60 });

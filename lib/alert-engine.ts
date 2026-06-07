@@ -37,6 +37,14 @@ export interface AlertEngineInput {
 const LOCATION_CACHE_TTL_MS = 30 * 60 * 1000;
 const locationCache = new Map<string, { expiresAt: number; value: string | null }>();
 
+// Periodic cleanup of stale location cache entries
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of locationCache) {
+    if (now > entry.expiresAt) locationCache.delete(key);
+  }
+}, 120_000);
+
 function minDistanceKm(routePoints: RoutePoint[], lat: number, lon: number): number {
   if (!routePoints.length) return Number.POSITIVE_INFINITY;
   let min = Number.POSITIVE_INFINITY;

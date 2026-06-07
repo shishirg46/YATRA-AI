@@ -94,6 +94,28 @@ export const routeGeometryCache = new RouteCache(30 * 60 * 1000);
 
 export const placesCache = new RouteCache(5 * 60 * 1000);
 
+function sweepStale(store: Map<string, CacheEntry<unknown>>, tagIndex: Map<string, Set<string>>) {
+  const now = Date.now();
+  for (const [key, entry] of store) {
+    if (now > entry.expiresAt) {
+      store.delete(key);
+      for (const tag of entry.tags) {
+        tagIndex.get(tag)?.delete(key);
+      }
+    }
+  }
+}
+
+const sweepInterval = setInterval(() => {
+  sweepStale(routeCache["store"], routeCache["tagIndex"]);
+  sweepStale(routeGeometryCache["store"], routeGeometryCache["tagIndex"]);
+  sweepStale(placesCache["store"], placesCache["tagIndex"]);
+}, 300_000);
+
+if (typeof sweepInterval === "number" && process.env.NODE_ENV === "test") {
+  clearInterval(sweepInterval);
+}
+
 export function makeRouteCacheKey(
   fromLat: number,
   fromLon: number,

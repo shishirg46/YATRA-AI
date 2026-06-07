@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { withRateLimit } from "@/lib/rate-limit";
+import { prisma } from "@/lib/prisma";
 import { planRequestSchema, validateBody } from "@/lib/validation";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
@@ -13,6 +14,9 @@ import { resolveOriginAndRoute, assessRoute, resolveHome } from "@/lib/plan/reso
 import { analyzeTravellers, computePillar, computeGroupScore, gatherRecommendations } from "@/lib/plan/scorer";
 import { findAlternatives } from "@/lib/plan/alternatives";
 import { buildPrompt, callAiAnalysis } from "@/lib/plan/ai";
+import { computeRouteRisk } from "@/lib/scoring/route-risk";
+import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
+
 
 async function planHandler(req: NextRequest) {
   try {
@@ -69,6 +73,36 @@ async function planHandler(req: NextRequest) {
 
     const routeRisk = await assessRoute(effectiveHome, destination as any, travelDate);
 
+    const currentMonth = new Date(travelDate).getMonth() + 1;
+    const isMonsoon = currentMonth >= 6 && currentMonth <= 9;
+    const { historicDisasters, recentDisasters } = await fetchDisasterCounts(prisma);
+    const corridorDistrictLookup = buildCorridorLookup(
+      [
+        effectiveHome
+          ? { lat: effectiveHome.latitude, lon: effectiveHome.longitude, district: effectiveHome.district.name }
+          : null,
+        { lat: destination.latitude, lon: destination.longitude, district: destination.district.name },
+      ].filter(Boolean) as { lat: number; lon: number; district: string }[],
+    );
+    const disasterRouteRisk = effectiveHome
+      ? computeRouteRisk({
+          originLat: effectiveHome.latitude,
+          originLon: effectiveHome.longitude,
+          originAlt: effectiveHome.altitude ?? null,
+          originDistrict: effectiveHome.district.name,
+          destLat: destination.latitude,
+          destLon: destination.longitude,
+          destAlt: destination.altitude ?? null,
+          destDistrict: destination.district.name,
+          isMonsoon,
+          currentMonth,
+          purposes: [],
+          corridorDistrictLookup,
+          historicDisasters,
+          recentDisasters,
+        })
+      : null;
+
     const locationInfo = {
       name: destination.name,
       district: destination.district.name,
@@ -102,13 +136,16 @@ async function planHandler(req: NextRequest) {
 
     const actionableRecommendations = gatherRecommendations(pillarModel, destination.name);
 
-    const prompt = buildPrompt(
-      destination, travelDate, tripType, memberAnalyses, leaderAnalysis,
-      groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable, budget, sortedAlternatives,
-      { verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "", healthWarning: "", budgetAdvice: "", alternativeReason: "", topTip: "" },
-    );
-
-    const ai = await callAiAnalysis(prompt);
+    const ai = await callAiAnalysis(buildPrompt(
+      destination, travelDate, tripType, memberAnalyses,
+      leaderAnalysis, groupScore, groupLevel, groupAvgScore,
+      conflict, mostVulnerable, budget, sortedAlternatives,
+      { verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "",
+        healthWarning: "", budgetAdvice: "", alternativeReason: "", topTip: "" },
+    )).catch(() => ({
+      verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "",
+      healthWarning: "", budgetAdvice: "", alternativeReason: "", topTip: "",
+    }));
 
     return NextResponse.json({
       destination: {
@@ -125,6 +162,13 @@ async function planHandler(req: NextRequest) {
       season: leaderAnalysis.riskReport.season,
       overallScore: groupScore,
       overallLevel: groupLevel,
+      baselineScore: pillarModel.baselineScore,
+      seasonalModifier: {
+        factors: pillarModel.seasonalFactors,
+        total: -pillarModel.seasonalFactors.reduce((s, f) => s + f.points, 0),
+        effectiveScore: groupScore,
+        baselineScore: pillarModel.baselineScore,
+      },
       groupAvgScore,
       confidence: leaderAnalysis.riskReport.confidence,
       conflict,
@@ -142,6 +186,7 @@ async function planHandler(req: NextRequest) {
       liveWeather,
       liveHazard,
       routeRisk,
+      disasterRouteRisk,
       routePlan: routePlan ? {
         nodes: routePlan.nodes.map((n: any) => ({ name: n.name, lat: n.lat, lon: n.lon })),
         segments: routePlan.segments.map((s: any) => ({

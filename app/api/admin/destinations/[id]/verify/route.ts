@@ -10,8 +10,9 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function verifyDestinationHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     
@@ -46,3 +47,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(verifyDestinationHandler, { max: 30, windowSeconds: 60 });

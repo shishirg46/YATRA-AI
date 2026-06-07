@@ -9,6 +9,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { 
   ChevronLeft, Search, Filter, CheckCircle2, AlertCircle, 
   MapPin, Loader2, Plus, Edit, Trash2, Merge, Upload, X, Check,
@@ -723,7 +724,7 @@ export default function AdminDestinationsPage() {
               </div>
               {image && (
                 <div className="mt-2 relative inline-block rounded overflow-hidden border border-slate-800">
-                  <img src={image} alt="Preview" className="h-20 object-cover rounded" />
+                  <Image src={image} alt="Preview" width={200} height={80} className="h-20 object-cover rounded" unoptimized />
                   <button
                     type="button"
                     onClick={() => setImage("")}

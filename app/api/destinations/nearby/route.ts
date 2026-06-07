@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getNearbyDestinations } from "@/lib/destinations/pipeline";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(request: NextRequest) {
+async function getNearbyDestinationsHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const lat = parseFloat(searchParams.get("lat") ?? "");
@@ -22,3 +23,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getNearbyDestinationsHandler, { max: 20, windowSeconds: 60 });

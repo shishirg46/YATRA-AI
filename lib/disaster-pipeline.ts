@@ -357,6 +357,22 @@ export async function ingestHistoricalBipad(
   return { inserted, years, progress };
 }
 
+export async function ensureRecentRealtimeData(maxAgeHours = 1): Promise<void> {
+  await ensureDisasterEventTable();
+  const latest = await prisma.yatra_disaster_events.findFirst({
+    orderBy: { date: 'desc' },
+    select: { date: true },
+  });
+  if (!latest) {
+    await ingestRealtime(24);
+    return;
+  }
+  const ageHours = (Date.now() - new Date(latest.date).getTime()) / 3600000;
+  if (ageHours > maxAgeHours) {
+    await ingestRealtime(24);
+  }
+}
+
 export async function ingestRealtime(lastHours = 24): Promise<{ inserted: number }> {
   const now = new Date();
   const start = new Date(now.getTime() - lastHours * 60 * 60 * 1000).toISOString().split("T")[0];

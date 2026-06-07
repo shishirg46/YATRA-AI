@@ -11,6 +11,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    optimizePackageImports: ["lucide-react"],
+  },
   images: {
     remotePatterns: [
       // Cloudinary — used for user profile photos uploaded via /api/user/avatar
@@ -18,6 +21,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "res.cloudinary.com",
         // pathname: "/your_cloud_name/**",  // optionally restrict to your cloud
+      },
+      // Wikimedia Commons — category-based default destination images
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
+      },
+      // Unsplash — destination photo sourcing
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
       },
       // Google — used for avatars from Google OAuth sign-in
       {
@@ -35,7 +48,7 @@ const nextConfig: NextConfig = {
   // Turbopack root — silences the "multiple lockfiles" warning in Next.js 16
   // Set this to the directory containing YOUR app's package.json
   turbopack: {
-    root: "/home/elshishir/Documents/yatraAI",
+    root: "/home/elshishir/Documents/yatra-ai",
   },
 };
 

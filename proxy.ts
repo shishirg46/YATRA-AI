@@ -1,75 +1,110 @@
-/**
- * FILE: proxy.ts
- * LOCATION: /proxy.ts (project root)
- * PURPOSE: Auth guard — checks session cookie on every request
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-const AUTH_ROUTES      = ["/sign-in", "/register", "/forgot-password"];
-const VERIFY_ROUTES    = ["/verify-email"];
+const AUTH_ROUTES = ["/sign-in", "/register", "/forgot-password"];
+const VERIFY_ROUTES = ["/verify-email"];
 const ONBOARDING_ROUTE = "/onboarding";
-const PUBLIC_ROUTES    = ["/", ...AUTH_ROUTES];
+const PUBLIC_PAGES = ["/", ...AUTH_ROUTES, ...VERIFY_ROUTES];
 
-export async function proxy(req: NextRequest) {
+const rateMap = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "anonymous"
+  );
+}
+
+function checkRateLimit(ip: string, max: number, windowMs: number): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(ip, { count: 1, resetAt: now + windowMs });
+    return true;
+  }
+  if (entry.count >= max) return false;
+  entry.count++;
+  return true;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateMap) {
+    if (now > entry.resetAt) rateMap.delete(key);
+  }
+}, 300_000);
+
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always allow: API, static, Next internals, files with extensions
   if (
-    pathname.startsWith("/api")     ||
-    pathname.startsWith("/_next")   ||
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon") ||
     pathname.includes(".")
   ) {
-    return NextResponse.next();
+    if (pathname.startsWith("/api")) {
+      const ip = getClientIp(req);
+      if (!checkRateLimit(`mw:${ip}`, 200, 60_000)) {
+        return NextResponse.json(
+          { message: "Too many requests. Please try again later." },
+          { status: 429, headers: { "Retry-After": "60" } }
+        );
+      }
+    }
+    const res = NextResponse.next();
+    if (pathname.startsWith("/admin")) {
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-pathname", pathname);
+      return NextResponse.next({ request: { headers: requestHeaders } });
+    }
+    return setSecurityHeaders(res);
   }
 
   const sessionCookie = getSessionCookie(req);
-  const isLoggedIn    = !!sessionCookie;
+  const isLoggedIn = !!sessionCookie;
 
-  // ── Not logged in ──────────────────────────────────────────────────────────
+  // ── Not logged in ──
   if (!isLoggedIn) {
-    // Allow public + auth + verify pages
-    if (
-      PUBLIC_ROUTES.includes(pathname) ||
-      VERIFY_ROUTES.some((r) => pathname.startsWith(r))
-    ) {
-      return NextResponse.next();
+    if (PUBLIC_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
+      return setSecurityHeaders(NextResponse.next());
     }
-    // Everything else → sign in
     const signInUrl = new URL("/sign-in", req.url);
     signInUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  // ── Logged in ──────────────────────────────────────────────────────────────
-  // Allow auth pages through — the session may be stale (DB wiped, expired, etc.)
-  // Let the page/API handle the actual session check rather than redirecting blindly
-  if (AUTH_ROUTES.includes(pathname)) {
-    return NextResponse.next();
-  }
-
-  // Allow verify + onboarding
+  // ── Logged in ──
   if (
+    AUTH_ROUTES.includes(pathname) ||
     VERIFY_ROUTES.some((r) => pathname.startsWith(r)) ||
     pathname === ONBOARDING_ROUTE
   ) {
-    return NextResponse.next();
+    return setSecurityHeaders(NextResponse.next());
   }
 
-  // For admin routes, set x-pathname header for role-based layout checks
   if (pathname.startsWith("/admin")) {
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set("x-pathname", pathname);
-    return NextResponse.next({
-      request: { headers: requestHeaders },
-    });
+    return setSecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } })
+    );
   }
 
-  // All other protected routes — allow through
-  // Session validity is checked inside each API route
-  return NextResponse.next();
+  return setSecurityHeaders(NextResponse.next());
+}
+
+function setSecurityHeaders(res: NextResponse): NextResponse {
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+  return res;
 }
 
 export const config = {

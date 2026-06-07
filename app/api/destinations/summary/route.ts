@@ -10,8 +10,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(req: NextRequest) {
+async function getDestinationsSummaryHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
@@ -83,3 +84,5 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getDestinationsSummaryHandler, { max: 30, windowSeconds: 60 });

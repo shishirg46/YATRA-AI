@@ -13,10 +13,11 @@ import { auth }                        from "@/lib/auth";
 import { headers }                     from "next/headers";
 import { Prisma }                      from "@/app/generated/prisma/client";
 import { prisma }                      from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // ── GET — list plans ──────────────────────────────────────────────────────────
 
-export async function GET() {
+async function getTripsHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -53,7 +54,7 @@ export async function GET() {
 
 // ── POST — create plan ────────────────────────────────────────────────────────
 
-export async function POST(req: NextRequest) {
+async function createTripHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -197,3 +198,6 @@ function planInclude() {
     },
   };
 }
+
+export const GET = withRateLimit(getTripsHandler, { max: 20, windowSeconds: 60 });
+export const POST = withRateLimit(createTripHandler, { max: 10, windowSeconds: 60 });

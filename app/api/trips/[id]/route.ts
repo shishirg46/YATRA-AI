@@ -11,8 +11,9 @@ import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
 import type { Prisma }               from "@/app/generated/prisma/client";
 import { prisma }                    from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(
+async function getTripHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -54,7 +55,7 @@ export async function GET(
   });
 }
 
-export async function PUT(
+async function updateTripHandler(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -130,3 +131,6 @@ export async function PUT(
 
   return NextResponse.json(updated);
 }
+
+export const GET = withRateLimit(getTripHandler, { max: 20, windowSeconds: 60 });
+export const PUT = withRateLimit(updateTripHandler, { max: 10, windowSeconds: 60 });

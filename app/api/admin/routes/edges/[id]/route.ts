@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, handleAdminError } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function patchRouteEdgeHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await verifyAdmin();
     const { id } = await params;
@@ -41,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+async function deleteRouteEdgeHandler(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const admin = await verifyAdmin();
     const { id } = await params;
@@ -67,3 +68,6 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return handleAdminError(err);
   }
 }
+
+export const PATCH = withRateLimit(patchRouteEdgeHandler, { max: 30, windowSeconds: 60 });
+export const DELETE = withRateLimit(deleteRouteEdgeHandler, { max: 30, windowSeconds: 60 });

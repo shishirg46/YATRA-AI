@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers, cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+async function getProfileStatusHandler() {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
 
@@ -41,3 +42,5 @@ export async function GET() {
     return NextResponse.json({ hasProfile: false, authenticated: false }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getProfileStatusHandler, { max: 30, windowSeconds: 60 });

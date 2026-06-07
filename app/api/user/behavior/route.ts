@@ -4,8 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest) {
+async function trackBehaviorHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
@@ -60,3 +61,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Failed to update behavior." }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(trackBehaviorHandler, { max: 20, windowSeconds: 60 });

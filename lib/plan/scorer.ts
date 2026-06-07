@@ -1,4 +1,4 @@
-import { analyzeTemporalRisk } from "@/lib/analysis/temporal-risk";
+import { analyzeTemporalRisk, generateSeasonalContext } from "@/lib/analysis/temporal-risk";
 import { computePillarModel } from "@/lib/analysis/pillar-score";
 import { scoreToLevel } from "./config";
 
@@ -34,6 +34,19 @@ export async function analyzeTravellers(
   travelDate: string,
   tripType: "SOLO" | "GROUP",
 ) {
+  // Generate seasonal context ONCE (not per traveller) to avoid N duplicate AI calls
+  const travelDateObj = new Date(travelDate);
+  const month = travelDateObj.getMonth() + 1;
+  const season = getSeason(month);
+  const seasonalCtx = await generateSeasonalContext({
+    destinationName: destination.name,
+    district: destination.district,
+    province: destination.province,
+    altitude: destination.altitude ?? 0,
+    month,
+    season,
+  });
+
   return Promise.all(
     travellers.map(async (t) => {
       const report = await analyzeTemporalRisk({
@@ -46,6 +59,7 @@ export async function analyzeTravellers(
         travelDate,
         userHealth: t.health ? { ...t.health, homeAltitude: t.homeAltitude, homeProvince: t.homeProvince } : null,
         tripType,
+        precomputedSeasonalContext: seasonalCtx,
       });
       return {
         userId: t.id,
@@ -60,6 +74,13 @@ export async function analyzeTravellers(
       };
     }),
   );
+}
+
+function getSeason(month: number): string {
+  if (month >= 6  && month <= 9)  return "Monsoon";
+  if (month >= 12 || month <= 2)  return "Winter";
+  if (month >= 3  && month <= 5)  return "Pre-monsoon (Spring)";
+  return "Post-monsoon (Autumn)";
 }
 
 export async function computePillar(

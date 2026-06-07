@@ -8,7 +8,6 @@
  * - Runs per-member risk analysis for each stop in parallel
  * - Applies group conflict detection + consensus scoring
  * - Finds alternatives for conflicted stops
- * - Calls Claude to generate a natural language group summary
  * - Saves result back to TravelPlan.groupRiskResult
  */
 
@@ -20,9 +19,10 @@ import { headers }                   from "next/headers";
 import { Prisma }                    from "@/app/generated/prisma/client";
 import { prisma }                    from "@/lib/prisma";
 import { analyzeGroupRoute, StopInput, MemberProfile, AlternativeStop } from "@/lib/analysis/group-risk";
-import { callAI } from "@/lib/ai/client";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(
+
+async function analyzeTripHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -135,53 +135,13 @@ export async function POST(
     alternatives,
   });
 
-  // ── Claude summary ────────────────────────────────────────────────────────
-  const conflictedStops = analysis.stopAnalyses.filter((s) => s.conflict);
-  const highSegments    = analysis.routeSegments.filter((s) => s.risk === "HIGH");
-
-  const prompt = `You are a Nepal travel safety advisor. Analyse this group trip:
-
-Group: ${members.length} travellers — ${members.map((m) => {
-  const conditions = m.health?.chronicConditions.join(", ") || "no conditions";
-  return `${m.name} (${conditions}, ${m.health?.fitnessLevel ?? "unknown"} fitness, from ${m.homeProvince || "unknown"})`;
-}).join("; ")}
-
-Route: ${stops.map((s, i) => `Stop ${i + 1}: ${s.locationName} (${s.altitude ?? "?"}m), ${s.arrivalDate} to ${s.departureDate}`).join(" → ")}
-
-Overall group safety: ${analysis.overallGroupLevel} (score: ${analysis.overallGroupScore}/100)
-${conflictedStops.length > 0 ? `Conflicted stops (${conflictedStops.length}): ${conflictedStops.map((s) => `${s.stop.locationName} — ${s.conflictReason}`).join("; ")}` : "No conflicts detected."}
-${highSegments.length > 0 ? `High-risk route segments: ${highSegments.map((s) => `${s.from}→${s.to}: ${s.reason}`).join("; ")}` : "No high-risk route segments."}
-${plan.budgetNPR ? `Total budget: NPR ${plan.budgetNPR.toLocaleString()} (NPR ${Math.round(plan.budgetNPR / members.length).toLocaleString()} per person)` : "No budget specified."}
-
-Respond ONLY with a JSON object (no markdown):
-{
-  "groupVerdict": "2-3 sentences: honest group trip assessment",
-  "conflictSummary": "1-2 sentences about health/safety conflicts between members (skip if none)",
-  "routeWarning": "1-2 sentences about the most dangerous route segment (skip if none)",
-  "budgetNote": "1 sentence about budget per person feasibility (skip if no budget)",
-  "topGroupTip": "Single most important tip for this specific group travelling this specific route"
-}`;
-
-  let aiSummary = {
+  const aiSummary = {
     groupVerdict:    "",
     conflictSummary: "",
     routeWarning:    "",
     budgetNote:      "",
     topGroupTip:     "",
   };
-
-  const raw = await callAI(prompt, {
-    system: "You are a Nepal travel safety advisor. Always respond with valid JSON only.",
-    maxTokens: 600,
-  });
-  if (raw) {
-    try {
-      const cleaned = raw.replace(/```json|```/g, "").trim();
-      aiSummary = { ...aiSummary, ...JSON.parse(cleaned) };
-    } catch {
-      console.warn("[trips/analyze] AI JSON parse failed, raw:", raw.slice(0, 200));
-    }
-  }
 
   analysis.aiSummary = aiSummary.groupVerdict;
 
@@ -197,3 +157,5 @@ Respond ONLY with a JSON object (no markdown):
 
   return NextResponse.json(result);
 }
+
+export const POST = withRateLimit(analyzeTripHandler, { max: 5, windowSeconds: 60 });

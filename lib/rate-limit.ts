@@ -1,92 +1,70 @@
-/**
- * In-memory sliding window rate limiter.
- * Swap for @upstash/ratelimit when Redis is available.
- */
+import { NextRequest, NextResponse } from "next/server";
 
-import { NextResponse } from "next/server";
+const rateMap = new Map<string, { count: number; resetAt: number }>();
 
-type Window = {
-  count: number;
-  resetAt: number;
-};
-
-const store = new Map<string, Window>();
-
-// Cleanup stale entries every 60s
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, win] of store) {
-    if (win.resetAt <= now) store.delete(key);
-  }
-}, 60_000);
-
-export interface RateLimitConfig {
-  /** Max requests per window */
-  max: number;
-  /** Window duration in seconds */
-  windowSeconds: number;
+export interface RateLimitResult {
+  allowed: boolean;
+  remaining: number;
+  resetIn: number;
 }
 
-export function rateLimit(
+function getClientIp(req: NextRequest): string {
+  return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || req.headers.get("x-real-ip")
+    || "anonymous";
+}
+
+export function checkRateLimit(
   key: string,
-  config: RateLimitConfig = { max: 30, windowSeconds: 60 }
-): { allowed: boolean; remaining: number; resetAt: number } {
-  const { max, windowSeconds } = config;
+  maxRequests: number = 60,
+  windowMs: number = 60_000,
+): RateLimitResult {
   const now = Date.now();
-  const winKey = `${key}:${Math.floor(now / (windowSeconds * 1000))}`;
+  const entry = rateMap.get(key);
 
-  const win = store.get(winKey);
-  const resetAt = (Math.floor(now / (windowSeconds * 1000)) + 1) * windowSeconds * 1000;
-
-  if (!win || win.resetAt <= now) {
-    store.set(winKey, { count: 1, resetAt });
-    return { allowed: true, remaining: max - 1, resetAt };
+  if (!entry || now > entry.resetAt) {
+    rateMap.set(key, { count: 1, resetAt: now + windowMs });
+    return { allowed: true, remaining: maxRequests - 1, resetIn: windowMs };
   }
 
-  if (win.count >= max) {
-    return { allowed: false, remaining: 0, resetAt: win.resetAt };
+  if (entry.count >= maxRequests) {
+    return { allowed: false, remaining: 0, resetIn: entry.resetAt - now };
   }
 
-  win.count++;
-  return { allowed: true, remaining: max - win.count, resetAt: win.resetAt };
+  entry.count++;
+  return { allowed: true, remaining: maxRequests - entry.count, resetIn: entry.resetAt - now };
 }
 
-/**
- * Higher-order function to wrap API handlers with rate limiting.
- */
-export function withRateLimit<T extends (req: any) => any>(
-  handler: T,
-  config?: RateLimitConfig
-): T {
-  const wrapped = async (req: Parameters<T>[0]): Promise<ReturnType<T>> => {
-    const ip = req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "unknown";
-    const route = new URL(req.url).pathname;
-    const result = rateLimit(`${ip}:${route}`, config);
+type ApiHandler = (req: NextRequest, ...args: any[]) => Promise<NextResponse | Response>;
 
+export function withRateLimit(
+  handler: ApiHandler,
+  opts: { max: number; windowSeconds: number },
+): ApiHandler {
+  return async (req: NextRequest, ...args: unknown[]) => {
+    const ip = getClientIp(req);
+    const path = req.nextUrl?.pathname ?? "unknown";
+    const result = checkRateLimit(`rl:${path}:${ip}`, opts.max, opts.windowSeconds * 1000);
     if (!result.allowed) {
       return NextResponse.json(
-        { message: "Too many requests. Please slow down." },
+        { message: "Too many requests. Please try again later." },
         {
           status: 429,
           headers: {
-            "Retry-After": String(Math.ceil((result.resetAt - Date.now()) / 1000)),
+            "Retry-After": String(Math.ceil(result.resetIn / 1000)),
             "X-RateLimit-Remaining": "0",
-            "X-RateLimit-Reset": String(result.resetAt),
           },
-        }
-      ) as ReturnType<T>;
+        },
+      );
     }
-
-    const response = await handler(req);
-    const headers = new Headers((response as Response).headers);
-    headers.set("X-RateLimit-Remaining", String(result.remaining));
-    headers.set("X-RateLimit-Reset", String(result.resetAt));
-
-    return new NextResponse((response as Response).body, {
-      status: (response as Response).status,
-      statusText: (response as Response).statusText,
-      headers,
-    }) as ReturnType<T>;
+    return handler(req, ...args);
   };
-  return wrapped as T;
 }
+
+// Cleanup stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateMap) {
+    if (now > entry.resetAt) rateMap.delete(key);
+  }
+}, 300_000);

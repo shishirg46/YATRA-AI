@@ -98,17 +98,22 @@ Budget: ${budget.specified > 0 ? `NPR ${budget.specified.toLocaleString()} total
 ${sortedAlternatives.length > 0 ? `Safer alternatives in same province:
 ${altSummary}` : "No safer alternatives found."}
 
-Respond with this exact JSON structure:
+Respond ONLY with a single JSON object. Every value must be a plain text string — no nested objects, no JSON inside JSON.
+IMPORTANT: Fields marked EMPTY must be set to empty string "", do not skip them.
+
 {
-  "verdict": "2-3 sentences: is this trip advisable? Be direct.",
-  "whyUnsafe": "${isUnsafe ? "2-3 sentences explaining exactly why this destination is unsafe for this date/group" : ""}",
-  "groupConflict": "${conflict ? "2 sentences about which member is at risk and why, using their name" : ""}",
-  "riskExplanation": "3-4 sentences: specific risks for this destination on this date in plain language",
-  "healthWarning": "1-2 sentences about health-specific risks (skip if no health conditions)",
-  "budgetAdvice": "1 sentence about budget feasibility (skip if no budget)",
-  "alternativeReason": "${isUnsafe || conflict ? "2-3 sentences: why the alternatives are better and which one you specifically recommend" : ""}",
-  "topTip": "Single most important actionable tip for this specific trip"
-}`;
+  "verdict": "The overall score is ${groupScore}/100 (${groupLevel}). Mention the baseline rating then explain what seasonal factors bring it down. Write 2-3 plain sentences. Be direct.",
+  "whyUnsafe": "${isUnsafe ? "Write 2-3 plain sentences explaining exactly why this destination is unsafe for this date/group. Be specific about the risks." : ""}",
+  "groupConflict": "${conflict ? "Write 2 plain sentences about which member is at most risk and why, using their name." : ""}",
+  "riskExplanation": "Write 3-4 plain sentences about the specific risks for this destination on this date. Use plain language.",
+  "healthWarning": "Write 1-2 plain sentences about health-specific risks for this trip.",
+  "budgetAdvice": "Write 1 plain sentence about budget feasibility for this trip.",
+  "alternativeReason": "${isUnsafe || conflict ? "Write 2-3 plain sentences explaining why the alternatives are better and which one you recommend." : ""}",
+  "topTip": "Write 1 plain sentence with the single most important actionable tip for this specific trip."
+}
+
+WRONG (nested JSON inside a string): {"verdict": "{\\"Score\\": 95}", ...}
+RIGHT (plain text inside string): {"verdict": "This destination is safe to visit. The weather is favorable and route conditions are good.", ...}`;
 }
 
 export async function callAiAnalysis(prompt: string): Promise<{
@@ -137,8 +142,29 @@ export async function callAiAnalysis(prompt: string): Promise<{
 
   try {
     const cleaned = aiRaw.replace(/```json|```/g, "").trim();
-    return { ...fallback, ...JSON.parse(cleaned) };
+    const parsed = JSON.parse(cleaned);
+
+    // Fix nested JSON: if a value looks like a JSON object string, extract just the text
+    for (const key of Object.keys(parsed)) {
+      if (typeof parsed[key] === "string" && parsed[key].startsWith("{")) {
+        try {
+          const inner = JSON.parse(parsed[key]);
+          parsed[key] = Object.values(inner).join(". ") || parsed[key];
+        } catch {
+          // not parseable, keep as-is
+        }
+      }
+    }
+
+    // Sanity: if verdict says safe, clear whyUnsafe and alternativeReason
+    const safeWords = ["safe", "advisable", "good to go", "recommended", "fine to travel"];
+    if (safeWords.some((w) => (parsed.verdict ?? "").toLowerCase().includes(w))) {
+      parsed.whyUnsafe = "";
+      parsed.alternativeReason = "";
+    }
+
+    return { ...fallback, ...parsed };
   } catch {
-    return { ...fallback, verdict: aiRaw.slice(0, 300) };
+    return { ...fallback, verdict: aiRaw.replace(/[{}"]/g, "").slice(0, 300) };
   }
 }

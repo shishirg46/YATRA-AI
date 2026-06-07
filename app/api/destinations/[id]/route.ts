@@ -19,6 +19,7 @@ import { prisma }                    from "@/lib/prisma";
 import { fetchWeather }              from "@/lib/collectors/weather";
 import { fetchHazard }               from "@/lib/collectors/hazard";
 import { computeSafetyScore, buildHealthFlags } from "@/lib/scoring/safety";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // ── Seasonal helpers ──────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ function getSeasonalGuide(altitude: number | null): {
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 
-export async function GET(
+async function getDestinationHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -88,7 +89,7 @@ export async function GET(
   }
 
   try {
-    // ── 1. Fetch core location data ─────────────────────────────────────────
+    // ── 1. Fetch core location data + destination image ────────────────────────
     const location = await prisma.location.findUnique({
       where: { id },
       include: { district: { include: { province: true } } },
@@ -97,6 +98,14 @@ export async function GET(
     if (!location) {
       return NextResponse.json({ message: "Destination not found." }, { status: 404 });
     }
+
+    const destination = await prisma.destination.findFirst({
+      where: {
+        normalizedName: { equals: location.name.toLowerCase().replace(/\s+/g, "-"), mode: "insensitive" },
+        district: { equals: location.district.name, mode: "insensitive" },
+      },
+      select: { image: true },
+    });
 
     // ── 2. Fetch user data for personalised scoring ──────────────────────────
     const [profileNotif, userHealth] = await Promise.all([
@@ -258,6 +267,7 @@ export async function GET(
         altitude: location.altitude,
         latitude: location.latitude,
         longitude: location.longitude,
+        image: destination?.image ?? null,
       },
 
       safety: {
@@ -344,3 +354,5 @@ export async function GET(
     return NextResponse.json({ message: "Server error." }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getDestinationHandler, { max: 20, windowSeconds: 60 });

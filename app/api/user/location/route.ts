@@ -6,8 +6,9 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { isPointInNepal } from "@/lib/routing/geo";
 import { saveUserHomeLocation } from "@/lib/routing/origin-resolver";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+async function getLocationHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -36,7 +37,7 @@ export async function GET() {
   });
 }
 
-export async function POST(req: NextRequest) {
+async function saveLocationHandler(req: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user) {
@@ -80,3 +81,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message }, { status: 400 });
   }
 }
+
+export const GET = withRateLimit(getLocationHandler, { max: 30, windowSeconds: 60 });
+export const POST = withRateLimit(saveLocationHandler, { max: 30, windowSeconds: 60 });

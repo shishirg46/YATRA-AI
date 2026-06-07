@@ -177,8 +177,9 @@ export function useRealtime() {
 
         return {
           ...dest,
-          safetyScore: live?.safetyScore  ?? dest.safetyScore,
-          safetyLevel: live?.safetyLevel  ?? dest.safetyLevel,
+          // Preserve per-user safetyScore/safetyLevel from server (SSE scores are global, not user-personalized)
+          safetyScore: dest.safetyScore,
+          safetyLevel: dest.safetyLevel,
           reasoning:   live?.reasoning    ?? dest.reasoning,
           weather:     liveWeather
             ? {

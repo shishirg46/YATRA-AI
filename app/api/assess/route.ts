@@ -131,43 +131,6 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // ── Step 5: Write HAZARD notifications for affected users ──────────────
-      // Only for HIGH_RISK or EXTREME — notify users whose home district
-      // matches this location so they get a real alert, not a synthetic one.
-      if (score.safetyLevel === "HIGH_RISK" || score.safetyLevel === "EXTREME") {
-        const affectedUsers = await prisma.user.findMany({
-          where: { homeLocationId: { not: null } },
-          select: { id: true, homeLocationId: true },
-        });
-
-        const usersInDistrict = affectedUsers.filter(
-          (u) => u.homeLocationId === loc.id
-        );
-
-        if (usersInDistrict.length > 0) {
-          await prisma.notification.createMany({
-            data: usersInDistrict.map((u) => ({
-              userId:  u.id,
-              message: JSON.stringify({
-                _type:      "HAZARD",
-                hazardType: score.decisionTrace.reasoning.some((r) => r.toLowerCase().includes("flood"))
-                  ? "FLOOD"
-                  : score.decisionTrace.reasoning.some((r) => r.toLowerCase().includes("landslide"))
-                  ? "LANDSLIDE"
-                  : score.decisionTrace.reasoning.some((r) => r.toLowerCase().includes("seismic") || r.toLowerCase().includes("earthquake"))
-                  ? "EARTHQUAKE"
-                  : "INFO",
-                title:    `${score.safetyLevel === "EXTREME" ? "⚠️ Extreme risk" : "🚨 High risk"}: ${loc.name}`,
-                body:     score.decisionTrace.reasoning[0] ?? `Safety score: ${score.safetyScore}/100`,
-                location: `${loc.district.name}, ${loc.district.province.name}`,
-                severity: score.safetyLevel === "EXTREME" ? "CRITICAL" : "HIGH",
-              }),
-            })),
-            skipDuplicates: true,
-          });
-        }
-      }
-
       results.push({ location: loc.name, score: score.safetyScore, level: score.safetyLevel });
       console.log(`✅ ${loc.name}: score=${score.safetyScore} level=${score.safetyLevel}`);
     } catch (err) {

@@ -62,7 +62,8 @@ export async function reverseGeocodeNepal(
       lon: parsedLon,
       placeType: data.type,
     };
-  } catch {
+  } catch (err) {
+    console.warn("[nominatim] reverse geocode failed:", err instanceof Error ? err.message : err);
     return null;
   }
 }
@@ -100,7 +101,8 @@ export async function searchPlaceInNepal(query: string): Promise<NominatimResult
       lon,
       placeType: hit.type,
     };
-  } catch {
+  } catch (err) {
+    console.warn("[nominatim] search failed:", err instanceof Error ? err.message : err);
     return null;
   }
 }

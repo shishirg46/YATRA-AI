@@ -19,8 +19,9 @@ import { NextResponse } from "next/server";
 import { auth }         from "@/lib/auth";
 import { headers }      from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-type NotifType = "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO";
+type NotifType = "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO" | "TRIP_START" | "TRIP_END";
 type Severity  = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
 interface Notification {
@@ -33,6 +34,7 @@ interface Notification {
   time:     string;
   read:     boolean;
   source?:  string;
+  planId?:  string;
   action?:  { type: string; planId: string };
 }
 
@@ -89,6 +91,8 @@ async function fetchLiveBipad(districtName: string): Promise<Notification[]> {
       }[]
     };
 
+    const ALLOWED_TYPES = new Set(["FLOOD", "LANDSLIDE", "EARTHQUAKE"]);
+
     return (data.results ?? []).map((inc) => {
       const typeStr    = inc.incident_type?.title ?? inc.hazard?.title ?? "";
       const hazardType = getHazardType(typeStr);
@@ -112,7 +116,7 @@ async function fetchLiveBipad(districtName: string): Promise<Notification[]> {
         read:     false,
         source:   "BIPAD",
       };
-    });
+    }).filter((n) => ALLOWED_TYPES.has(n.type));
   } catch {
     return [];
   }
@@ -124,6 +128,8 @@ function parseDbRow(row: { id: string; isRead: boolean; createdAt: Date }, data:
   if (data._type === "PROFILE") return null;
 
   if (data._type === "HAZARD") {
+    // Only show HAZARD notifications that came from real-time BIPAD incidents
+    if (!data.bipadId) return null;
     return {
       id:       row.id,
       type:     (data.hazardType ?? "INFO") as NotifType,
@@ -165,12 +171,27 @@ function parseDbRow(row: { id: string; isRead: boolean; createdAt: Date }, data:
     };
   }
 
+  if (data._type === "TRIP_START" || data._type === "TRIP_END") {
+    return {
+      id:       row.id,
+      type:     data._type as "TRIP_START" | "TRIP_END",
+      title:    (data.title  ?? "Trip update") as string,
+      body:     (data.body   ?? "") as string,
+      location: "Trip update",
+      severity: "LOW" as Severity,
+      time:     row.createdAt.toISOString(),
+      read:     row.isRead,
+      planId:   data.planId as string,
+      action:   { type: data._type as string, planId: data.planId as string },
+    };
+  }
+
   return null;
 }
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 
-export async function GET() {
+async function getNotificationsHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json([], { status: 401 });
 
@@ -269,3 +290,5 @@ export async function GET() {
 
   return NextResponse.json(all);
 }
+
+export const GET = withRateLimit(getNotificationsHandler, { max: 30, windowSeconds: 60 });

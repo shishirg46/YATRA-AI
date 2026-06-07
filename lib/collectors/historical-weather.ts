@@ -1,3 +1,5 @@
+import { openMeteoFetch } from "./open-meteo-client";
+
 export interface DailyWeather {
   date: string;
   tempMax: number;
@@ -70,12 +72,9 @@ export async function fetchHistoricalWeather(
     + `&timezone=auto`;
 
   try {
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(15000),
-      headers: { "Accept": "application/json" },
-    });
-    if (!res.ok) {
-      console.warn(`[historical-weather] Open-Meteo Archive returned ${res.status} for ${lat},${lon}`);
+    const res = await openMeteoFetch(url);
+    if (!res || !res.ok) {
+      if (res) console.warn(`[historical-weather] Open-Meteo Archive returned ${res.status} for ${lat},${lon}`);
       return null;
     }
 

@@ -93,9 +93,10 @@ export async function analyzeTemporalRisk(params: {
   travelDate:      string;          // YYYY-MM-DD
   userHealth:      UserHealthProfile | null;
   tripType:        "SOLO" | "GROUP";
+  precomputedSeasonalContext?: string; // skip AI call if provided
 }): Promise<TravelRiskReport> {
 
-  const { destinationName, district, province, lat, lon, altitude, travelDate, userHealth, tripType } = params;
+  const { destinationName, district, province, lat, lon, altitude, travelDate, userHealth, tripType, precomputedSeasonalContext } = params;
 
   // Declare month + season before Promise.all since generateSeasonalContext needs them
   const travelDateObj = new Date(travelDate);
@@ -103,10 +104,13 @@ export async function analyzeTemporalRisk(params: {
   const season        = getSeason(month);
 
   // ── Fetch all data in parallel (weather + hazard + AI seasonal context) ──────
+  const seasonalContextTask = precomputedSeasonalContext
+    ? Promise.resolve(precomputedSeasonalContext)
+    : generateSeasonalContext({ destinationName, district, province, altitude: altitude ?? 0, month, season });
   const [weatherStats, hazardStats, seasonalCtx] = await Promise.all([
     fetchHistoricalWeather(lat, lon, travelDate, 5),
     fetchHistoricalHazard(district, lat, lon, travelDate, 5),
-    generateSeasonalContext({ destinationName, district, province, altitude: altitude ?? 0, month, season }),
+    seasonalContextTask,
   ]);
 
   const riskFactors:      RiskFactor[]      = [];
@@ -402,7 +406,19 @@ function getSeason(month: number): string {
 
 // ── AI seasonal context generator ────────────────────────────────────────────
 
-async function generateSeasonalContext(params: {
+function fallbackIsSpecific(altitude: number, season: string): boolean {
+  const isVHigh = altitude > 4000;
+  const isHigh  = altitude > 2500;
+
+  if (season === "Monsoon")                return true;
+  if (season === "Post-monsoon (Autumn)")  return true;
+  if (season === "Winter" && isVHigh)      return true;
+  if (season === "Pre-monsoon (Spring)" && isHigh) return true;
+
+  return false;
+}
+
+export async function generateSeasonalContext(params: {
   destinationName: string;
   district:        string;
   province:        string;
@@ -415,6 +431,10 @@ async function generateSeasonalContext(params: {
   const monthNames = ["","January","February","March","April","May","June",
                        "July","August","September","October","November","December"];
   const monthName  = monthNames[month];
+
+  if (fallbackIsSpecific(altitude, season)) {
+    return fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
+  }
 
   const prompt = `Write 2-3 sentences describing what it is like to travel to "${destinationName}" in ${district}, ${province} Province, Nepal in ${monthName} (${season} season). Altitude: ${altitude > 0 ? `${altitude.toLocaleString()}m` : "lowland"}.
 

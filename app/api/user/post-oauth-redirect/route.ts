@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers, cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET() {
+async function postOauthRedirectHandler() {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`;
 
   try {
@@ -52,3 +53,5 @@ export async function GET() {
     return NextResponse.redirect(new URL("/sign-in", baseUrl), { status: 302 });
   }
 }
+
+export const GET = withRateLimit(postOauthRedirectHandler, { max: 20, windowSeconds: 60 });

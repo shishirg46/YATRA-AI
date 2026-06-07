@@ -26,6 +26,8 @@ const transporter = nodemailer.createTransport({
 const APP_NAME   = "YatraAI";
 const FROM_EMAIL = process.env.GMAIL_USER ?? "noreply@yatraai.com";
 
+export const emailTransporter = transporter;
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",

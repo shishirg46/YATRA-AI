@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // Shared shape for both POST and PATCH bodies
 type HealthBody = {
@@ -33,7 +34,7 @@ type HealthBody = {
 
 // ── POST — full upsert (onboarding) ──────────────────────────────────────────
 
-export async function POST(req: NextRequest) {
+async function createHealthHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -80,7 +81,7 @@ export async function POST(req: NextRequest) {
 
 // ── PATCH — partial update (dashboard edit panel) ────────────────────────────
 
-export async function PATCH(req: NextRequest) {
+async function updateHealthHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -139,7 +140,7 @@ export async function PATCH(req: NextRequest) {
 
 // ── GET — fetch current health data (for dashboard drawer) ───────────────────
 
-export async function GET() {
+async function getHealthHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json(null, { status: 401 });
@@ -158,3 +159,7 @@ export async function GET() {
 
   return NextResponse.json(health ?? null);
 }
+
+export const POST = withRateLimit(createHealthHandler, { max: 10, windowSeconds: 60 });
+export const PATCH = withRateLimit(updateHealthHandler, { max: 10, windowSeconds: 60 });
+export const GET = withRateLimit(getHealthHandler, { max: 30, windowSeconds: 60 });

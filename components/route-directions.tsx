@@ -88,14 +88,7 @@ export default function RouteDirections({
                     {formatDistance(step.distance)}
                   </span>
                 )}
-                <a 
-                  href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${step.lat},${step.lon}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-[10px] text-sky-400 hover:text-sky-300 transition-colors underline decoration-sky-400/30 underline-offset-2"
-                >
-                  View Street View
-                </a>
+
               </div>
             </div>
           </div>

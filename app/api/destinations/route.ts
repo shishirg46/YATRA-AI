@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDestinations } from "@/lib/destinations";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(request: NextRequest) {
+async function getDestinationsHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category") ?? undefined;
@@ -34,3 +35,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getDestinationsHandler, { max: 30, windowSeconds: 60 });

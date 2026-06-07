@@ -24,10 +24,6 @@ export async function findAlternatives(
   budgetNPR: number,
   altitude: number | null,
 ): Promise<DestinationSummary[]> {
-  const needsAlternatives = true;
-
-  if (!needsAlternatives) return [];
-
   const rawAlternatives = await prisma.location.findMany({
     where: {
       id: { not: destinationId },

@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
 import { sampleRoutePoints } from "@/lib/dynamic-route";
+import { withRateLimit } from "@/lib/rate-limit";
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -19,7 +20,7 @@ function isValidLatLon(lat: number, lon: number): boolean {
  * POST /api/routes
  * Builds a segmented route through known corridor places (not direct A→B).
  */
-export async function POST(req: NextRequest) {
+async function getRoutesHandler(req: NextRequest) {
   try {
     const body = await req.json();
     const {
@@ -103,3 +104,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message }, { status: 502 });
   }
 }
+
+export const POST = withRateLimit(getRoutesHandler, { max: 40, windowSeconds: 60 });

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPopularDestinations } from "@/lib/destinations/pipeline";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(request: NextRequest) {
+async function getPopularDestinationsHandler(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") ?? "20", 10);
@@ -20,3 +21,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withRateLimit(getPopularDestinationsHandler, { max: 30, windowSeconds: 60 });

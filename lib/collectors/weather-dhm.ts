@@ -78,7 +78,7 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherSna
     return cached.value;
   }
 
-  const result = await fetchDhmWeather(lat, lon);
+  const result = await fetchOpenMeteo(lat, lon);
   setWeatherCache(cacheKey, result);
 
   return result;
@@ -98,7 +98,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
 
     if (!res.ok) {
       console.warn(`[weather] DHM API ${res.status}`);
-      return fetchOpenMeteoFallback(lat, lon);
+      return fallback("dhm-error");
     }
 
     const data = (await res.json()) as DhmForecastResponse;
@@ -108,7 +108,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
       : [];
 
     if (hourly.length === 0) {
-      return fetchOpenMeteoFallback(lat, lon);
+      return fallback("dhm-no-data");
     }
 
     const current = hourly[0];
@@ -167,21 +167,21 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
     };
   } catch (err) {
     console.warn(`[weather] DHM fetch failed:`, err);
-    return fetchOpenMeteoFallback(lat, lon);
+    return fallback("dhm-unreachable");
   }
 }
 
-async function fetchOpenMeteoFallback(lat: number, lon: number): Promise<WeatherSnapshot | null> {
+async function fetchOpenMeteo(lat: number, lon: number): Promise<WeatherSnapshot | null> {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code`;
-    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return fallback("open-meteo-error");
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return fetchDhmWeather(lat, lon);
 
     const data = await res.json() as {
       current?: { temperature_2m: number; relative_humidity_2m: number; precipitation: number; wind_speed_10m: number; weather_code: number };
     };
 
-    if (!data.current) return fallback("open-meteo-no-data");
+    if (!data.current) return fetchDhmWeather(lat, lon);
 
     const code = data.current.weather_code;
     const desc = code === 0 ? "Clear" : [1, 2, 3].includes(code) ? "Partly cloudy" : [45, 48].includes(code) ? "Foggy" : [51, 53, 55].includes(code) ? "Drizzle" : [61, 63, 65].includes(code) ? "Rain" : [71, 73, 75].includes(code) ? "Snow" : [95, 96, 99].includes(code) ? "Thunderstorm" : "Fair";
@@ -192,13 +192,13 @@ async function fetchOpenMeteoFallback(lat: number, lon: number): Promise<Weather
       rainfall: data.current.precipitation,
       windSpeed: data.current.wind_speed_10m,
       description: desc,
-      source: "open-meteo-fallback",
+      source: "open-meteo",
       timestamp: new Date().toISOString(),
       sourceLabel: "Open-Meteo",
       officialSource: false,
     };
   } catch {
-    return fallback("open-meteo-unreachable");
+    return fetchDhmWeather(lat, lon);
   }
 }
 

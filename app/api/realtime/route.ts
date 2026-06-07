@@ -27,6 +27,7 @@ import { prisma }        from "@/lib/prisma";
 import { fetchWeather }  from "@/lib/collectors/weather";
 import { fetchHazard }   from "@/lib/collectors/hazard";
 import { computeSafetyScore, buildHealthFlags } from "@/lib/scoring/safety";
+import { withRateLimit } from "@/lib/rate-limit";
 
 // How many locations to update per cycle (avoid hammering APIs)
 const LOCATIONS_PER_CYCLE = 20;
@@ -45,7 +46,7 @@ function isPlanLimitReachedError(error: unknown): boolean {
   return /planLimitReached|Failed to identify your database|Failed to get session/i.test(`${direct} ${nested}`);
 }
 
-export async function GET(req: NextRequest) {
+async function realtimeHandler(req: NextRequest) {
   let session: Awaited<ReturnType<typeof auth.api.getSession>>;
   try {
     session = await auth.api.getSession({ headers: await headers() });
@@ -243,40 +244,15 @@ export async function GET(req: NextRequest) {
                   },
                 });
 
-                // Push immediate alert if critical
+                // Only create notifications for real-time hazard spikes
                 if (score.safetyLevel === "EXTREME" || score.safetyLevel === "HIGH_RISK") {
-                  // Check if we already alerted for this location recently
-                  const recentAlert = await prisma.notification.findFirst({
-                    where: {
-                      userId:    userId,
-                      message:   { contains: loc.id },
-                      createdAt: { gte: new Date(Date.now() - 6 * 60 * 60 * 1000) }, // 6h
-                    },
+                  alerts.push({
+                    locationId:  loc.id,
+                    name:        loc.name,
+                    safetyLevel: score.safetyLevel,
+                    safetyScore: score.safetyScore,
+                    reason:      score.decisionTrace.reasoning[0],
                   });
-
-                  if (!recentAlert) {
-                    const alertMsg = {
-                      _type:      "HAZARD",
-                      hazardType: hazard.floodIndex > 0.5 ? "FLOOD" : hazard.landslideIndex > 0.5 ? "LANDSLIDE" : hazard.earthquakeIndex > 0.3 ? "EARTHQUAKE" : "INFO",
-                      title:      `${score.safetyLevel === "EXTREME" ? "⚠️ Extreme" : "🚨 High"} risk: ${loc.name}`,
-                      body:       score.decisionTrace.reasoning[0] ?? `Score dropped to ${score.safetyScore}/100`,
-                      location:   `${loc.district.name}, ${loc.district.province.name}`,
-                      severity:   score.safetyLevel === "EXTREME" ? "CRITICAL" : "HIGH",
-                      locationId: loc.id,
-                    };
-
-                    await prisma.notification.create({
-                      data: { userId, message: JSON.stringify(alertMsg) },
-                    }).catch(() => {});
-
-                    alerts.push({
-                      locationId:  loc.id,
-                      name:        loc.name,
-                      safetyLevel: score.safetyLevel,
-                      safetyScore: score.safetyScore,
-                      reason:      score.decisionTrace.reasoning[0],
-                    });
-                  }
                 }
               } catch { /* skip this location */ }
             })
@@ -310,3 +286,5 @@ export async function GET(req: NextRequest) {
     },
   });
 }
+
+export const GET = withRateLimit(realtimeHandler, { max: 10, windowSeconds: 60 });

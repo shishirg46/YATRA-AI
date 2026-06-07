@@ -7,6 +7,10 @@ import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
 import { haversineKm } from "@/lib/routing/geo";
+import { prisma } from "@/lib/prisma";
+import { computeRouteRisk } from "@/lib/scoring/route-risk";
+import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
+import { withRateLimit } from "@/lib/rate-limit";
 
 interface RoutePoint {
   lat: number;
@@ -89,7 +93,7 @@ function sampleAlongRoute(
   return sampled;
 }
 
-export async function POST(req: NextRequest) {
+async function checkRouteHandler(req: NextRequest) {
   try {
     const body: CheckRouteRequest = await req.json();
     const { origin, destination, travelDate } = body;
@@ -190,6 +194,34 @@ export async function POST(req: NextRequest) {
         routeRiskReason = `Monsoon conditions on hilly corridor (${Math.round(totalKm)} km, ${built.nodes.length} stops).`;
       }
 
+      // District-level historic/recent disaster context
+      const { historicDisasters, recentDisasters } = await fetchDisasterCounts(prisma);
+      const corridorDistrictLookup = buildCorridorLookup([
+        origin.district || origin.name
+          ? { lat: origin.lat, lon: origin.lon, district: origin.district || origin.name || "" }
+          : null,
+        destination.district || destination.name
+          ? { lat: destination.lat, lon: destination.lon, district: destination.district || destination.name || "" }
+          : null,
+      ].filter(Boolean) as { lat: number; lon: number; district: string }[]);
+      const isMonsoon = month >= 6 && month <= 9;
+      const disasterRouteRisk = computeRouteRisk({
+        originLat: origin.lat,
+        originLon: origin.lon,
+        originAlt: null,
+        originDistrict: origin.district ?? undefined,
+        destLat: destination.lat,
+        destLon: destination.lon,
+        destAlt: null,
+        destDistrict: destination.district ?? "",
+        isMonsoon,
+        currentMonth: month,
+        purposes: [],
+        corridorDistrictLookup,
+        historicDisasters,
+        recentDisasters,
+      });
+
       routeAnalysis = {
         risk: routeRisk,
         reason: routeRiskReason,
@@ -200,6 +232,7 @@ export async function POST(req: NextRequest) {
         stops: built.nodes.map((n) => n.name),
         distanceKm: Math.round(totalKm),
         source: built.source,
+        disasterRouteRisk,
       };
     }
 
@@ -228,3 +261,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Failed to check route safety" }, { status: 500 });
   }
 }
+
+export const POST = withRateLimit(checkRouteHandler, { max: 10, windowSeconds: 60 });

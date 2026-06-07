@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth }                      from "@/lib/auth";
 import { headers }                   from "next/headers";
 import { prisma }                    from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
 const STALE_AFTER_HOURS = 24; // reassess if older than this
 
@@ -46,7 +47,7 @@ async function getSessionOr503() {
   }
 }
 
-export async function GET() {
+async function getAssessStatusHandler() {
   const sessionOrResponse = await getSessionOr503();
   if (sessionOrResponse instanceof NextResponse) return sessionOrResponse;
   const session = sessionOrResponse;
@@ -76,7 +77,7 @@ export async function GET() {
   });
 }
 
-export async function POST(req: NextRequest) {
+async function triggerAssessHandler(req: NextRequest) {
   const sessionOrResponse = await getSessionOr503();
   if (sessionOrResponse instanceof NextResponse) return sessionOrResponse;
   const session = sessionOrResponse;
@@ -119,3 +120,6 @@ export async function POST(req: NextRequest) {
       : "No assessment data found — first run started in background",
   });
 }
+
+export const GET = withRateLimit(getAssessStatusHandler, { max: 20, windowSeconds: 60 });
+export const POST = withRateLimit(triggerAssessHandler, { max: 5, windowSeconds: 60 });

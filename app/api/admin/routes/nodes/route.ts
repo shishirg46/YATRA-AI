@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, handleAdminError } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(req: NextRequest) {
+async function getRouteNodesHandler(req: NextRequest) {
   try {
     await verifyAdmin();
     const { searchParams } = new URL(req.url);
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
   }
 }
 
-export async function POST(req: NextRequest) {
+async function createRouteNodeHandler(req: NextRequest) {
   try {
     const admin = await verifyAdmin();
     const body = await req.json();
@@ -79,3 +80,6 @@ export async function POST(req: NextRequest) {
     return handleAdminError(err);
   }
 }
+
+export const GET = withRateLimit(getRouteNodesHandler, { max: 60, windowSeconds: 60 });
+export const POST = withRateLimit(createRouteNodeHandler, { max: 30, windowSeconds: 60 });

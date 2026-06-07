@@ -12,8 +12,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function POST(req: NextRequest) {
+async function sendFriendRequestHandler(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
@@ -62,3 +63,5 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ friendshipId: friendship.id });
 }
+
+export const POST = withRateLimit(sendFriendRequestHandler, { max: 10, windowSeconds: 60 });

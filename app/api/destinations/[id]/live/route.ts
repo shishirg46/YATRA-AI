@@ -15,8 +15,11 @@ import {
 } from "@/lib/scoring/safety";
 
 import { assessRouteSegment } from "@/lib/analysis/group-risk";
+import { computeRouteRisk } from "@/lib/scoring/route-risk";
+import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
+import { withRateLimit } from "@/lib/rate-limit";
 
-export async function GET(
+async function getLiveHandler(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -134,7 +137,12 @@ export async function GET(
     );
 
     // ================= ROUTE RISK =================
+    const currentMonth = new Date().getMonth() + 1;
+    const isMonsoon = currentMonth >= 6 && currentMonth <= 9;
+    const purposes = [...travelPurposes, ...healthFlags];
+
     let routeRisk = null;
+    let routeHazardRisk = null;
 
     const home = user?.homeLocation;
 
@@ -163,6 +171,29 @@ export async function GET(
           departureDate: new Date().toISOString().split("T")[0],
         }
       ).catch(() => null);
+
+      // District-level historic/recent disaster context
+      const { historicDisasters, recentDisasters } = await fetchDisasterCounts(prisma);
+      const corridorDistrictLookup = buildCorridorLookup([
+        { lat: home.latitude, lon: home.longitude, district: home.district.name },
+        { lat: destination.latitude, lon: destination.longitude, district: destination.district },
+      ]);
+      routeHazardRisk = computeRouteRisk({
+        originLat: home.latitude,
+        originLon: home.longitude,
+        originAlt: home.altitude ?? null,
+        originDistrict: home.district.name,
+        destLat: destination.latitude,
+        destLon: destination.longitude,
+        destAlt: destination.altitude ?? null,
+        destDistrict: destination.district,
+        isMonsoon,
+        currentMonth,
+        purposes,
+        corridorDistrictLookup,
+        historicDisasters,
+        recentDisasters,
+      });
     }
 
     // ================= NEAREST ROUTE NODE =================
@@ -184,6 +215,7 @@ export async function GET(
       hazard: liveHazard,
       safety,
       routeRisk,
+      routeHazardRisk,
       nearestRouteNode,
       assessedAt: new Date().toISOString(),
       isLive: true,
@@ -197,3 +229,5 @@ export async function GET(
     );
   }
 }
+
+export const GET = withRateLimit(getLiveHandler, { max: 60, windowSeconds: 60 });
