@@ -8,15 +8,17 @@ import {
   MapPinned,
   Mountain,
   NotebookPen,
+  Sparkles,
 } from "lucide-react";
 
-export type AppNavId = "dashboard" | "plan" | "trips";
+export type AppNavId = "dashboard" | "plan" | "trips" | "more" | "accessibility";
 
 type AppShellProps = {
   children: React.ReactNode;
   active?: AppNavId;
   title?: string;
   actions?: React.ReactNode;
+  center?: React.ReactNode;
   subpage?: boolean;
   onBack?: () => void;
   showMobileNav?: boolean;
@@ -27,6 +29,7 @@ const MOBILE_NAV: { id: AppNavId; href: string; label: string; icon: typeof Moun
   { id: "dashboard", href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { id: "plan", href: "/plan", label: "Plan", icon: MapPinned },
   { id: "trips", href: "/trips", label: "Trips", icon: NotebookPen },
+  { id: "more", href: "/more", label: "More", icon: Sparkles },
 ];
 
 export function AppShell({
@@ -34,6 +37,7 @@ export function AppShell({
   active,
   title,
   actions,
+  center,
   subpage = false,
   onBack,
   showMobileNav = true,
@@ -60,7 +64,9 @@ export function AppShell({
             </button>
           ) : null}
           <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
-            <Mountain className="text-amber-400 shrink-0" size={22} />
+            <span className="flex size-9 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-300/10 shadow-[0_0_28px_rgba(245,158,11,.14)]">
+              <Mountain className="text-amber-300 shrink-0" size={19} />
+            </span>
             <span className="font-display font-bold text-lg text-white tracking-tight truncate">
               YatraAI
             </span>
@@ -75,6 +81,10 @@ export function AppShell({
           ) : null}
         </div>
 
+        {center ? (
+          <div className="absolute left-1/2 hidden -translate-x-1/2 md:block">{center}</div>
+        ) : null}
+
         {actions ? (
           <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">{actions}</div>
         ) : null}
@@ -87,7 +97,7 @@ export function AppShell({
           className="md:hidden fixed bottom-0 inset-x-0 z-30 border-t border-white/6 bg-[rgba(10,15,30,0.96)] backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
           aria-label="Main"
         >
-          <div className="grid grid-cols-3 h-14">
+          <div className="grid grid-cols-4 h-14">
             {MOBILE_NAV.map((item) => {
               const Icon = item.icon;
               const isActive = active === item.id;

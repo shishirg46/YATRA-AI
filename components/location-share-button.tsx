@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useLocationShare } from "@/lib/hooks/useLocationShare";
 
-export function LocationShareButton({ tripId }: { tripId?: string }) {
+export function LocationShareButton({ tripId, className = "" }: { tripId?: string; className?: string }) {
   const {
     isSharing,
     shareSession,
@@ -30,7 +30,7 @@ export function LocationShareButton({ tripId }: { tripId?: string }) {
 
   if (isSharing && shareSession) {
     return (
-      <div className="rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4">
+      <div className={`rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 ${className}`}>
         <div className="flex items-center gap-3 mb-3">
           <span className="relative flex h-3 w-3">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -77,7 +77,7 @@ export function LocationShareButton({ tripId }: { tripId?: string }) {
 
   if (error) {
     return (
-      <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+      <div className={`rounded-xl border border-red-500/20 bg-red-500/5 p-4 ${className}`}>
         <div className="flex items-start gap-3">
           <X size={16} className="text-red-400 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
@@ -97,7 +97,7 @@ export function LocationShareButton({ tripId }: { tripId?: string }) {
   return (
     <button
       onClick={() => startSharing().catch(() => {})}
-      className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-amber-400 transition-all font-body text-sm font-medium"
+      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-amber-400 transition-all font-body text-sm font-medium ${className}`}
     >
       <Share2 size={15} />
       Share Live Location

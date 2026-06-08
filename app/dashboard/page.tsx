@@ -45,6 +45,10 @@ import { FirstRunCoachmarks } from "./_components/FirstRunCoachmarks";
 import { AppShell }            from "@/components/app-shell";
 import { LocationShareButton } from "@/components/location-share-button";
 import { useResolvedOrigin } from "@/lib/hooks/use-resolved-origin";
+import {
+  rankRecommendedDestinations,
+  recommendationSortScore,
+} from "@/lib/recommendations/destination-recommendations";
 
 const PAGE_SIZE          = 12;
 const DASHBOARD_CARD_LIMIT = 6;
@@ -443,113 +447,6 @@ export default function DashboardPage() {
 
   // ── Filter + paginate + rank ────────────────────────────────────────────────────────
 
-  // Distance helper
-  function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  // Priority Ranking Algorithm — safe > nearby > personalized
-  function calculateScore(dest: Destination, userProf: UserProfile | null): number {
-    let score = 0;
-    const pref = userProf?.preference;
-    const health = userProf?.health;
-    if (!pref) return dest.safetyScore;
-
-    // 1. SAFETY DOMINATES — safe destinations always recommended first
-    if (dest.safetyLevel === "SAFE") score += 150;
-    else if (dest.safetyLevel === "CAUTION") score += 80;
-    else if (dest.safetyLevel === "HIGH_RISK") score -= 100;
-    else score -= 500;
-
-    // Risk tolerance check
-    if (pref.riskTolerance === "LOW" && (dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME")) return -9999;
-    if (pref.riskTolerance === "MEDIUM" && dest.safetyLevel === "EXTREME") return -9999;
-
-    // 1b. ROUTE RISK — distance matters, even for safe destinations
-    if (dest.routeRisk) {
-      if (dest.routeRisk.routeRiskLevel === "SAFE") score += 100;
-      else if (dest.routeRisk.routeRiskLevel === "CAUTION") score += 40;
-      else if (dest.routeRisk.routeRiskLevel === "HIGH_RISK") score -= 120;
-      else score -= 400;
-      if (pref.riskTolerance === "LOW" && (dest.routeRisk.routeRiskLevel === "HIGH_RISK" || dest.routeRisk.routeRiskLevel === "EXTREME")) return -9999;
-      if (pref.riskTolerance === "MEDIUM" && dest.routeRisk.routeRiskLevel === "EXTREME") return -9999;
-    }
-
-    // 2. PROXIMITY — nearby destinations get major boost
-    if (pref.locationLat && pref.locationLng && dest.latitude && dest.longitude) {
-      const dist = getDistanceFromLatLonInKm(pref.locationLat, pref.locationLng, dest.latitude, dest.longitude);
-      if (pref.maxDistanceKm && dist > pref.maxDistanceKm) {
-        score -= 150;
-      } else {
-        score += Math.max(0, 80 - dist);
-      }
-    }
-
-    // Same province = nearby boost
-    if (userProf?.homeLocation?.province && dest.province === userProf.homeLocation.province) {
-      score += 50;
-    }
-
-    // 3. PERSONALIZATION — interests, travel style, behavior
-    const destStr = (dest.name + " " + dest.district + " " + dest.province + " " + dest.reasoning.join(" ")).toLowerCase();
-    
-    let interestMatches = 0;
-    pref.interests?.forEach((interest: string) => {
-      if (destStr.includes(interest.toLowerCase())) interestMatches++;
-    });
-    score += (interestMatches * 20);
-
-    let styleMatches = 0;
-    pref.travelStyle?.forEach((style: string) => {
-      if (destStr.includes(style.toLowerCase())) styleMatches++;
-    });
-    score += (styleMatches * 15);
-
-    // 4. HEALTH-BASED ADJUSTMENTS
-    if (health) {
-      if (health.chronicConditions?.includes("asthma")) {
-        if (dest.altitude && dest.altitude > 2500) score -= 60;
-      }
-      if (health.chronicConditions?.includes("heart") || health.chronicConditions?.includes("hypertension")) {
-        if (dest.altitude && dest.altitude > 2000) score -= 50;
-      }
-      if (health.fitnessLevel === "LOW") {
-        if (dest.altitude && dest.altitude > 1500) score -= 40;
-        if (dest.safetyLevel === "EXTREME") score -= 200;
-      }
-      if (health.mobilityLimited) {
-        if (dest.altitude && dest.altitude > 1000) score -= 60;
-        if (!dest.routeAccessible) score -= 80;
-      }
-      if (health.chronicConditions?.includes("diabetes")) {
-        if (dest.altitude && dest.altitude > 3000) score -= 40;
-      }
-    }
-
-    // 5. Behavior Adjustments
-    const behavior = userProf?.behavior?.metrics || {};
-    const destClicks = behavior.destinations?.[dest.id] || 0;
-    score += (destClicks * 5);
-
-    if (behavior.categories) {
-      Object.entries(behavior.categories).forEach(([cat, clicks]) => {
-        if (destStr.includes(cat.toLowerCase())) {
-          score += (Number(clicks) * 2);
-        }
-      });
-    }
-
-    return score;
-  }
-
   // Merge live SSE score updates into base dashboard data
   const all      = mergeLiveScores(data?.destinations ?? []) as Destination[];
 
@@ -569,8 +466,10 @@ export default function DashboardPage() {
     return true;
   });
 
-  // Sort by personalized priority score instead of just safety
-  const sortedAndRanked = [...filtered].sort((a, b) => calculateScore(b, userData) - calculateScore(a, userData));
+  const rankedRecommendations = rankRecommendedDestinations(filtered, userData);
+  const sortedAndRanked = filter === "RECOMMENDED"
+    ? rankedRecommendations.map((item) => item.destination)
+    : [...filtered].sort((a, b) => recommendationSortScore(b, userData) - recommendationSortScore(a, userData));
 
   const totalPages      = Math.ceil(sortedAndRanked.length / PAGE_SIZE);
   const paginated       = sortedAndRanked.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -585,8 +484,9 @@ export default function DashboardPage() {
     extreme:  all.filter((d) => d.safetyLevel === "EXTREME").length,
   };
   
-  // Recommendations are the top 3 ranked from the algorithm (already sorted)
-  const recommended = sortedAndRanked.slice(0, 3);
+  const recommended = rankRecommendedDestinations(all, userData)
+    .slice(0, 3)
+    .map((item) => item.destination);
 
   // ── Loading / Error ──────────────────────────────────────────────────────────
 
@@ -762,22 +662,22 @@ export default function DashboardPage() {
             />
           )}
 
-          <div className="stat-card p-3">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${userLocation ? "bg-primary/10" : "bg-muted"}`}>
+          <div className="stat-card location-card">
+            <div className="location-card__main">
+              <div className={`location-card__icon transition-colors ${userLocation ? "" : "opacity-70 grayscale"}`}>
                 <Navigation size={18} className={userLocation ? "text-primary" : "text-muted-foreground"} />
               </div>
-              <div>
-                <p className="font-body text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Current Origin</p>
-                <div className="flex items-center gap-2">
-                  <p className="font-display font-bold text-foreground">
+              <div className="location-card__content">
+                <p className="location-card__eyebrow">Current Origin</p>
+                <div className="location-card__title-row">
+                  <p className="location-card__title">
                     {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
                   </p>
                   {(resolvingOrigin || locating) && (
-                    <span className="text-[10px] bg-muted text-accent px-1.5 py-0.5 rounded border border-accent/20">Resolving…</span>
+                    <span className="location-card__badge text-accent">Resolving…</span>
                   )}
                   {userLocation && !resolvingOrigin && (
-                    <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded border border-border">
+                    <span className="location-card__badge">
                       {resolvedOrigin?.routeNodeName ? `Hub: ${resolvedOrigin.routeNodeName}` : "Snapped"}
                     </span>
                   )}
@@ -785,25 +685,25 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
+            <div className="location-card__actions">
+              <div className="location-card__secondary-actions">
                 <button
                   onClick={requestUserLocation}
                   disabled={locating}
-                  className="px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-muted-foreground transition-all text-xs font-body font-medium flex items-center gap-1.5"
+                  className="location-card__button"
                 >
                   {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
                   {locating ? "Locating..." : "Auto-Detect"}
                 </button>
                 <button
                   onClick={() => setPickingLocation(true)}
-                  className="px-3 py-1.5 rounded-lg bg-muted hover:bg-accent/10 text-foreground transition-all text-xs font-body font-medium flex items-center gap-1.5 border border-border"
+                  className="location-card__button"
                 >
                   <Search size={12} />
                   Set Manually
                 </button>
               </div>
-              <LocationShareButton />
+              <LocationShareButton className="location-card__share" />
             </div>
           </div>
         </div>

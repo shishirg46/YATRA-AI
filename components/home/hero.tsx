@@ -3,7 +3,7 @@
 import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Shield } from "lucide-react";
+import { ArrowRight, MapPin, Route, Shield, Sparkles } from "lucide-react";
 
 export function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -49,30 +49,31 @@ export function Hero() {
       <div className="absolute bottom-0 inset-x-0 h-48 mountain-divider opacity-30" />
       <div className="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-background to-transparent" />
 
-      <div className="relative z-10 max-w-4xl mx-auto">
+      <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-12 text-left lg:grid-cols-[1fr_420px]">
+        <div className="text-center lg:text-left">
         {/* Pill badge */}
-        <div className="anim-1 mb-6 inline-flex items-center gap-2 bg-primary/10 border border-primary/25 text-primary text-xs font-body font-medium px-4 py-1.5 rounded-full">
+        <div className="anim-1 mb-6 inline-flex items-center gap-2 bg-primary/10 border border-primary/25 text-primary text-xs font-body font-medium px-4 py-1.5 rounded-full shadow-[0_0_40px_rgba(245,158,11,.12)]">
           <Shield size={12} />
           <span>विश्वसनीय यात्रा सुरक्षा &mdash; Trusted travel safety for Nepal</span>
         </div>
 
         {/* Main heading */}
-        <h1 className="anim-2 font-display text-5xl md:text-7xl font-black leading-[1.05] mb-6">
+        <h1 className="anim-2 font-display text-5xl md:text-7xl font-black leading-[1.03] mb-6 text-balance">
           Explore Nepal,{" "}
           <br />
           <span className="shimmer-text">Travel Confident.</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="anim-3 font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed mb-10">
+        <p className="anim-3 font-body text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed mb-10 text-pretty">
           Real-time AI-powered safety scores for every destination, road, and trail across Nepal. 
           Know before you go &mdash; from the mountains to the valleys.
         </p>
 
         {/* CTAs */}
-        <div className="anim-4 flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <div className="anim-4 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
           <Link href="/register">
-            <Button className="bg-primary hover:bg-nepali-red text-primary-foreground font-semibold text-base px-8 py-6 rounded-full shadow-[0_0_40px_rgba(204,41,54,0.3)] hover:shadow-[0_0_60px_rgba(204,41,54,0.5)] transition-all duration-300 font-body group">
+            <Button className="bg-primary hover:bg-gold text-primary-foreground font-semibold text-base px-8 py-6 rounded-full shadow-[0_0_40px_rgba(245,158,11,0.28)] hover:shadow-[0_0_60px_rgba(245,158,11,0.45)] transition-all duration-300 font-body group">
               Start your journey
               <ArrowRight size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
@@ -102,6 +103,51 @@ export function Hero() {
             <span className="w-1.5 h-1.5 rounded-full bg-gold" />
             नेपाली सेवा
           </span>
+        </div>
+        </div>
+
+        <div className="anim-3 hidden lg:block">
+          <div className="relative rounded-[2rem] border border-white/10 bg-slate-950/45 p-4 text-left shadow-[0_30px_90px_rgba(0,0,0,.42)] backdrop-blur-xl">
+            <div className="absolute -inset-px rounded-[2rem] bg-linear-to-br from-amber-400/20 via-transparent to-sky-400/20 opacity-70" />
+            <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#08111f]">
+              <div className="h-44 bg-[radial-gradient(circle_at_32%_30%,rgba(245,158,11,.28),transparent_22%),radial-gradient(circle_at_70%_58%,rgba(56,189,248,.22),transparent_26%),linear-gradient(135deg,rgba(15,23,42,.4),rgba(15,23,42,.95))] p-5">
+                <div className="flex items-center justify-between">
+                  <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-300">Live route check</span>
+                  <Sparkles size={18} className="text-amber-300" />
+                </div>
+                <div className="mt-10 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <MapPin size={16} className="text-amber-300" />
+                    <div>
+                      <p className="text-xs text-slate-500">From Kathmandu</p>
+                      <p className="font-display text-xl font-bold text-white">Pokhara Lakeside</p>
+                    </div>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-white/10">
+                    <div className="h-full w-[82%] rounded-full bg-linear-to-r from-emerald-400 to-amber-300" />
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-px bg-white/10">
+                {[
+                  ["82", "Safety"],
+                  ["3", "Routes"],
+                  ["Low", "Weather"],
+                ].map(([value, label]) => (
+                  <div key={label} className="bg-slate-950/75 p-4">
+                    <p className="font-display text-2xl font-bold text-white">{value}</p>
+                    <p className="text-xs text-slate-500">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-3 p-5">
+                <div className="flex items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/10 p-3">
+                  <Route size={16} className="mt-0.5 text-amber-300" />
+                  <p className="text-sm leading-relaxed text-slate-300">Take Prithvi Highway early morning; rainfall risk rises after 3 PM.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

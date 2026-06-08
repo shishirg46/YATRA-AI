@@ -9,11 +9,10 @@ import {
   Shield,
   Zap,
   Map,
-  Wind,
   Mountain,
   ArrowRight,
-  Star,
   CheckCircle2,
+  Radio,
 } from "lucide-react";
 
 const destinations = [
@@ -92,14 +91,21 @@ export default function Home() {
       }}
     >
       {/* ── NAV ─────────────────────────────────────────────── */}
-      <nav className="nav-blur fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-4 font-body">
+      <nav className="nav-blur fixed top-0 inset-x-0 z-50 flex items-center justify-between px-6 md:px-12 py-3 font-body">
         <div className="flex items-center gap-2">
-          <Mountain className="text-amber-400" size={22} />
+          <span className="flex size-10 items-center justify-center rounded-2xl border border-amber-300/20 bg-amber-300/10 shadow-[0_0_28px_rgba(245,158,11,.14)]">
+            <Mountain className="text-amber-300" size={20} />
+          </span>
           <span className="font-display font-bold text-lg tracking-tight">
             YatraAI
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="hidden items-center gap-6 rounded-full border border-white/8 bg-white/5 px-5 py-2 text-sm text-slate-400 backdrop-blur md:flex">
+          <a href="#features" className="hover:text-white transition-colors">Features</a>
+          <a href="#destinations" className="hover:text-white transition-colors">Destinations</a>
+          <a href="#safety" className="hover:text-white transition-colors">Safety</a>
+        </div>
+        <div className="flex items-center gap-2">
           <Link href="/sign-in">
             <Button variant="ghost" className="text-slate-300 hover:text-amber-500 cursor-pointer font-body text-sm">
               Sign In
@@ -117,7 +123,7 @@ export default function Home() {
       <Hero />
 
       {/* ── STATS ───────────────────────────────────────────── */}
-      <section className="relative py-16 px-6">
+      <section className="relative -mt-10 px-6 pb-16">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
           {stats.map((s) => (
             <div key={s.label} className="stat-card p-6 text-center">
@@ -129,22 +135,25 @@ export default function Home() {
       </section>
 
       {/* ── FEATURES ────────────────────────────────────────── */}
-      <section className="py-24 px-6">
+      <section id="features" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-sky-400/10 text-sky-400 border-sky-400/20 font-body text-xs uppercase tracking-widest px-4 py-1">
               How It Works
             </Badge>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-white">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-white text-balance">
               Intelligence for every step
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl font-body text-slate-400">
+              YatraAI turns weather, route, terrain, and personal context into simple travel decisions.
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {features.map((f) => (
-              <Card key={f.title} className="card-hover bg-slate-800/50 border-slate-700/50 backdrop-blur-sm rounded-2xl overflow-hidden">
+              <Card key={f.title} className="card-hover group bg-slate-800/50 border-slate-700/50 backdrop-blur-sm rounded-3xl overflow-hidden">
                 <CardContent className="p-8">
-                  <div className={`${f.bg} w-12 h-12 rounded-xl flex items-center justify-center mb-6`}>
+                  <div className={`${f.bg} w-12 h-12 rounded-2xl flex items-center justify-center mb-6 ring-1 ring-white/10 transition-transform group-hover:scale-105`}>
                     <f.icon className={f.color} size={22} />
                   </div>
                   <h3 className="font-display text-xl font-bold text-white mb-3">{f.title}</h3>
@@ -157,28 +166,30 @@ export default function Home() {
       </section>
 
       {/* ── DESTINATIONS ────────────────────────────────────── */}
-      <section className="py-24 px-6 relative">
+      <section id="destinations" className="py-24 px-6 relative">
         <div className="glow-dot w-96 h-96 bg-amber-500/10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-emerald-400/10 text-emerald-400 border-emerald-400/20 font-body text-xs uppercase tracking-widest px-4 py-1">
               Destinations
             </Badge>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-white">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-white text-balance">
               Popular routes, monitored
             </h2>
+            <p className="mx-auto mt-4 max-w-2xl font-body text-slate-400">
+              A softer landing for big decisions: safety status, context, and next actions in one scan.
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {destinations.map((d) => (
-              <div key={d.name} className="showcase-card h-72 bg-slate-800">
+              <div key={d.name} className="showcase-card h-80 bg-slate-800 ring-1 ring-white/8">
                 <img
                   src={`/images/${d.name.toLowerCase()}.png`}
                   alt={d.name}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-                {/* Placeholder gradient when no image */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${d.gradient}`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${d.gradient} opacity-45 mix-blend-multiply`} />
                 <div className="dest-overlay" />
 
                 <div className="absolute inset-0 p-6 flex flex-col justify-between z-10">
@@ -206,11 +217,34 @@ export default function Home() {
       </section>
 
       {/* ── CTA BANNER ──────────────────────────────────────── */}
+      <section id="safety" className="px-6 py-10">
+        <div className="mx-auto grid max-w-6xl gap-6 rounded-[2rem] border border-white/10 bg-white/[0.035] p-6 backdrop-blur md:grid-cols-3 md:p-8">
+          {[
+            ["Route aware", "Checks road segments, live hazards, and seasonal trouble spots."],
+            ["Personalized", "Balances group health, altitude, budget, and travel timing."],
+            ["Explainable", "Shows why a destination is safe, risky, or worth delaying."],
+          ].map(([title, desc]) => (
+            <div key={title} className="flex gap-4">
+              <div className="mt-1 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-400/10 text-emerald-300 ring-1 ring-emerald-300/20">
+                <CheckCircle2 size={18} />
+              </div>
+              <div>
+                <h3 className="font-display text-lg font-bold text-white">{title}</h3>
+                <p className="mt-1 font-body text-sm leading-relaxed text-slate-400">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ──────────────────────────────────────── */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto text-center relative">
           <div className="absolute inset-0 rounded-3xl bg-linear-to-br from-amber-500/10 to-sky-500/5 border border-amber-400/20" />
           <div className="relative z-10 py-16 px-8">
-            <Star className="text-amber-400 mx-auto mb-6" size={32} />
+            <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-3xl border border-amber-300/20 bg-amber-300/10">
+              <Radio className="text-amber-300" size={28} />
+            </div>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
               Plan your next Nepal adventure
             </h2>

@@ -254,28 +254,40 @@ export default function ExplorePage() {
               }}
             />
           )}
-          <div className="stat-card p-3 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${userLocation ? "bg-amber-500/10" : "bg-slate-800"}`}>
+          <div className="stat-card location-card">
+            <div className="location-card__main">
+              <div className={`location-card__icon transition-colors ${userLocation ? "" : "opacity-70 grayscale"}`}>
                 <Navigation size={18} className={userLocation ? "text-amber-400" : "text-slate-500"} />
               </div>
-              <div>
-                <p className="font-body text-[10px] text-slate-500 uppercase tracking-widest font-bold">Current Origin</p>
-                <p className="font-display font-bold text-white">
-                  {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
-                </p>
+              <div className="location-card__content">
+                <p className="location-card__eyebrow">Current Origin</p>
+                <div className="location-card__title-row">
+                  <p className="location-card__title">
+                    {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
+                  </p>
+                  {(resolvingOrigin || locating) && (
+                    <span className="location-card__badge text-accent">Resolving…</span>
+                  )}
+                  {userLocation && !resolvingOrigin && (
+                    <span className="location-card__badge">
+                      {resolvedOrigin?.routeNodeName ? `Hub: ${resolvedOrigin.routeNodeName}` : "Snapped"}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button onClick={requestUserLocation} disabled={locating}
-                className="px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 transition-all text-xs font-body font-medium flex items-center gap-1.5">
-                {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
-                {locating ? "Locating..." : "Auto-Detect"}
-              </button>
-              <button onClick={() => setPickingLocation(true)}
-                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white transition-all text-xs font-body font-medium flex items-center gap-1.5 border border-white/5">
-                <Search size={12} /> Set Manually
-              </button>
+            <div className="location-card__actions md:grid-cols-1 md:min-w-[17rem]">
+              <div className="location-card__secondary-actions">
+                <button onClick={requestUserLocation} disabled={locating}
+                  className="location-card__button">
+                  {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
+                  {locating ? "Locating..." : "Auto-Detect"}
+                </button>
+                <button onClick={() => setPickingLocation(true)}
+                  className="location-card__button">
+                  <Search size={12} /> Set Manually
+                </button>
+              </div>
             </div>
           </div>
           {(locationError || originResolveError) && (

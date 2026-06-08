@@ -74,6 +74,8 @@ export interface PillarModelResult {
       evacuationWarning: string | null;
     };
   };
+  baselineScore: number;
+  seasonalFactors: Array<{ factor: string; points: number }>;
 }
 
 function clamp(n: number, lo: number, hi: number) {
@@ -465,6 +467,15 @@ export async function computePillarModel(input: {
   const emergencyHours = (input.destination.altitude ?? 0) > 3500 ? 7 : (input.destination.altitude ?? 0) > 2200 ? 4 : 2;
   const emergencyWarning = emergencyHours > 6 ? "Evacuation may take over 6 hours in bad weather." : null;
 
+  const baselineScore = routeHistoricScore + destinationScore + weatherScore + personalScore;
+  const seasonalFactors = [
+    { factor: "route_historic", points: routeHistoricScore },
+    { factor: "route_realtime", points: routeRealtimeScore },
+    { factor: "destination_safety", points: destinationScore },
+    { factor: "weather_safety", points: weatherScore },
+    { factor: "personal_safety", points: personalScore },
+  ];
+
   return {
     totalScore,
     overallLevel: toOverallLevel(totalScore),
@@ -505,5 +516,7 @@ export async function computePillarModel(input: {
         evacuationWarning: emergencyWarning,
       },
     },
+    baselineScore,
+    seasonalFactors,
   };
 }

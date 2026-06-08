@@ -42,6 +42,18 @@ export interface Destination {
   routeAccessible?: boolean;
   dataQualityScore?: number | null;
   isLive?:      boolean;
+  tags?:        string[];
+  routeRisk?: {
+    routeRiskScore: number;
+    routeRiskLevel: "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME";
+    routeDistanceKm: number;
+    decisionTrace: { reasoning: string[] };
+    dataSource: string;
+  } | null;
+  recommendationMeta?: {
+    closedOrRestricted: boolean;
+    unavailablePermit: boolean;
+  };
 }
 
 export interface UserProfile {
@@ -73,6 +85,7 @@ export interface UserProfile {
     chronicConditions: string[];
     allergies:         string[];
   } | null;
+  savedDestinationIds?: string[];
 }
 
 export interface HealthData {
@@ -122,6 +135,11 @@ export interface DashboardData {
   destinations: Destination[];
   stats:        { total: number; safe: number; caution: number; highRisk: number; extreme: number };
   destinationSummary?: DestinationSummary;
+  recommendations?: {
+    recommendations: any[];
+    summary: string;
+    aiUsed: boolean;
+  };
 }
 
 export interface HazardNotif {

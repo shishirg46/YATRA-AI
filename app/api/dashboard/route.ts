@@ -43,6 +43,32 @@ function getWeatherMeta(snapshot: unknown) {
 
 const UNRELIABLE_CATEGORIES: DestinationCategory[] = ["CHOWK", "MUNICIPALITY"];
 
+function buildRecommendationMeta(destination: { description: string | null; tags: string[] }) {
+  const text = `${destination.description ?? ""} ${destination.tags.join(" ")}`.toLowerCase();
+  return {
+    closedOrRestricted: [
+      "road closed",
+      "route closed",
+      "closed road",
+      "closed route",
+      "off limits",
+      "closed territory",
+      "remained closed",
+      "currently closed",
+      "temporarily closed",
+      "not open to visitors",
+    ].some((term) => text.includes(term)),
+    unavailablePermit: [
+      "impossibility of gaining a permit",
+      "impossible to gain a permit",
+      "permit unavailable",
+      "permits unavailable",
+      "no permits issued",
+      "never been officially climbed",
+    ].some((term) => text.includes(term)),
+  };
+}
+
 function estimatedWeather(alt: number | null, isMonsoon: boolean): WeatherInput {
   const altitude = alt ?? 0;
   const temp = Math.round((25 - altitude * 0.0065) * 10) / 10;
@@ -315,6 +341,8 @@ async function getDashboardHandler(request?: NextRequest) {
         verified: dest.verified,
         routeAccessible: dest.routeAccessible,
         dataQualityScore: dest.dataQualityScore,
+        tags: dest.tags,
+        recommendationMeta: buildRecommendationMeta(dest),
       };
     });
 
