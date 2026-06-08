@@ -442,13 +442,13 @@ export default function NewTripPage() {
                 <span className="font-body text-xs text-slate-500">{members.length} invited</span>
               </div>
               <p className="font-body text-xs text-slate-500">
-                Search by username to add travellers. Their health profiles will be used in the group safety analysis.
+                Search by name to add travellers. Their health profiles will be used in the group safety analysis.
               </p>
 
               {/* Search */}
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input type="text" placeholder="Search by username…" value={memberSearch}
+                <input type="text" placeholder="Search by name…" value={memberSearch}
                   onChange={(e) => setMemberSearch(e.target.value)}
                   className="trip-input w-full pl-9 pr-9 py-2.5 text-sm rounded-xl" />
                 {searching && <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin" />}

@@ -68,12 +68,12 @@ async function searchFriendsHandler(req: NextRequest) {
     );
   }
 
-  // ── Default: search all users by username ───────────────────────────────
+  // ── Default: search all users by display name ───────────────────────────
   if (!q || q.length < 2) return NextResponse.json([]);
 
   const users = await prisma.user.findMany({
     where: {
-      username: { contains: q.replace(/^@/, ""), mode: "insensitive" },
+      name: { contains: q, mode: "insensitive" },
       id:       { not: userId },
     },
     select: { id: true, name: true, email: true, image: true, username: true },

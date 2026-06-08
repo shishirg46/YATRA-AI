@@ -444,7 +444,7 @@ function MemberSearch({ members, onChange }: {
     <div className="space-y-3">
       <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
-        <input type="text" placeholder="Search by username…" value={q} onChange={(e) => setQ(e.target.value)}
+        <input type="text" placeholder="Search by name…" value={q} onChange={(e) => setQ(e.target.value)}
           className="plan-input w-full pl-9 pr-9 py-2.5 text-sm rounded-xl"/>
         {loading
           ? <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin"/>
@@ -496,7 +496,7 @@ function MemberSearch({ members, onChange }: {
 
       {members.length === 0 && !q && (
         <p className="font-body text-xs text-slate-600 text-center py-3">
-          Search for travel partners by username. Their health profiles will be included in the safety analysis.
+          Search for travel partners by name. Their health profiles will be included in the safety analysis.
         </p>
       )}
     </div>
