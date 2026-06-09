@@ -80,12 +80,12 @@ export type PrismaVersion = {
 }
 
 /**
- * Prisma Client JS version: 7.7.0
- * Query Engine version: 75cbdc1eb7150937890ad5465d861175c6624711
+ * Prisma Client JS version: 7.8.0
+ * Query Engine version: 3c6e192761c0362d496ed980de936e2f3cebcd3a
  */
 export const prismaVersion: PrismaVersion = {
-  client: "7.7.0",
-  engine: "75cbdc1eb7150937890ad5465d861175c6624711"
+  client: "7.8.0",
+  engine: "3c6e192761c0362d496ed980de936e2f3cebcd3a"
 }
 
 /**
@@ -3396,6 +3396,12 @@ export const RouteNodeScalarFieldEnum = {
   type: 'type',
   latitude: 'latitude',
   longitude: 'longitude',
+  elevationM: 'elevationM',
+  accessibilityLevel: 'accessibilityLevel',
+  strategicImportance: 'strategicImportance',
+  hazardExposureIndex: 'hazardExposureIndex',
+  connectivityRank: 'connectivityRank',
+  monsoonVulnerability: 'monsoonVulnerability',
   placeId: 'placeId',
   isHub: 'isHub',
   isActive: 'isActive',
@@ -3411,6 +3417,16 @@ export const RouteEdgeScalarFieldEnum = {
   fromNodeId: 'fromNodeId',
   toNodeId: 'toNodeId',
   distanceKm: 'distanceKm',
+  surfaceType: 'surfaceType',
+  roadCondition: 'roadCondition',
+  travelReliability: 'travelReliability',
+  gradientPct: 'gradientPct',
+  landslideRisk: 'landslideRisk',
+  floodRisk: 'floodRisk',
+  weatherSensitivity: 'weatherSensitivity',
+  reliabilityScore: 'reliabilityScore',
+  monsoonVulnerability: 'monsoonVulnerability',
+  seasonalClosure: 'seasonalClosure',
   roadName: 'roadName',
   isBidirectional: 'isBidirectional'
 } as const
@@ -3913,6 +3929,62 @@ export type ListEnumPlaceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
 
 
 /**
+ * Reference to a field of type 'NodeAccessibility'
+ */
+export type EnumNodeAccessibilityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NodeAccessibility'>
+    
+
+
+/**
+ * Reference to a field of type 'NodeAccessibility[]'
+ */
+export type ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NodeAccessibility[]'>
+    
+
+
+/**
+ * Reference to a field of type 'StrategicImportance'
+ */
+export type EnumStrategicImportanceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StrategicImportance'>
+    
+
+
+/**
+ * Reference to a field of type 'StrategicImportance[]'
+ */
+export type ListEnumStrategicImportanceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StrategicImportance[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RoadSurface'
+ */
+export type EnumRoadSurfaceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoadSurface'>
+    
+
+
+/**
+ * Reference to a field of type 'RoadSurface[]'
+ */
+export type ListEnumRoadSurfaceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoadSurface[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RoadCondition'
+ */
+export type EnumRoadConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoadCondition'>
+    
+
+
+/**
+ * Reference to a field of type 'RoadCondition[]'
+ */
+export type ListEnumRoadConditionFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoadCondition[]'>
+    
+
+
+/**
  * Reference to a field of type 'HazardReportType'
  */
 export type EnumHazardReportTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'HazardReportType'>
@@ -4116,6 +4188,21 @@ export type PrismaClientOptions = ({
    * ```
    */
   comments?: runtime.SqlCommenterPlugin[]
+  /**
+   * Optional maximum size for the query plan cache. If not provided, a default size will be used.
+   * A value of `0` can be used to disable the cache entirely. A higher cache size can improve
+   * performance for applications that execute a large number of unique queries, while a smaller
+   * cache size can reduce memory usage.
+   * 
+   * @example
+   * ```
+   * const prisma = new PrismaClient({
+   *   adapter,
+   *   queryPlanCacheMaxSize: 100,
+   * })
+   * ```
+   */
+  queryPlanCacheMaxSize?: number
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit

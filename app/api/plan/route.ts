@@ -201,6 +201,7 @@ async function planHandler(req: NextRequest) {
         resolutionNote: originResolutionNote,
       } : null,
       routePillar: pillarModel.route,
+      segmentDetails: pillarModel.segmentDetails,
       destinationPillar: pillarModel.destination,
       weatherPillar: pillarModel.weather,
       personalPillar: pillarModel.personal,

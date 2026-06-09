@@ -12,12 +12,13 @@ import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 import { HazardNotif, HAZARD_CONFIG } from "./types";
 import { TimeAgo } from "./ui";
 
-export function NotificationPanel({ open, onClose, notifications, onMarkRead, onMarkAllRead }: {
-  open:          boolean;
-  onClose:       () => void;
-  notifications: HazardNotif[];
-  onMarkRead:    (id: string) => void;
-  onMarkAllRead: () => void;
+export function NotificationPanel({ open, onClose, notifications, onMarkRead, onMarkAllRead, onNotificationClick }: {
+  open:               boolean;
+  onClose:            () => void;
+  notifications:      HazardNotif[];
+  onMarkRead:         (id: string) => void;
+  onMarkAllRead:      () => void;
+  onNotificationClick?: (n: HazardNotif) => void;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -79,7 +80,7 @@ export function NotificationPanel({ open, onClose, notifications, onMarkRead, on
                 : "bg-sky-500";
 
               return (
-                <button key={notif.id} onClick={() => onMarkRead(notif.id)}
+                <button key={notif.id} onClick={() => { onMarkRead(notif.id); onNotificationClick?.(notif); }}
                   className={`w-full text-left px-5 py-4 border-b border-slate-800/60 hover:bg-slate-800/40 transition-colors ${!notif.read ? "bg-slate-800/25" : ""}`}
                 >
                   <div className="flex gap-3">

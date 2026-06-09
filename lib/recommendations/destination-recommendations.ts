@@ -11,26 +11,25 @@ type RankedDestination = {
   score: number;
   tier: RecommendationTier;
   signals: {
-    safe: boolean;
-    accessible: boolean;
-    partiallyAccessible: boolean;
     preference: boolean;
+    health: boolean;
+    safe: boolean;
+    caution: boolean;
     nearby: boolean;
+    popular: boolean;
     distanceKm: number | null;
   };
 };
 
 const TIERS: RecommendationTier[] = [
-  { id: 1, label: "Best possible recommendation", reason: "Safe, accessible, preference match, and nearby." },
-  { id: 2, label: "Highly suitable", reason: "Safe, accessible, and matches your preferences." },
-  { id: 3, label: "Reliable nearby option", reason: "Safe, accessible, and close to your origin." },
-  { id: 4, label: "Minor warnings only", reason: "Safe, preference-aligned, nearby, with minor access warnings." },
-  { id: 5, label: "Good fallback", reason: "Safe and nearby, with minor access warnings." },
-  { id: 6, label: "Limited safety confidence", reason: "Accessible, nearby, and preference-aligned with no known major danger." },
-  { id: 7, label: "Open nearby route", reason: "Accessible and nearby with no known major danger." },
-  { id: 8, label: "Interest match nearby", reason: "Matches your interests and is nearby, but route-quality data is limited." },
-  { id: 9, label: "Preference fallback", reason: "Matches your preferences; shown only when stronger options are unavailable." },
-  { id: 10, label: "Nearby fallback", reason: "Nearby option; shown only when stronger options are unavailable." },
+  { id: 1, label: "Best match — preference, health, safe, nearby", reason: "Matches your interests, suitable for your health profile, safe, and close to you." },
+  { id: 2, label: "Strong match — preference, health, nearby", reason: "Matches your interests, suitable for your health profile, nearby, with minor safety cautions." },
+  { id: 3, label: "Great match — preference, safe, nearby", reason: "Matches your interests, safe, and close to you." },
+  { id: 4, label: "Good match — preference, safe", reason: "Matches your interests and is safe to visit." },
+  { id: 5, label: "Interest match — caution", reason: "Matches your interests. Moderate risk accepted due to limited safe options." },
+  { id: 6, label: "Popular nearby — safe", reason: "Popular destination that is safe and nearby." },
+  { id: 7, label: "Popular — safe", reason: "Popular and safe destination." },
+  { id: 8, label: "Popular — caution", reason: "Popular destination with moderate risk. Fallback when safer options are unavailable." },
 ];
 
 const HARD_FILTER_TERMS = [
@@ -59,7 +58,7 @@ const HARD_FILTER_TERMS = [
 ];
 
 const PREFERENCE_KEYWORDS: Record<string, string[]> = {
-  trekking: ["trek", "trekking", "mountain", "hill", "camp", "trail", "himal", "village"],
+  trekking: ["trek", "trekking", "mountain", "hill", "camp", "trail", "himal"],
   hiking: ["trek", "hiking", "hill", "mountain", "trail", "viewpoint"],
   adventure: ["mountain", "trek", "camp", "waterfall", "trail", "viewpoint"],
   cultural: ["culture", "cultural", "heritage", "temple", "monastery", "gumba", "palace"],
@@ -68,10 +67,13 @@ const PREFERENCE_KEYWORDS: Record<string, string[]> = {
   spiritual: ["spiritual", "temple", "monastery", "gumba", "sacred"],
   nature: ["nature", "lake", "forest", "waterfall", "riverside", "hill", "wildlife"],
   wildlife: ["wildlife", "forest", "national park", "reserve", "jungle"],
-  relaxing: ["lake", "viewpoint", "riverside", "settlement", "tourist"],
-  family: ["lake", "temple", "tourist", "viewpoint", "municipality"],
-  solo: ["tourist", "lake", "temple", "viewpoint", "settlement"],
+  relaxing: ["lake", "viewpoint", "riverside"],
+  family: ["lake", "temple", "viewpoint"],
+  solo: ["lake", "temple", "viewpoint"],
 };
+
+/** Minimum popularity score to qualify as "popular" for lower tiers */
+const POPULAR_THRESHOLD = 0.5;
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const radiusKm = 6371;
@@ -90,16 +92,59 @@ function normalize(value: string) {
   return value.toLowerCase().replace(/[_-]+/g, " ").trim();
 }
 
+type SearchField = "name" | "district" | "province" | "tags" | "reasoning" | "routeRisk";
+
+const SAFETY_BOILERPLATE_PATTERNS = [
+  "Trekking — exposed terrain increases landslide and wind risk",
+  "Solo travel (×1.2) — no group safety net",
+  "High risk tolerance — penalties weighted",
+  "Low risk tolerance — penalties weighted",
+  "No significant current hazards — conditions appear favourable",
+];
+
+const ROUTE_BOILERPLATE_PATTERNS = [
+  "flood risk during monsoon trekking",
+];
+
+function getSearchField(destination: Destination, field: SearchField): string {
+  switch (field) {
+    case "name": return normalize(destination.name);
+    case "district": return normalize(destination.district);
+    case "province": return normalize(destination.province);
+    case "tags": return normalize((destination.tags ?? []).join(" "));
+    case "reasoning":
+      return normalize(
+        (destination.reasoning ?? []).filter(
+          (r) => !SAFETY_BOILERPLATE_PATTERNS.some((pattern) => r.startsWith(pattern))
+        ).join(" ")
+      );
+    case "routeRisk":
+      return normalize(
+        (destination.routeRisk?.decisionTrace?.reasoning ?? []).filter(
+          (r) => !ROUTE_BOILERPLATE_PATTERNS.some((pattern) => r.includes(pattern))
+        ).join(" ")
+      );
+  }
+}
+
 function getSearchText(destination: Destination) {
   return normalize([
     destination.name,
     destination.district,
     destination.province,
-    destination.category,
     ...(destination.tags ?? []),
-    ...destination.reasoning,
-    ...(destination.routeRisk?.decisionTrace?.reasoning ?? []),
+    ...(destination.reasoning ?? []).filter(
+      (r) => !SAFETY_BOILERPLATE_PATTERNS.some((pattern) => r.startsWith(pattern))
+    ),
+    ...(destination.routeRisk?.decisionTrace?.reasoning ?? []).filter(
+      (r) => !ROUTE_BOILERPLATE_PATTERNS.some((pattern) => r.includes(pattern))
+    ),
   ].join(" "));
+}
+
+function fieldMatchesPreference(fieldText: string, preference: string): boolean {
+  if (fieldText.includes(preference)) return true;
+  return (PREFERENCE_KEYWORDS[preference] ?? []).some((keyword) => fieldText.includes(keyword));
 }
 
 function matchesPreference(destination: Destination, profile: UserProfile | null) {
@@ -112,8 +157,17 @@ function matchesPreference(destination: Destination, profile: UserProfile | null
 
   const searchText = getSearchText(destination);
   return preferences.some((preference) => {
-    if (searchText.includes(preference)) return true;
-    return (PREFERENCE_KEYWORDS[preference] ?? []).some((keyword) => searchText.includes(keyword));
+    if (!searchText.includes(preference) &&
+        !(PREFERENCE_KEYWORDS[preference] ?? []).some((keyword) => searchText.includes(keyword))) {
+      return false;
+    }
+
+    const fields: SearchField[] = ["name", "tags", "reasoning", "district", "routeRisk"];
+    const matchCount = fields.filter((field) =>
+      fieldMatchesPreference(getSearchField(destination, field), preference)
+    ).length;
+
+    return matchCount >= 2;
   });
 }
 
@@ -135,6 +189,28 @@ function isNearby(destination: Destination, profile: UserProfile | null, distanc
   return !!profile?.homeLocation?.province && destination.province === profile.homeLocation.province;
 }
 
+/**
+ * Health signal: only true when explicit health data exists AND
+ * the destination is appropriate for the user's health profile.
+ * If no health data, returns false (health-requiring tiers are skipped).
+ */
+function getHealthSignal(destination: Destination, profile: UserProfile | null): boolean {
+  const health = profile?.health;
+  if (!health) return false;
+
+  if (health.mobilityLimited && destination.routeAccessible === false) return false;
+  if (health.fitnessLevel === "LOW" && (destination.altitude ?? 0) > 1800) return false;
+  if (health.chronicConditions?.some((c) => ["asthma", "heart", "hypertension"].includes(c))) {
+    if (destination.altitude && destination.altitude > 2500) return false;
+  }
+
+  return true;
+}
+
+function getPopularSignal(destination: Destination): boolean {
+  return (destination.popularityScore ?? 0) > POPULAR_THRESHOLD;
+}
+
 export function isHardFilteredRecommendation(destination: Destination) {
   if (destination.safetyLevel === "HIGH_RISK" || destination.safetyLevel === "EXTREME") return true;
   if (destination.routeRisk?.routeRiskLevel === "HIGH_RISK" || destination.routeRisk?.routeRiskLevel === "EXTREME") return true;
@@ -144,21 +220,35 @@ export function isHardFilteredRecommendation(destination: Destination) {
   return HARD_FILTER_TERMS.some((term) => routeText.includes(term));
 }
 
+/**
+ * 8-tier priority system:
+ *
+ *  1. Preference + Health + Safe      + Nearby   (highest)
+ *  2. Preference + Health + Caution    + Nearby
+ *  3. Preference           + Safe      + Nearby
+ *  4. Preference           + Safe
+ *  5. Preference           + Caution
+ *  6. Popular              + Safe      + Nearby
+ *  7. Popular              + Safe
+ *  8. Popular              + Caution              (lowest)
+ */
 function getTier(signals: RankedDestination["signals"], destination: Destination): RecommendationTier | null {
-  const noKnownMajorDanger = destination.safetyLevel === "SAFE" || destination.safetyLevel === "CAUTION";
+  const { preference, health, safe, caution, nearby, popular } = signals;
 
-  if (signals.safe && signals.accessible && signals.preference && signals.nearby) return TIERS[0];
-  if (signals.safe && signals.accessible && signals.preference) return TIERS[1];
-  if (signals.safe && signals.accessible && signals.nearby) return TIERS[2];
-  if (signals.safe && signals.partiallyAccessible && signals.preference && signals.nearby) return TIERS[3];
-  if (signals.safe && signals.partiallyAccessible && signals.nearby) return TIERS[4];
-  if (noKnownMajorDanger && signals.accessible && signals.preference && signals.nearby) return TIERS[5];
-  if (noKnownMajorDanger && signals.accessible && signals.nearby) return TIERS[6];
-  if (noKnownMajorDanger && signals.preference && signals.nearby) return TIERS[7];
-  if (noKnownMajorDanger && signals.preference) return TIERS[8];
-  if (noKnownMajorDanger && signals.nearby) return TIERS[9];
+  if (preference && health && safe && nearby) return TIERS[0];
+  if (preference && health && caution && nearby) return TIERS[1];
+  if (preference && safe && nearby) return TIERS[2];
+  if (preference && safe) return TIERS[3];
+  if (preference && caution) return TIERS[4];
+  if (popular && safe && nearby) return TIERS[5];
+  if (popular && safe) return TIERS[6];
+  if (popular && caution) return TIERS[7];
+
   return null;
 }
+
+const TERRAIN_INTERESTS = new Set(["trekking", "hiking", "adventure", "nature", "wildlife"]);
+const LOWLAND_INTERESTS = new Set(["relaxing", "family"]);
 
 function tieBreakerScore(destination: Destination, profile: UserProfile | null, distanceKm: number | null) {
   let score = destination.safetyScore;
@@ -168,11 +258,26 @@ function tieBreakerScore(destination: Destination, profile: UserProfile | null, 
   score += destination.confidence ? destination.confidence * 0.05 : 0;
   if (distanceKm != null) score += Math.max(0, 35 - distanceKm / 4);
 
+  const altitude = destination.altitude ?? 0;
+  const interests = new Set((profile?.preference?.interests ?? []).map(normalize));
+
+  if (altitude > 0) {
+    const hasTerrainInterest = [...interests].some((i) => TERRAIN_INTERESTS.has(i));
+    const hasLowlandInterest = [...interests].some((i) => LOWLAND_INTERESTS.has(i));
+
+    if (hasTerrainInterest && !hasLowlandInterest) {
+      score += Math.min(altitude / 100, 30);
+    }
+    if (hasLowlandInterest && !hasTerrainInterest) {
+      if (altitude < 500) score += 10;
+    }
+  }
+
   const health = profile?.health;
   if (health?.mobilityLimited && destination.routeAccessible === false) score -= 50;
-  if (health?.fitnessLevel === "LOW" && destination.altitude && destination.altitude > 1800) score -= 30;
+  if (health?.fitnessLevel === "LOW" && altitude > 1800) score -= 30;
   if (health?.chronicConditions?.some((c) => ["asthma", "heart", "hypertension"].includes(c))) {
-    if (destination.altitude && destination.altitude > 2500) score -= 35;
+    if (altitude > 2500) score -= 35;
   }
 
   return score;
@@ -185,17 +290,15 @@ export function rankRecommendedDestinations(
   return destinations
     .filter((destination) => !isHardFilteredRecommendation(destination))
     .map((destination) => {
-      const routeLevel = destination.routeRisk?.routeRiskLevel;
       const distanceKm = distanceFromProfile(destination, profile);
       const safe = destination.safetyLevel === "SAFE";
-      const accessible = destination.routeAccessible !== false && (!routeLevel || routeLevel === "SAFE");
-      const partiallyAccessible =
-        !accessible &&
-        (destination.routeAccessible !== false || routeLevel === "SAFE" || routeLevel === "CAUTION") &&
-        (!routeLevel || routeLevel === "CAUTION" || routeLevel === "SAFE");
+      const caution = destination.safetyLevel === "CAUTION";
       const preference = matchesPreference(destination, profile);
+      const health = getHealthSignal(destination, profile);
       const nearby = isNearby(destination, profile, distanceKm);
-      const signals = { safe, accessible, partiallyAccessible, preference, nearby, distanceKm };
+      const popular = getPopularSignal(destination);
+
+      const signals = { preference, health, safe, caution, nearby, popular, distanceKm };
       const tier = getTier(signals, destination);
       if (!tier) return null;
 
@@ -203,7 +306,7 @@ export function rankRecommendedDestinations(
         destination,
         signals,
         tier,
-        score: (11 - tier.id) * 1000 + tieBreakerScore(destination, profile, distanceKm),
+        score: (8 - tier.id) * 1000 + tieBreakerScore(destination, profile, distanceKm),
       };
     })
     .filter((item): item is RankedDestination => item !== null)
@@ -212,5 +315,11 @@ export function rankRecommendedDestinations(
 
 export function recommendationSortScore(destination: Destination, profile: UserProfile | null) {
   if (isHardFilteredRecommendation(destination)) return -100_000 + destination.safetyScore;
-  return rankRecommendedDestinations([destination], profile)[0]?.score ?? destination.safetyScore;
+  const ranked = rankRecommendedDestinations([destination], profile);
+  if (ranked.length > 0) return ranked[0].score;
+
+  const hasPref = (profile?.preference?.interests?.length ?? 0) > 0;
+  if (hasPref) return -50_000 + destination.safetyScore;
+
+  return destination.safetyScore;
 }

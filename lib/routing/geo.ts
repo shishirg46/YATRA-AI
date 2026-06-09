@@ -72,3 +72,34 @@ export function nameSimilarity(a: string, b: string): number {
   const overlap = aWords.filter((w) => w.length > 2 && bWords.includes(w)).length;
   return overlap / Math.max(aWords.length, bWords.length, 1);
 }
+
+/**
+ * Resample a polyline into evenly-spaced points at `intervalMeters` intervals.
+ * Uses linear interpolation between original waypoints.
+ */
+export function resamplePolyline(
+  points: { lat: number; lon: number }[],
+  intervalMeters: number
+): { lat: number; lon: number }[] {
+  if (points.length < 2) return [...points];
+  const result: { lat: number; lon: number }[] = [{ ...points[0] }];
+  let accumulated = 0;
+  for (let i = 1; i < points.length; i++) {
+    const segDist =
+      haversineKm(points[i - 1].lat, points[i - 1].lon, points[i].lat, points[i].lon) * 1000;
+    if (segDist === 0) continue;
+    accumulated += segDist;
+    if (accumulated >= intervalMeters) {
+      const frac = 1 - (accumulated - intervalMeters) / segDist;
+      result.push({
+        lat: points[i - 1].lat + (points[i].lat - points[i - 1].lat) * frac,
+        lon: points[i - 1].lon + (points[i].lon - points[i - 1].lon) * frac,
+      });
+      accumulated = 0;
+    }
+  }
+  const last = points[points.length - 1];
+  const lastR = result[result.length - 1];
+  if (lastR.lat !== last.lat || lastR.lon !== last.lon) result.push({ ...last });
+  return result;
+}

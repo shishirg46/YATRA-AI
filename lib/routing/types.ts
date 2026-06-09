@@ -117,6 +117,15 @@ export interface RouteIntelligence {
   vehicleProfile: VehicleProfile;
 }
 
+export interface HazardProfile {
+  landslideExposure: number;   // 0-100, independent per segment
+  floodExposure: number;       // 0-100
+  weatherRisk: number;         // 0-100
+  roadConditionRisk: number;   // 0-100
+  seismicRisk: number;         // 0-100
+  composite: number;           // 0-100 weighted blend
+}
+
 export interface BuiltRouteSegment {
   index: number;
   from: RouteNode;
@@ -125,6 +134,15 @@ export interface BuiltRouteSegment {
   riskLevel?: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
   riskScore?: number;
   hazards?: string[];
+  hazardProfile?: HazardProfile;
+}
+
+export interface TripIntelligence {
+  optimalDepartureTime: string | null;
+  monsoonWarning: string | null;
+  driverAdvisories: string[];
+  segmentHazards: Record<number, HazardProfile>;
+  seasonalNote: string | null;
 }
 
 export interface PerSegmentRoute {
@@ -161,6 +179,7 @@ export interface BuiltRoute {
   segmentRoutes?: PerSegmentRoute[];
   source: string;
   resolutionNote?: string;
+  tripIntelligence?: TripIntelligence;
 }
 
 export interface BuildRouteInput {

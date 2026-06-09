@@ -347,11 +347,11 @@ export default function DashboardPage() {
         setError(`Error ${res.status}: ${json.message ?? "Unknown error"}`);
         return;
       }
-      if (json.user?.role === "ADMIN") {
+      if (json.user?.role === "ADMIN" && !window.location.search.includes("mode=user")) {
         router.replace("/admin/dashboard");
         return;
       }
-      if (json.user?.role === "ANALYST") {
+      if (json.user?.role === "ANALYST" && !window.location.search.includes("mode=user")) {
         router.replace("/admin/analytics");
         return;
       }

@@ -22,10 +22,36 @@ export interface PillarScoreItem {
   summary: string;
 }
 
+export interface SegmentDetail {
+  index: number;
+  from: string;
+  to: string;
+  fromLat: number;
+  fromLon: number;
+  toLat: number;
+  toLon: number;
+  distanceKm: number;
+  riskLevel: string;
+  riskScore: number;
+  gradient: number | null;
+  roadSurface: { highway: string; surface: string | null; riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME" } | null;
+  riverProximityKm: number | null;
+  elevationStart: number | null;
+  elevationEnd: number | null;
+  hazards: string[];
+  floodIndex: number;
+  landslideIndex: number;
+  earthquakeIndex: number;
+  temperature: number;
+  rainfall: number;
+  windSpeed: number;
+}
+
 export interface PillarModelResult {
   totalScore: number;
   overallLevel: "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME";
   pillars: PillarScoreItem[];
+  segmentDetails: SegmentDetail[];
   route: {
     highway: string;
     breakpoints: string[];
@@ -295,17 +321,31 @@ export async function computePillarModel(input: {
         landslides: landslideCount,
       });
     }
+    const extraDetails: string[] = [];
+    if (seg.gradient !== undefined && seg.gradient !== null && Math.abs(seg.gradient) > 8) {
+      extraDetails.push(`Grade ${seg.gradient >= 0 ? "+" : ""}${seg.gradient}%`);
+    }
+    if (seg.roadSurface) {
+      const surf = seg.roadSurface.surface ? `/${seg.roadSurface.surface}` : "";
+      extraDetails.push(`${seg.roadSurface.highway}${surf}`);
+    }
+    if (seg.riverProximityKm !== undefined && seg.riverProximityKm !== null && seg.riverProximityKm < 1) {
+      extraDetails.push(`River ${Math.round(seg.riverProximityKm * 1000)}m`);
+    }
+    const extraStr = extraDetails.length > 0 ? ` — ${extraDetails.join(", ")}` : "";
+
     if ((segPenalty >= 1.25 || (seg.hazards ?? []).length > 0) && districtFrom !== districtTo && !seenFlagSections.has(sectionKey)) {
       seenFlagSections.add(sectionKey);
       segFlags.push({
         where: `${districtFrom} / ${districtTo} — ${section}`,
         when: extractMonthsHint(travelMonth),
-        what: `${Math.round(flood * 100)}% flood risk, ${Math.round(land * 100)}% landslide risk, ${eqEvents.length} notable seismic events`,
+        what: `${Math.round(flood * 100)}% flood risk, ${Math.round(land * 100)}% landslide risk, ${eqEvents.length} notable seismic events${extraStr}`,
         effect: segPenalty > 2 ? "Possible delays or partial road blockage. Keep 1 extra buffer day." : "Monitor advisories before departure.",
         status: segPenalty > 2.8 ? "Blocked" : segPenalty > 1.4 ? "Advisory" : "Clear",
         sources: [
           seg.evidence?.historical?.source ?? "bipad+usgs",
           "OpenStreetMap route geometry",
+          ...(seg.roadSurface ? ["OSM road surface tags"] : []),
         ],
       });
     }
@@ -476,10 +516,36 @@ export async function computePillarModel(input: {
     { factor: "personal_safety", points: personalScore },
   ];
 
+  const segmentDetails: SegmentDetail[] = (bestRoute?.segments ?? []).map((seg) => ({
+    index: seg.index,
+    from: seg.startPoint.name ?? nearestPlaceName(seg.startPoint.lat, seg.startPoint.lon, places) ?? `(${seg.startPoint.lat.toFixed(3)}, ${seg.startPoint.lon.toFixed(3)})`,
+    to: seg.endPoint.name ?? nearestPlaceName(seg.endPoint.lat, seg.endPoint.lon, places) ?? `(${seg.endPoint.lat.toFixed(3)}, ${seg.endPoint.lon.toFixed(3)})`,
+    fromLat: seg.startPoint.lat,
+    fromLon: seg.startPoint.lon,
+    toLat: seg.endPoint.lat,
+    toLon: seg.endPoint.lon,
+    distanceKm: Math.round((seg.distance / 1000) * 10) / 10,
+    riskLevel: seg.riskLevel,
+    riskScore: Math.round(seg.riskScore * 100),
+    gradient: seg.gradient ?? null,
+    roadSurface: seg.roadSurface ?? null,
+    riverProximityKm: seg.riverProximityKm ?? null,
+    elevationStart: seg.elevationStart ?? null,
+    elevationEnd: seg.elevationEnd ?? null,
+    hazards: seg.hazards,
+    floodIndex: seg.realtime?.floodIndex ?? 0,
+    landslideIndex: seg.realtime?.landslideIndex ?? 0,
+    earthquakeIndex: seg.realtime?.earthquakeIndex ?? 0,
+    temperature: seg.realtime?.temperature ?? 0,
+    rainfall: seg.realtime?.rainfall ?? 0,
+    windSpeed: seg.realtime?.windSpeed ?? 0,
+  }));
+
   return {
     totalScore,
     overallLevel: toOverallLevel(totalScore),
     pillars,
+    segmentDetails,
     route: {
       highway: routeName,
       breakpoints: (bestRoute?.waypoints ?? [])

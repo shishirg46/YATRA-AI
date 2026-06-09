@@ -314,39 +314,58 @@ model Place {
 }
 
 model RouteNode {
-  id             String              @id @default(uuid())
-  name           String
-  type           PlaceType           @default(ROUTE_NODE)
-  latitude       Float
-  longitude      Float
-  placeId        String?
-  isHub          Boolean             @default(false)
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-  edgesFrom      RouteEdge[]         @relation("EdgeFrom")
-  edgesTo        RouteEdge[]         @relation("EdgeTo")
-  place          Place?              @relation(fields: [placeId], references: [id])
-  savedLocations UserSavedLocation[]
+  id                   String              @id @default(uuid())
+  name                 String
+  type                 PlaceType           @default(ROUTE_NODE)
+  latitude             Float
+  longitude            Float
+  elevationM           Float?
+  accessibilityLevel   NodeAccessibility?
+  strategicImportance  StrategicImportance?
+  hazardExposureIndex  Float?
+  connectivityRank     Int?
+  monsoonVulnerability Float?
+  placeId              String?
+  isHub                Boolean             @default(false)
+  isActive             Boolean             @default(true)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  edgesFrom            RouteEdge[]         @relation("EdgeFrom")
+  edgesTo              RouteEdge[]         @relation("EdgeTo")
+  place                Place?              @relation(fields: [placeId], references: [id])
+  savedLocations       UserSavedLocation[]
 
   @@index([latitude, longitude])
   @@index([isHub, isActive])
+  @@index([strategicImportance])
   @@map("route_node")
 }
 
 model RouteEdge {
-  id              String    @id @default(uuid())
-  fromNodeId      String
-  toNodeId        String
-  distanceKm      Float
-  roadName        String?
-  isBidirectional Boolean   @default(true)
-  fromNode        RouteNode @relation("EdgeFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
-  toNode          RouteNode @relation("EdgeTo", fields: [toNodeId], references: [id], onDelete: Cascade)
+  id                 String         @id @default(uuid())
+  fromNodeId         String
+  toNodeId           String
+  distanceKm         Float
+  surfaceType        RoadSurface?
+  roadCondition      RoadCondition?
+  travelReliability  Float?
+  gradientPct        Float?
+  landslideRisk      Float?
+  floodRisk          Float?
+  weatherSensitivity Float?
+  reliabilityScore   Float?
+  monsoonVulnerability Float?
+  seasonalClosure    String?
+  roadName           String?
+  isBidirectional    Boolean        @default(true)
+  fromNode           RouteNode      @relation("EdgeFrom", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  toNode             RouteNode      @relation("EdgeTo", fields: [toNodeId], references: [id], onDelete: Cascade)
 
   @@unique([fromNodeId, toNodeId])
   @@index([fromNodeId])
   @@index([toNodeId])
+  @@index([roadCondition])
+  @@index([travelReliability])
   @@map("route_edge")
 }
 
@@ -667,6 +686,39 @@ enum MemberStatus {
   PENDING
   ACCEPTED
   DECLINED
+}
+
+enum NodeAccessibility {
+  YEAR_ROUND
+  SEASONAL
+  DIFFICULT
+  IMPASSABLE
+}
+
+enum StrategicImportance {
+  MAJOR_HIGHWAY
+  REGIONAL_HUB
+  BORDER_CROSSING
+  TOURIST_GATEWAY
+  MOUNTAIN_PASS
+  RIVER_CROSSING
+  TRANSIT_HUB
+  LOCAL_ROAD
+}
+
+enum RoadCondition {
+  GOOD
+  FAIR
+  POOR
+  DIRT_TRACK
+  IMPASSABLE
+}
+
+enum RoadSurface {
+  PAVED
+  GRAVEL
+  DIRT
+  UNKNOWN
 }
 
 enum PlaceType {

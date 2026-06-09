@@ -28,10 +28,24 @@ export type AggregateRouteEdge = {
 
 export type RouteEdgeAvgAggregateOutputType = {
   distanceKm: number | null
+  travelReliability: number | null
+  gradientPct: number | null
+  landslideRisk: number | null
+  floodRisk: number | null
+  weatherSensitivity: number | null
+  reliabilityScore: number | null
+  monsoonVulnerability: number | null
 }
 
 export type RouteEdgeSumAggregateOutputType = {
   distanceKm: number | null
+  travelReliability: number | null
+  gradientPct: number | null
+  landslideRisk: number | null
+  floodRisk: number | null
+  weatherSensitivity: number | null
+  reliabilityScore: number | null
+  monsoonVulnerability: number | null
 }
 
 export type RouteEdgeMinAggregateOutputType = {
@@ -39,6 +53,16 @@ export type RouteEdgeMinAggregateOutputType = {
   fromNodeId: string | null
   toNodeId: string | null
   distanceKm: number | null
+  surfaceType: $Enums.RoadSurface | null
+  roadCondition: $Enums.RoadCondition | null
+  travelReliability: number | null
+  gradientPct: number | null
+  landslideRisk: number | null
+  floodRisk: number | null
+  weatherSensitivity: number | null
+  reliabilityScore: number | null
+  monsoonVulnerability: number | null
+  seasonalClosure: string | null
   roadName: string | null
   isBidirectional: boolean | null
 }
@@ -48,6 +72,16 @@ export type RouteEdgeMaxAggregateOutputType = {
   fromNodeId: string | null
   toNodeId: string | null
   distanceKm: number | null
+  surfaceType: $Enums.RoadSurface | null
+  roadCondition: $Enums.RoadCondition | null
+  travelReliability: number | null
+  gradientPct: number | null
+  landslideRisk: number | null
+  floodRisk: number | null
+  weatherSensitivity: number | null
+  reliabilityScore: number | null
+  monsoonVulnerability: number | null
+  seasonalClosure: string | null
   roadName: string | null
   isBidirectional: boolean | null
 }
@@ -57,6 +91,16 @@ export type RouteEdgeCountAggregateOutputType = {
   fromNodeId: number
   toNodeId: number
   distanceKm: number
+  surfaceType: number
+  roadCondition: number
+  travelReliability: number
+  gradientPct: number
+  landslideRisk: number
+  floodRisk: number
+  weatherSensitivity: number
+  reliabilityScore: number
+  monsoonVulnerability: number
+  seasonalClosure: number
   roadName: number
   isBidirectional: number
   _all: number
@@ -65,10 +109,24 @@ export type RouteEdgeCountAggregateOutputType = {
 
 export type RouteEdgeAvgAggregateInputType = {
   distanceKm?: true
+  travelReliability?: true
+  gradientPct?: true
+  landslideRisk?: true
+  floodRisk?: true
+  weatherSensitivity?: true
+  reliabilityScore?: true
+  monsoonVulnerability?: true
 }
 
 export type RouteEdgeSumAggregateInputType = {
   distanceKm?: true
+  travelReliability?: true
+  gradientPct?: true
+  landslideRisk?: true
+  floodRisk?: true
+  weatherSensitivity?: true
+  reliabilityScore?: true
+  monsoonVulnerability?: true
 }
 
 export type RouteEdgeMinAggregateInputType = {
@@ -76,6 +134,16 @@ export type RouteEdgeMinAggregateInputType = {
   fromNodeId?: true
   toNodeId?: true
   distanceKm?: true
+  surfaceType?: true
+  roadCondition?: true
+  travelReliability?: true
+  gradientPct?: true
+  landslideRisk?: true
+  floodRisk?: true
+  weatherSensitivity?: true
+  reliabilityScore?: true
+  monsoonVulnerability?: true
+  seasonalClosure?: true
   roadName?: true
   isBidirectional?: true
 }
@@ -85,6 +153,16 @@ export type RouteEdgeMaxAggregateInputType = {
   fromNodeId?: true
   toNodeId?: true
   distanceKm?: true
+  surfaceType?: true
+  roadCondition?: true
+  travelReliability?: true
+  gradientPct?: true
+  landslideRisk?: true
+  floodRisk?: true
+  weatherSensitivity?: true
+  reliabilityScore?: true
+  monsoonVulnerability?: true
+  seasonalClosure?: true
   roadName?: true
   isBidirectional?: true
 }
@@ -94,6 +172,16 @@ export type RouteEdgeCountAggregateInputType = {
   fromNodeId?: true
   toNodeId?: true
   distanceKm?: true
+  surfaceType?: true
+  roadCondition?: true
+  travelReliability?: true
+  gradientPct?: true
+  landslideRisk?: true
+  floodRisk?: true
+  weatherSensitivity?: true
+  reliabilityScore?: true
+  monsoonVulnerability?: true
+  seasonalClosure?: true
   roadName?: true
   isBidirectional?: true
   _all?: true
@@ -190,6 +278,16 @@ export type RouteEdgeGroupByOutputType = {
   fromNodeId: string
   toNodeId: string
   distanceKm: number
+  surfaceType: $Enums.RoadSurface | null
+  roadCondition: $Enums.RoadCondition | null
+  travelReliability: number | null
+  gradientPct: number | null
+  landslideRisk: number | null
+  floodRisk: number | null
+  weatherSensitivity: number | null
+  reliabilityScore: number | null
+  monsoonVulnerability: number | null
+  seasonalClosure: string | null
   roadName: string | null
   isBidirectional: boolean
   _count: RouteEdgeCountAggregateOutputType | null
@@ -222,6 +320,16 @@ export type RouteEdgeWhereInput = {
   fromNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   toNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   distanceKm?: Prisma.FloatFilter<"RouteEdge"> | number
+  surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"RouteEdge"> | $Enums.RoadSurface | null
+  roadCondition?: Prisma.EnumRoadConditionNullableFilter<"RouteEdge"> | $Enums.RoadCondition | null
+  travelReliability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  gradientPct?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  landslideRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  floodRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  weatherSensitivity?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  reliabilityScore?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  seasonalClosure?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   roadName?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   isBidirectional?: Prisma.BoolFilter<"RouteEdge"> | boolean
   fromNode?: Prisma.XOR<Prisma.RouteNodeScalarRelationFilter, Prisma.RouteNodeWhereInput>
@@ -233,6 +341,16 @@ export type RouteEdgeOrderByWithRelationInput = {
   fromNodeId?: Prisma.SortOrder
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
+  surfaceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  roadCondition?: Prisma.SortOrderInput | Prisma.SortOrder
+  travelReliability?: Prisma.SortOrderInput | Prisma.SortOrder
+  gradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  floodRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrderInput | Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
+  seasonalClosure?: Prisma.SortOrderInput | Prisma.SortOrder
   roadName?: Prisma.SortOrderInput | Prisma.SortOrder
   isBidirectional?: Prisma.SortOrder
   fromNode?: Prisma.RouteNodeOrderByWithRelationInput
@@ -248,6 +366,16 @@ export type RouteEdgeWhereUniqueInput = Prisma.AtLeast<{
   fromNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   toNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   distanceKm?: Prisma.FloatFilter<"RouteEdge"> | number
+  surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"RouteEdge"> | $Enums.RoadSurface | null
+  roadCondition?: Prisma.EnumRoadConditionNullableFilter<"RouteEdge"> | $Enums.RoadCondition | null
+  travelReliability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  gradientPct?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  landslideRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  floodRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  weatherSensitivity?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  reliabilityScore?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  seasonalClosure?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   roadName?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   isBidirectional?: Prisma.BoolFilter<"RouteEdge"> | boolean
   fromNode?: Prisma.XOR<Prisma.RouteNodeScalarRelationFilter, Prisma.RouteNodeWhereInput>
@@ -259,6 +387,16 @@ export type RouteEdgeOrderByWithAggregationInput = {
   fromNodeId?: Prisma.SortOrder
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
+  surfaceType?: Prisma.SortOrderInput | Prisma.SortOrder
+  roadCondition?: Prisma.SortOrderInput | Prisma.SortOrder
+  travelReliability?: Prisma.SortOrderInput | Prisma.SortOrder
+  gradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  floodRisk?: Prisma.SortOrderInput | Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrderInput | Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrderInput | Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
+  seasonalClosure?: Prisma.SortOrderInput | Prisma.SortOrder
   roadName?: Prisma.SortOrderInput | Prisma.SortOrder
   isBidirectional?: Prisma.SortOrder
   _count?: Prisma.RouteEdgeCountOrderByAggregateInput
@@ -276,6 +414,16 @@ export type RouteEdgeScalarWhereWithAggregatesInput = {
   fromNodeId?: Prisma.StringWithAggregatesFilter<"RouteEdge"> | string
   toNodeId?: Prisma.StringWithAggregatesFilter<"RouteEdge"> | string
   distanceKm?: Prisma.FloatWithAggregatesFilter<"RouteEdge"> | number
+  surfaceType?: Prisma.EnumRoadSurfaceNullableWithAggregatesFilter<"RouteEdge"> | $Enums.RoadSurface | null
+  roadCondition?: Prisma.EnumRoadConditionNullableWithAggregatesFilter<"RouteEdge"> | $Enums.RoadCondition | null
+  travelReliability?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  gradientPct?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  landslideRisk?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  floodRisk?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  weatherSensitivity?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  reliabilityScore?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableWithAggregatesFilter<"RouteEdge"> | number | null
+  seasonalClosure?: Prisma.StringNullableWithAggregatesFilter<"RouteEdge"> | string | null
   roadName?: Prisma.StringNullableWithAggregatesFilter<"RouteEdge"> | string | null
   isBidirectional?: Prisma.BoolWithAggregatesFilter<"RouteEdge"> | boolean
 }
@@ -283,6 +431,16 @@ export type RouteEdgeScalarWhereWithAggregatesInput = {
 export type RouteEdgeCreateInput = {
   id?: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
   fromNode: Prisma.RouteNodeCreateNestedOneWithoutEdgesFromInput
@@ -294,6 +452,16 @@ export type RouteEdgeUncheckedCreateInput = {
   fromNodeId: string
   toNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -301,6 +469,16 @@ export type RouteEdgeUncheckedCreateInput = {
 export type RouteEdgeUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fromNode?: Prisma.RouteNodeUpdateOneRequiredWithoutEdgesFromNestedInput
@@ -312,6 +490,16 @@ export type RouteEdgeUncheckedUpdateInput = {
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -321,6 +509,16 @@ export type RouteEdgeCreateManyInput = {
   fromNodeId: string
   toNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -328,6 +526,16 @@ export type RouteEdgeCreateManyInput = {
 export type RouteEdgeUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -337,6 +545,16 @@ export type RouteEdgeUncheckedUpdateManyInput = {
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -361,12 +579,29 @@ export type RouteEdgeCountOrderByAggregateInput = {
   fromNodeId?: Prisma.SortOrder
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
+  surfaceType?: Prisma.SortOrder
+  roadCondition?: Prisma.SortOrder
+  travelReliability?: Prisma.SortOrder
+  gradientPct?: Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrder
+  floodRisk?: Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
+  seasonalClosure?: Prisma.SortOrder
   roadName?: Prisma.SortOrder
   isBidirectional?: Prisma.SortOrder
 }
 
 export type RouteEdgeAvgOrderByAggregateInput = {
   distanceKm?: Prisma.SortOrder
+  travelReliability?: Prisma.SortOrder
+  gradientPct?: Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrder
+  floodRisk?: Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
 }
 
 export type RouteEdgeMaxOrderByAggregateInput = {
@@ -374,6 +609,16 @@ export type RouteEdgeMaxOrderByAggregateInput = {
   fromNodeId?: Prisma.SortOrder
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
+  surfaceType?: Prisma.SortOrder
+  roadCondition?: Prisma.SortOrder
+  travelReliability?: Prisma.SortOrder
+  gradientPct?: Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrder
+  floodRisk?: Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
+  seasonalClosure?: Prisma.SortOrder
   roadName?: Prisma.SortOrder
   isBidirectional?: Prisma.SortOrder
 }
@@ -383,12 +628,29 @@ export type RouteEdgeMinOrderByAggregateInput = {
   fromNodeId?: Prisma.SortOrder
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
+  surfaceType?: Prisma.SortOrder
+  roadCondition?: Prisma.SortOrder
+  travelReliability?: Prisma.SortOrder
+  gradientPct?: Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrder
+  floodRisk?: Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
+  seasonalClosure?: Prisma.SortOrder
   roadName?: Prisma.SortOrder
   isBidirectional?: Prisma.SortOrder
 }
 
 export type RouteEdgeSumOrderByAggregateInput = {
   distanceKm?: Prisma.SortOrder
+  travelReliability?: Prisma.SortOrder
+  gradientPct?: Prisma.SortOrder
+  landslideRisk?: Prisma.SortOrder
+  floodRisk?: Prisma.SortOrder
+  weatherSensitivity?: Prisma.SortOrder
+  reliabilityScore?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
 }
 
 export type RouteEdgeCreateNestedManyWithoutFromNodeInput = {
@@ -475,9 +737,27 @@ export type RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput = {
   deleteMany?: Prisma.RouteEdgeScalarWhereInput | Prisma.RouteEdgeScalarWhereInput[]
 }
 
+export type NullableEnumRoadSurfaceFieldUpdateOperationsInput = {
+  set?: $Enums.RoadSurface | null
+}
+
+export type NullableEnumRoadConditionFieldUpdateOperationsInput = {
+  set?: $Enums.RoadCondition | null
+}
+
 export type RouteEdgeCreateWithoutFromNodeInput = {
   id?: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
   toNode: Prisma.RouteNodeCreateNestedOneWithoutEdgesToInput
@@ -487,6 +767,16 @@ export type RouteEdgeUncheckedCreateWithoutFromNodeInput = {
   id?: string
   toNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -504,6 +794,16 @@ export type RouteEdgeCreateManyFromNodeInputEnvelope = {
 export type RouteEdgeCreateWithoutToNodeInput = {
   id?: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
   fromNode: Prisma.RouteNodeCreateNestedOneWithoutEdgesFromInput
@@ -513,6 +813,16 @@ export type RouteEdgeUncheckedCreateWithoutToNodeInput = {
   id?: string
   fromNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -551,6 +861,16 @@ export type RouteEdgeScalarWhereInput = {
   fromNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   toNodeId?: Prisma.StringFilter<"RouteEdge"> | string
   distanceKm?: Prisma.FloatFilter<"RouteEdge"> | number
+  surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"RouteEdge"> | $Enums.RoadSurface | null
+  roadCondition?: Prisma.EnumRoadConditionNullableFilter<"RouteEdge"> | $Enums.RoadCondition | null
+  travelReliability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  gradientPct?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  landslideRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  floodRisk?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  weatherSensitivity?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  reliabilityScore?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteEdge"> | number | null
+  seasonalClosure?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   roadName?: Prisma.StringNullableFilter<"RouteEdge"> | string | null
   isBidirectional?: Prisma.BoolFilter<"RouteEdge"> | boolean
 }
@@ -575,6 +895,16 @@ export type RouteEdgeCreateManyFromNodeInput = {
   id?: string
   toNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -583,6 +913,16 @@ export type RouteEdgeCreateManyToNodeInput = {
   id?: string
   fromNodeId: string
   distanceKm: number
+  surfaceType?: $Enums.RoadSurface | null
+  roadCondition?: $Enums.RoadCondition | null
+  travelReliability?: number | null
+  gradientPct?: number | null
+  landslideRisk?: number | null
+  floodRisk?: number | null
+  weatherSensitivity?: number | null
+  reliabilityScore?: number | null
+  monsoonVulnerability?: number | null
+  seasonalClosure?: string | null
   roadName?: string | null
   isBidirectional?: boolean
 }
@@ -590,6 +930,16 @@ export type RouteEdgeCreateManyToNodeInput = {
 export type RouteEdgeUpdateWithoutFromNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   toNode?: Prisma.RouteNodeUpdateOneRequiredWithoutEdgesToNestedInput
@@ -599,6 +949,16 @@ export type RouteEdgeUncheckedUpdateWithoutFromNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -607,6 +967,16 @@ export type RouteEdgeUncheckedUpdateManyWithoutFromNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -614,6 +984,16 @@ export type RouteEdgeUncheckedUpdateManyWithoutFromNodeInput = {
 export type RouteEdgeUpdateWithoutToNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fromNode?: Prisma.RouteNodeUpdateOneRequiredWithoutEdgesFromNestedInput
@@ -623,6 +1003,16 @@ export type RouteEdgeUncheckedUpdateWithoutToNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -631,6 +1021,16 @@ export type RouteEdgeUncheckedUpdateManyWithoutToNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
+  surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
+  roadCondition?: Prisma.NullableEnumRoadConditionFieldUpdateOperationsInput | $Enums.RoadCondition | null
+  travelReliability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  landslideRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  floodRisk?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  weatherSensitivity?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  reliabilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  seasonalClosure?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isBidirectional?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
@@ -642,6 +1042,16 @@ export type RouteEdgeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   fromNodeId?: boolean
   toNodeId?: boolean
   distanceKm?: boolean
+  surfaceType?: boolean
+  roadCondition?: boolean
+  travelReliability?: boolean
+  gradientPct?: boolean
+  landslideRisk?: boolean
+  floodRisk?: boolean
+  weatherSensitivity?: boolean
+  reliabilityScore?: boolean
+  monsoonVulnerability?: boolean
+  seasonalClosure?: boolean
   roadName?: boolean
   isBidirectional?: boolean
   fromNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
@@ -653,6 +1063,16 @@ export type RouteEdgeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   fromNodeId?: boolean
   toNodeId?: boolean
   distanceKm?: boolean
+  surfaceType?: boolean
+  roadCondition?: boolean
+  travelReliability?: boolean
+  gradientPct?: boolean
+  landslideRisk?: boolean
+  floodRisk?: boolean
+  weatherSensitivity?: boolean
+  reliabilityScore?: boolean
+  monsoonVulnerability?: boolean
+  seasonalClosure?: boolean
   roadName?: boolean
   isBidirectional?: boolean
   fromNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
@@ -664,6 +1084,16 @@ export type RouteEdgeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   fromNodeId?: boolean
   toNodeId?: boolean
   distanceKm?: boolean
+  surfaceType?: boolean
+  roadCondition?: boolean
+  travelReliability?: boolean
+  gradientPct?: boolean
+  landslideRisk?: boolean
+  floodRisk?: boolean
+  weatherSensitivity?: boolean
+  reliabilityScore?: boolean
+  monsoonVulnerability?: boolean
+  seasonalClosure?: boolean
   roadName?: boolean
   isBidirectional?: boolean
   fromNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
@@ -675,11 +1105,21 @@ export type RouteEdgeSelectScalar = {
   fromNodeId?: boolean
   toNodeId?: boolean
   distanceKm?: boolean
+  surfaceType?: boolean
+  roadCondition?: boolean
+  travelReliability?: boolean
+  gradientPct?: boolean
+  landslideRisk?: boolean
+  floodRisk?: boolean
+  weatherSensitivity?: boolean
+  reliabilityScore?: boolean
+  monsoonVulnerability?: boolean
+  seasonalClosure?: boolean
   roadName?: boolean
   isBidirectional?: boolean
 }
 
-export type RouteEdgeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fromNodeId" | "toNodeId" | "distanceKm" | "roadName" | "isBidirectional", ExtArgs["result"]["routeEdge"]>
+export type RouteEdgeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fromNodeId" | "toNodeId" | "distanceKm" | "surfaceType" | "roadCondition" | "travelReliability" | "gradientPct" | "landslideRisk" | "floodRisk" | "weatherSensitivity" | "reliabilityScore" | "monsoonVulnerability" | "seasonalClosure" | "roadName" | "isBidirectional", ExtArgs["result"]["routeEdge"]>
 export type RouteEdgeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   fromNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
   toNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
@@ -704,6 +1144,16 @@ export type $RouteEdgePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     fromNodeId: string
     toNodeId: string
     distanceKm: number
+    surfaceType: $Enums.RoadSurface | null
+    roadCondition: $Enums.RoadCondition | null
+    travelReliability: number | null
+    gradientPct: number | null
+    landslideRisk: number | null
+    floodRisk: number | null
+    weatherSensitivity: number | null
+    reliabilityScore: number | null
+    monsoonVulnerability: number | null
+    seasonalClosure: string | null
     roadName: string | null
     isBidirectional: boolean
   }, ExtArgs["result"]["routeEdge"]>
@@ -1135,6 +1585,16 @@ export interface RouteEdgeFieldRefs {
   readonly fromNodeId: Prisma.FieldRef<"RouteEdge", 'String'>
   readonly toNodeId: Prisma.FieldRef<"RouteEdge", 'String'>
   readonly distanceKm: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly surfaceType: Prisma.FieldRef<"RouteEdge", 'RoadSurface'>
+  readonly roadCondition: Prisma.FieldRef<"RouteEdge", 'RoadCondition'>
+  readonly travelReliability: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly gradientPct: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly landslideRisk: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly floodRisk: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly weatherSensitivity: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly reliabilityScore: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly monsoonVulnerability: Prisma.FieldRef<"RouteEdge", 'Float'>
+  readonly seasonalClosure: Prisma.FieldRef<"RouteEdge", 'String'>
   readonly roadName: Prisma.FieldRef<"RouteEdge", 'String'>
   readonly isBidirectional: Prisma.FieldRef<"RouteEdge", 'Boolean'>
 }

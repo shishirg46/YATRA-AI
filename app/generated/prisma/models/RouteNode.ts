@@ -29,11 +29,19 @@ export type AggregateRouteNode = {
 export type RouteNodeAvgAggregateOutputType = {
   latitude: number | null
   longitude: number | null
+  elevationM: number | null
+  hazardExposureIndex: number | null
+  connectivityRank: number | null
+  monsoonVulnerability: number | null
 }
 
 export type RouteNodeSumAggregateOutputType = {
   latitude: number | null
   longitude: number | null
+  elevationM: number | null
+  hazardExposureIndex: number | null
+  connectivityRank: number | null
+  monsoonVulnerability: number | null
 }
 
 export type RouteNodeMinAggregateOutputType = {
@@ -42,6 +50,12 @@ export type RouteNodeMinAggregateOutputType = {
   type: $Enums.PlaceType | null
   latitude: number | null
   longitude: number | null
+  elevationM: number | null
+  accessibilityLevel: $Enums.NodeAccessibility | null
+  strategicImportance: $Enums.StrategicImportance | null
+  hazardExposureIndex: number | null
+  connectivityRank: number | null
+  monsoonVulnerability: number | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
@@ -55,6 +69,12 @@ export type RouteNodeMaxAggregateOutputType = {
   type: $Enums.PlaceType | null
   latitude: number | null
   longitude: number | null
+  elevationM: number | null
+  accessibilityLevel: $Enums.NodeAccessibility | null
+  strategicImportance: $Enums.StrategicImportance | null
+  hazardExposureIndex: number | null
+  connectivityRank: number | null
+  monsoonVulnerability: number | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
@@ -68,6 +88,12 @@ export type RouteNodeCountAggregateOutputType = {
   type: number
   latitude: number
   longitude: number
+  elevationM: number
+  accessibilityLevel: number
+  strategicImportance: number
+  hazardExposureIndex: number
+  connectivityRank: number
+  monsoonVulnerability: number
   placeId: number
   isHub: number
   isActive: number
@@ -80,11 +106,19 @@ export type RouteNodeCountAggregateOutputType = {
 export type RouteNodeAvgAggregateInputType = {
   latitude?: true
   longitude?: true
+  elevationM?: true
+  hazardExposureIndex?: true
+  connectivityRank?: true
+  monsoonVulnerability?: true
 }
 
 export type RouteNodeSumAggregateInputType = {
   latitude?: true
   longitude?: true
+  elevationM?: true
+  hazardExposureIndex?: true
+  connectivityRank?: true
+  monsoonVulnerability?: true
 }
 
 export type RouteNodeMinAggregateInputType = {
@@ -93,6 +127,12 @@ export type RouteNodeMinAggregateInputType = {
   type?: true
   latitude?: true
   longitude?: true
+  elevationM?: true
+  accessibilityLevel?: true
+  strategicImportance?: true
+  hazardExposureIndex?: true
+  connectivityRank?: true
+  monsoonVulnerability?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -106,6 +146,12 @@ export type RouteNodeMaxAggregateInputType = {
   type?: true
   latitude?: true
   longitude?: true
+  elevationM?: true
+  accessibilityLevel?: true
+  strategicImportance?: true
+  hazardExposureIndex?: true
+  connectivityRank?: true
+  monsoonVulnerability?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -119,6 +165,12 @@ export type RouteNodeCountAggregateInputType = {
   type?: true
   latitude?: true
   longitude?: true
+  elevationM?: true
+  accessibilityLevel?: true
+  strategicImportance?: true
+  hazardExposureIndex?: true
+  connectivityRank?: true
+  monsoonVulnerability?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -219,6 +271,12 @@ export type RouteNodeGroupByOutputType = {
   type: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM: number | null
+  accessibilityLevel: $Enums.NodeAccessibility | null
+  strategicImportance: $Enums.StrategicImportance | null
+  hazardExposureIndex: number | null
+  connectivityRank: number | null
+  monsoonVulnerability: number | null
   placeId: string | null
   isHub: boolean
   isActive: boolean
@@ -255,6 +313,12 @@ export type RouteNodeWhereInput = {
   type?: Prisma.EnumPlaceTypeFilter<"RouteNode"> | $Enums.PlaceType
   latitude?: Prisma.FloatFilter<"RouteNode"> | number
   longitude?: Prisma.FloatFilter<"RouteNode"> | number
+  elevationM?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  accessibilityLevel?: Prisma.EnumNodeAccessibilityNullableFilter<"RouteNode"> | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.EnumStrategicImportanceNullableFilter<"RouteNode"> | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -272,6 +336,12 @@ export type RouteNodeOrderByWithRelationInput = {
   type?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessibilityLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  strategicImportance?: Prisma.SortOrderInput | Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrderInput | Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrderInput | Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -292,6 +362,12 @@ export type RouteNodeWhereUniqueInput = Prisma.AtLeast<{
   type?: Prisma.EnumPlaceTypeFilter<"RouteNode"> | $Enums.PlaceType
   latitude?: Prisma.FloatFilter<"RouteNode"> | number
   longitude?: Prisma.FloatFilter<"RouteNode"> | number
+  elevationM?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  accessibilityLevel?: Prisma.EnumNodeAccessibilityNullableFilter<"RouteNode"> | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.EnumStrategicImportanceNullableFilter<"RouteNode"> | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -309,6 +385,12 @@ export type RouteNodeOrderByWithAggregationInput = {
   type?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrderInput | Prisma.SortOrder
+  accessibilityLevel?: Prisma.SortOrderInput | Prisma.SortOrder
+  strategicImportance?: Prisma.SortOrderInput | Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrderInput | Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrderInput | Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -330,6 +412,12 @@ export type RouteNodeScalarWhereWithAggregatesInput = {
   type?: Prisma.EnumPlaceTypeWithAggregatesFilter<"RouteNode"> | $Enums.PlaceType
   latitude?: Prisma.FloatWithAggregatesFilter<"RouteNode"> | number
   longitude?: Prisma.FloatWithAggregatesFilter<"RouteNode"> | number
+  elevationM?: Prisma.FloatNullableWithAggregatesFilter<"RouteNode"> | number | null
+  accessibilityLevel?: Prisma.EnumNodeAccessibilityNullableWithAggregatesFilter<"RouteNode"> | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.EnumStrategicImportanceNullableWithAggregatesFilter<"RouteNode"> | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.FloatNullableWithAggregatesFilter<"RouteNode"> | number | null
+  connectivityRank?: Prisma.IntNullableWithAggregatesFilter<"RouteNode"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableWithAggregatesFilter<"RouteNode"> | number | null
   placeId?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
@@ -343,6 +431,12 @@ export type RouteNodeCreateInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -359,6 +453,12 @@ export type RouteNodeUncheckedCreateInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -375,6 +475,12 @@ export type RouteNodeUpdateInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -391,6 +497,12 @@ export type RouteNodeUncheckedUpdateInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -407,6 +519,12 @@ export type RouteNodeCreateManyInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -420,6 +538,12 @@ export type RouteNodeUpdateManyMutationInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -432,6 +556,12 @@ export type RouteNodeUncheckedUpdateManyInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -455,6 +585,12 @@ export type RouteNodeCountOrderByAggregateInput = {
   type?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrder
+  accessibilityLevel?: Prisma.SortOrder
+  strategicImportance?: Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -465,6 +601,10 @@ export type RouteNodeCountOrderByAggregateInput = {
 export type RouteNodeAvgOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
 }
 
 export type RouteNodeMaxOrderByAggregateInput = {
@@ -473,6 +613,12 @@ export type RouteNodeMaxOrderByAggregateInput = {
   type?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrder
+  accessibilityLevel?: Prisma.SortOrder
+  strategicImportance?: Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -486,6 +632,12 @@ export type RouteNodeMinOrderByAggregateInput = {
   type?: Prisma.SortOrder
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrder
+  accessibilityLevel?: Prisma.SortOrder
+  strategicImportance?: Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -496,6 +648,10 @@ export type RouteNodeMinOrderByAggregateInput = {
 export type RouteNodeSumOrderByAggregateInput = {
   latitude?: Prisma.SortOrder
   longitude?: Prisma.SortOrder
+  elevationM?: Prisma.SortOrder
+  hazardExposureIndex?: Prisma.SortOrder
+  connectivityRank?: Prisma.SortOrder
+  monsoonVulnerability?: Prisma.SortOrder
 }
 
 export type RouteNodeScalarRelationFilter = {
@@ -550,6 +706,14 @@ export type RouteNodeUncheckedUpdateManyWithoutPlaceNestedInput = {
   deleteMany?: Prisma.RouteNodeScalarWhereInput | Prisma.RouteNodeScalarWhereInput[]
 }
 
+export type NullableEnumNodeAccessibilityFieldUpdateOperationsInput = {
+  set?: $Enums.NodeAccessibility | null
+}
+
+export type NullableEnumStrategicImportanceFieldUpdateOperationsInput = {
+  set?: $Enums.StrategicImportance | null
+}
+
 export type RouteNodeCreateNestedOneWithoutEdgesFromInput = {
   create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgesFromInput, Prisma.RouteNodeUncheckedCreateWithoutEdgesFromInput>
   connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutEdgesFromInput
@@ -600,6 +764,12 @@ export type RouteNodeCreateWithoutPlaceInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -615,6 +785,12 @@ export type RouteNodeUncheckedCreateWithoutPlaceInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -659,6 +835,12 @@ export type RouteNodeScalarWhereInput = {
   type?: Prisma.EnumPlaceTypeFilter<"RouteNode"> | $Enums.PlaceType
   latitude?: Prisma.FloatFilter<"RouteNode"> | number
   longitude?: Prisma.FloatFilter<"RouteNode"> | number
+  elevationM?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  accessibilityLevel?: Prisma.EnumNodeAccessibilityNullableFilter<"RouteNode"> | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.EnumStrategicImportanceNullableFilter<"RouteNode"> | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -672,6 +854,12 @@ export type RouteNodeCreateWithoutEdgesFromInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -687,6 +875,12 @@ export type RouteNodeUncheckedCreateWithoutEdgesFromInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -707,6 +901,12 @@ export type RouteNodeCreateWithoutEdgesToInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -722,6 +922,12 @@ export type RouteNodeUncheckedCreateWithoutEdgesToInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -753,6 +959,12 @@ export type RouteNodeUpdateWithoutEdgesFromInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -768,6 +980,12 @@ export type RouteNodeUncheckedUpdateWithoutEdgesFromInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -794,6 +1012,12 @@ export type RouteNodeUpdateWithoutEdgesToInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -809,6 +1033,12 @@ export type RouteNodeUncheckedUpdateWithoutEdgesToInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -824,6 +1054,12 @@ export type RouteNodeCreateWithoutSavedLocationsInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -839,6 +1075,12 @@ export type RouteNodeUncheckedCreateWithoutSavedLocationsInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -870,6 +1112,12 @@ export type RouteNodeUpdateWithoutSavedLocationsInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -885,6 +1133,12 @@ export type RouteNodeUncheckedUpdateWithoutSavedLocationsInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -900,6 +1154,12 @@ export type RouteNodeCreateManyPlaceInput = {
   type?: $Enums.PlaceType
   latitude: number
   longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -912,6 +1172,12 @@ export type RouteNodeUpdateWithoutPlaceInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -927,6 +1193,12 @@ export type RouteNodeUncheckedUpdateWithoutPlaceInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -942,6 +1214,12 @@ export type RouteNodeUncheckedUpdateManyWithoutPlaceInput = {
   type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
   latitude?: Prisma.FloatFieldUpdateOperationsInput | number
   longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1003,6 +1281,12 @@ export type RouteNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   type?: boolean
   latitude?: boolean
   longitude?: boolean
+  elevationM?: boolean
+  accessibilityLevel?: boolean
+  strategicImportance?: boolean
+  hazardExposureIndex?: boolean
+  connectivityRank?: boolean
+  monsoonVulnerability?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1021,6 +1305,12 @@ export type RouteNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   type?: boolean
   latitude?: boolean
   longitude?: boolean
+  elevationM?: boolean
+  accessibilityLevel?: boolean
+  strategicImportance?: boolean
+  hazardExposureIndex?: boolean
+  connectivityRank?: boolean
+  monsoonVulnerability?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1035,6 +1325,12 @@ export type RouteNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   type?: boolean
   latitude?: boolean
   longitude?: boolean
+  elevationM?: boolean
+  accessibilityLevel?: boolean
+  strategicImportance?: boolean
+  hazardExposureIndex?: boolean
+  connectivityRank?: boolean
+  monsoonVulnerability?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1049,6 +1345,12 @@ export type RouteNodeSelectScalar = {
   type?: boolean
   latitude?: boolean
   longitude?: boolean
+  elevationM?: boolean
+  accessibilityLevel?: boolean
+  strategicImportance?: boolean
+  hazardExposureIndex?: boolean
+  connectivityRank?: boolean
+  monsoonVulnerability?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1056,7 +1358,7 @@ export type RouteNodeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
+export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "elevationM" | "accessibilityLevel" | "strategicImportance" | "hazardExposureIndex" | "connectivityRank" | "monsoonVulnerability" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
 export type RouteNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
@@ -1085,6 +1387,12 @@ export type $RouteNodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     type: $Enums.PlaceType
     latitude: number
     longitude: number
+    elevationM: number | null
+    accessibilityLevel: $Enums.NodeAccessibility | null
+    strategicImportance: $Enums.StrategicImportance | null
+    hazardExposureIndex: number | null
+    connectivityRank: number | null
+    monsoonVulnerability: number | null
     placeId: string | null
     isHub: boolean
     isActive: boolean
@@ -1522,6 +1830,12 @@ export interface RouteNodeFieldRefs {
   readonly type: Prisma.FieldRef<"RouteNode", 'PlaceType'>
   readonly latitude: Prisma.FieldRef<"RouteNode", 'Float'>
   readonly longitude: Prisma.FieldRef<"RouteNode", 'Float'>
+  readonly elevationM: Prisma.FieldRef<"RouteNode", 'Float'>
+  readonly accessibilityLevel: Prisma.FieldRef<"RouteNode", 'NodeAccessibility'>
+  readonly strategicImportance: Prisma.FieldRef<"RouteNode", 'StrategicImportance'>
+  readonly hazardExposureIndex: Prisma.FieldRef<"RouteNode", 'Float'>
+  readonly connectivityRank: Prisma.FieldRef<"RouteNode", 'Int'>
+  readonly monsoonVulnerability: Prisma.FieldRef<"RouteNode", 'Float'>
   readonly placeId: Prisma.FieldRef<"RouteNode", 'String'>
   readonly isHub: Prisma.FieldRef<"RouteNode", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"RouteNode", 'Boolean'>

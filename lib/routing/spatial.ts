@@ -9,7 +9,16 @@ type SpatialResult = {
   distanceKm: number;
 };
 
-type SpatialNodeResult = SpatialResult & { isHub: boolean };
+type SpatialNodeResult = SpatialResult & {
+  isHub: boolean;
+  type: string;
+  elevationM: number | null;
+  accessibilityLevel: string | null;
+  strategicImportance: string | null;
+  hazardExposureIndex: number | null;
+  connectivityRank: number | null;
+  monsoonVulnerability: number | null;
+};
 
 /**
  * Build a haversine-distance SELECT expression that works without PostGIS.
@@ -79,7 +88,8 @@ export async function findNearestRouteNode(
 ): Promise<(SpatialNodeResult & { distanceKm: number }) | null> {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   const rows = await prisma.$queryRawUnsafe<(SpatialNodeResult & { distanceKm: number })[]>(
-    `SELECT id, name, latitude AS lat, longitude AS lon, "isHub",
+    `SELECT id, name, type, latitude AS lat, longitude AS lon, "isHub",
+            "elevationM", "accessibilityLevel", "strategicImportance", "hazardExposureIndex", "connectivityRank", "monsoonVulnerability",
             ${HAVERSINE_SQL("latitude", "longitude", String(lat), String(lon))}
      FROM "route_node"
      WHERE "isActive" = true

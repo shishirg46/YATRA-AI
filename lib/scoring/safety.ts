@@ -122,21 +122,21 @@ export function computeSafetyScore(
   // ── A. STATIC LOCATION FACTORS ────────────────────────────────────────────
 
   // 1. Altitude penalty — the higher the destination, the higher the baseline risk
-  //    regardless of current weather
+  //    regardless of current weather. Reduced from v1 to avoid hard-filtering
+  //    legitimate trekking destinations (they should reach "CAUTION" not "HIGH_RISK").
   if (alt >= 5000) {
-    penalties.altitude = 25;
+    penalties.altitude = 12;
     reasoning.push(`Extreme altitude (${alt.toLocaleString()}m) — severe hypoxia risk, requires professional guide`);
   } else if (alt >= 4500) {
-    penalties.altitude = 20;
+    penalties.altitude = 8;
     reasoning.push(`Very high altitude (${alt.toLocaleString()}m) — high AMS risk, acclimatisation mandatory`);
   } else if (alt >= 3500) {
-    penalties.altitude = 14;
+    penalties.altitude = 5;
     reasoning.push(`High altitude (${alt.toLocaleString()}m) — AMS risk, ascend slowly`);
   } else if (alt >= 2500) {
-    penalties.altitude = 7;
-    reasoning.push(`Moderate altitude (${alt.toLocaleString()}m) — some AMS risk for lowland travellers`);
-  } else if (alt >= 1500) {
     penalties.altitude = 2;
+  } else if (alt >= 1500) {
+    penalties.altitude = 1;
   } else {
     penalties.altitude = 0;
   }

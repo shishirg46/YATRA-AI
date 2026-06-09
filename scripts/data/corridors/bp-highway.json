@@ -1,0 +1,20 @@
+{
+  "id": "bp-highway",
+  "name": "BP Highway (B. P. Koirala Highway)",
+  "description": "Connects Kathmandu to the eastern Terai (Bardibas/Janakpur), crossing the Mahabharat range.",
+  "highway": "bp",
+  "vehicleAccess": ["car", "motorcycle", "jeep"],
+  "nodes": [
+    { "name": "Kathmandu (Koteshwor)", "lat": 27.6667, "lon": 85.3500, "type": "JUNCTION", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 1350 },
+    { "name": "Dhulikhel", "lat": 27.6333, "lon": 85.5500, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": true, "elevationM": 1460 },
+    { "name": "Kavre (Banepa)", "lat": 27.6333, "lon": 85.5333, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 1480 },
+    { "name": "Panchkhal", "lat": 27.6167, "lon": 85.6167, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 1350 },
+    { "name": "Sindhuli Madi", "lat": 27.2167, "lon": 85.7000, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 700 },
+    { "name": "Sindhuli (Kamalamai)", "lat": 27.2500, "lon": 85.9000, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 600 },
+    { "name": "Khurkot", "lat": 27.1167, "lon": 85.9333, "type": "JUNCTION", "strategicImportance": "RIVER_CROSSING", "isHub": true, "elevationM": 350 },
+    { "name": "Sitalpati", "lat": 27.0000, "lon": 85.9000, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 280 },
+    { "name": "Bardibas (Mahottari)", "lat": 26.9333, "lon": 85.8500, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": true, "elevationM": 180 },
+    { "name": "Janakpur", "lat": 26.7333, "lon": 85.9167, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 90 }
+  ],
+  "edges": []
+}

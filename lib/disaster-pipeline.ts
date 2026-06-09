@@ -67,6 +67,32 @@ export interface RouteRiskResult {
   segments: RouteRiskSegment[];
 }
 
+/**
+ * Per-segment independent hazard scores.
+ * Each hazard is evaluated independently for each route segment.
+ * - Mountain roads → naturally higher landslide exposure
+ * - River corridors → naturally higher flood exposure
+ * - Weather effects → vary by location and time
+ */
+export interface IndependentHazardScores {
+  landslideExposure: number;    // 0-100, based on gradient + terrain + rainfall + historical
+  floodExposure: number;        // 0-100, based on river proximity + terrain + rainfall + historical
+  weatherRisk: number;          // 0-100, based on rainfall + wind + temperature
+  roadConditionRisk: number;    // 0-100, based on surface type + gradient + reliability
+  seismicRisk: number;          // 0-100, based on earthquake history + proximity
+  composite: number;            // 0-100, weighted blend
+}
+
+export interface HazardEvaluationInput extends SegmentRiskInput {
+  avgLat?: number;              // Used to infer terrain zone
+  avgGradient?: number | null;  // Used for landslide/road condition scoring
+  hasRiverProximity?: boolean;  // Used for flood scoring
+  surfaceType?: string | null;  // Used for road condition scoring
+  reliabilityScore?: number | null; // Used for road condition scoring
+  landslideRisk?: number | null;    // Edge-level static risk
+  floodRisk?: number | null;        // Edge-level static risk
+}
+
 export async function ensureDisasterEventTable(): Promise<void> {
   await prisma.$executeRawUnsafe(`
     CREATE TABLE IF NOT EXISTS yatra_disaster_events (
@@ -729,6 +755,199 @@ export function calculateSegmentHazardRisk(input: SegmentRiskInput): SegmentRisk
       total: realtimeClusters.length + historicalClusters.length,
     },
   };
+}
+
+/**
+ * Evaluate per-segment hazard scores independently.
+ *
+ * Each hazard type is computed independently so that the safety layer
+ * can answer "How safe is this segment from landslides?" separately
+ * from "How safe is this segment from floods?"
+ *
+ * This replaces the old blended approach where every segment showed
+ * the same hazard categories.
+ *
+ * - Mountain roads → higher landslide exposure
+ * - River corridors → higher flood exposure
+ * - Weather effects → vary by location and time
+ * - Road condition → based on surface type + gradient + reliability
+ * - Seismic risk → based on earthquake history + proximity
+ */
+export function calculateIndependentHazardScores(input: HazardEvaluationInput): IndependentHazardScores {
+  const routePoints = sampleRoutePoints(input.sampledPoints ?? [], 10);
+  const avgLat = input.avgLat ?? (
+    routePoints.length > 0
+      ? routePoints.reduce((s, p) => s + p.lat, 0) / routePoints.length
+      : 27.5
+  );
+  const rain = Number(input.weather?.rain_mm_per_hr ?? 0);
+  const wind = Number(input.weather?.wind_kph ?? 0);
+  const realtime = input.realtimeDisasters ?? [];
+  const historical = input.historicalDisasters ?? [];
+
+  const filteredRealtime = realtime.filter((d) => isNearRoute(d, routePoints, 10));
+  const filteredHistorical = historical.filter((d) => isNearRoute(d, routePoints, 10));
+  const realtimeClusters = clusterRealtimeDisasters(filteredRealtime, routePoints, 5);
+  const historicalClusters = clusterHistoricalDisasters(filteredHistorical, routePoints, 5);
+
+  // Determine terrain zone
+  const terrain: "TERAI" | "HILL" | "MOUNTAIN" = avgLat < 27.0 ? "TERAI" : avgLat < 28.2 ? "HILL" : "MOUNTAIN";
+
+  // ── 1. Landslide Exposure (0-100) ──────────────────────────────────
+  let landslideScore = 0;
+
+  // Terrain base: mountain roads are naturally landslide-prone
+  if (terrain === "MOUNTAIN") landslideScore += 30;
+  else if (terrain === "HILL") landslideScore += 15;
+  else landslideScore += 5;
+
+  // Edge-level static risk
+  const edgeLandslide = input.landslideRisk ?? 0;
+  landslideScore += edgeLandslide * 30;
+
+  // Gradient contribution
+  const gradient = input.avgGradient ?? 0;
+  if (gradient > 15) landslideScore += 20;
+  else if (gradient > 10) landslideScore += 12;
+  else if (gradient > 5) landslideScore += 6;
+
+  // Rainfall triggers
+  if (rain > 30) landslideScore += 20;
+  else if (rain > 10) landslideScore += 10;
+  else if (rain > 2) landslideScore += 3;
+
+  // Historical landslide clusters
+  const lsClusters = historicalClusters.filter((c) => c.type === "landslide");
+  for (const c of lsClusters) {
+    const intensity = c.count >= 12 ? 1.3 : c.count >= 8 ? 1.0 : c.count >= 5 ? 0.8 : 0.4;
+    const distanceFactor = c.nearestDistanceKm <= 5 ? 1.0 : 0.7;
+    landslideScore += intensity * distanceFactor * 10;
+  }
+
+  // Realtime landslide events
+  const realtimeLs = realtimeClusters.filter((c) => c.type === "landslide");
+  landslideScore += realtimeLs.length * 15;
+
+  landslideScore = clampToRange(landslideScore, 0, 100);
+
+  // ── 2. Flood Exposure (0-100) ─────────────────────────────────────
+  let floodScore = 0;
+
+  // Terrain base: Terai is flood-prone
+  if (terrain === "TERAI") floodScore += 25;
+  else if (terrain === "HILL") floodScore += 8;
+  else floodScore += 2;
+
+  // Edge-level static flood risk
+  const edgeFlood = input.floodRisk ?? 0;
+  floodScore += edgeFlood * 30;
+
+  // River proximity
+  if (input.hasRiverProximity) floodScore += 15;
+
+  // Rainfall triggers
+  if (rain > 30) floodScore += 25;
+  else if (rain > 10) floodScore += 12;
+  else if (rain > 2) floodScore += 4;
+
+  // Historical flood clusters
+  const floodClusters = historicalClusters.filter((c) => c.type === "flood");
+  for (const c of floodClusters) {
+    const intensity = c.count >= 12 ? 1.3 : c.count >= 8 ? 1.0 : c.count >= 5 ? 0.8 : 0.4;
+    const distanceFactor = c.nearestDistanceKm <= 5 ? 1.0 : 0.7;
+    floodScore += intensity * distanceFactor * 12;
+  }
+
+  // Realtime flood events
+  const realtimeFlood = realtimeClusters.filter((c) => c.type === "flood");
+  floodScore += realtimeFlood.length * 15;
+
+  floodScore = clampToRange(floodScore, 0, 100);
+
+  // ── 3. Weather Risk (0-100) ───────────────────────────────────────
+  let weatherScore = 0;
+
+  if (rain > 30) weatherScore += 40;
+  else if (rain > 10) weatherScore += 20;
+  else if (rain > 2) weatherScore += 5;
+
+  if (wind > 60) weatherScore += 20;
+  else if (wind > 35) weatherScore += 10;
+  else if (wind > 20) weatherScore += 3;
+
+  // Terrain amplifies weather effects
+  if (terrain === "MOUNTAIN") weatherScore = Math.round(weatherScore * 1.3);
+  else if (terrain === "HILL") weatherScore = Math.round(weatherScore * 1.1);
+
+  weatherScore = clampToRange(weatherScore, 0, 100);
+
+  // ── 4. Road Condition Risk (0-100) ────────────────────────────────
+  let roadScore = 0;
+
+  const surface = input.surfaceType ?? null;
+  if (!surface || surface === "UNKNOWN") {
+    roadScore += 15;
+  } else if (surface === "PAVED") {
+    roadScore += 5;
+  } else if (surface === "GRAVEL") {
+    roadScore += 20;
+  } else if (surface === "DIRT") {
+    roadScore += 40;
+  }
+
+  // Gradient
+  if (gradient > 12) roadScore += 20;
+  else if (gradient > 8) roadScore += 10;
+  else if (gradient > 4) roadScore += 5;
+
+  // Reliability
+  const reliability = input.reliabilityScore ?? 0.5;
+  roadScore += (1 - reliability) * 30;
+
+  roadScore = clampToRange(roadScore, 0, 100);
+
+  // ── 5. Seismic Risk (0-100) ──────────────────────────────────────
+  let seismicScore = 0;
+
+  // Terrain base: mountain/hill areas in Nepal have higher seismic risk
+  if (terrain === "MOUNTAIN") seismicScore += 20;
+  else if (terrain === "HILL") seismicScore += 12;
+  else seismicScore += 5;
+
+  // Realtime earthquake clusters
+  const eqClusters = realtimeClusters.filter((c) => c.type === "earthquake");
+  for (const c of eqClusters) {
+    const distanceFactor = c.nearestDistanceKm <= 5 ? 1.0 : 0.6;
+    seismicScore += 20 * distanceFactor;
+  }
+
+  // Historical earthquake activity (inferred from clusters)
+  const histEq = historicalClusters.filter((c) => c.type === "earthquake");
+  seismicScore += Math.min(histEq.length * 8, 30);
+
+  seismicScore = clampToRange(seismicScore, 0, 100);
+
+  // ── Composite (0-100) ────────────────────────────────────────────
+  const composite = Math.round(
+    landslideScore * 0.25 +
+    floodScore * 0.20 +
+    weatherScore * 0.20 +
+    roadScore * 0.20 +
+    seismicScore * 0.15
+  );
+
+  return {
+    landslideExposure: Math.round(landslideScore),
+    floodExposure: Math.round(floodScore),
+    weatherRisk: Math.round(weatherScore),
+    roadConditionRisk: Math.round(roadScore),
+    seismicRisk: Math.round(seismicScore),
+    composite: Math.min(100, composite),
+  };
+}
+
+function clampToRange(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
 
 function clusterAreaLabel(cluster: DisasterCluster): string {

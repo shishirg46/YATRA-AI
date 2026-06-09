@@ -4,7 +4,16 @@
  * PURPOSE: Shared types and config constants used across all dashboard components
  */
 
-import { Shield, AlertTriangle, Zap, XCircle, Waves, AlertOctagon, Flame, CloudRain, Info } from "lucide-react";
+import { Shield, AlertTriangle, Zap, XCircle, Waves, AlertOctagon, Flame, CloudRain, Info, MapPin } from "lucide-react";
+
+export interface AiRecommendation {
+  id: string;
+  name: string;
+  matchScore: number;
+  district: string;
+  whyVisit: string;
+  caution?: string;
+}
 
 export interface Destination {
   id:          string;
@@ -50,6 +59,9 @@ export interface Destination {
     decisionTrace: { reasoning: string[] };
     dataSource: string;
   } | null;
+  popularityScore?: number | null;
+  accessibilityScore?: number | null;
+  tourismSupportScore?: number | null;
   recommendationMeta?: {
     closedOrRestricted: boolean;
     unavailablePermit: boolean;
@@ -136,7 +148,7 @@ export interface DashboardData {
   stats:        { total: number; safe: number; caution: number; highRisk: number; extreme: number };
   destinationSummary?: DestinationSummary;
   recommendations?: {
-    recommendations: any[];
+    recommendations: AiRecommendation[];
     summary: string;
     aiUsed: boolean;
   };
@@ -144,13 +156,14 @@ export interface DashboardData {
 
 export interface HazardNotif {
   id:       string;
-  type:     "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO";
+  type:     "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO" | "TRIP_START";
   title:    string;
   body:     string;
   location: string;
   severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   time:     string;
   read:     boolean;
+  planId?:  string;
 }
 
 export interface Friend {
@@ -188,6 +201,7 @@ export const HAZARD_CONFIG = {
   FIRE:       { icon: Flame,        color: "text-rose-400",   bg: "bg-rose-400/10",   border: "border-rose-400/25" },
   STORM:      { icon: CloudRain,    color: "text-sky-400",    bg: "bg-sky-400/10",    border: "border-sky-400/25" },
   INFO:       { icon: Info,         color: "text-slate-400",  bg: "bg-slate-400/10",  border: "border-slate-400/25" },
+  TRIP_START: { icon: MapPin,       color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/25" },
 };
 
 export const PURPOSE_LABELS: Record<string, string> = {

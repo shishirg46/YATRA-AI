@@ -127,7 +127,7 @@ export function AdminShell({ children, active, title }: AdminShellProps) {
         {/* Bottom Actions */}
         <div className="p-3 border-t border-slate-900 space-y-1 bg-slate-950/40">
           <Link
-            href="/dashboard"
+            href="/dashboard?mode=user"
             className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-colors group"
           >
             <UserCheck size={19} className="text-slate-450 group-hover:text-emerald-400 shrink-0" />
@@ -190,7 +190,7 @@ export function AdminShell({ children, active, title }: AdminShellProps) {
         </nav>
         <div className="p-3 border-t border-slate-900 space-y-1">
           <Link
-            href="/dashboard"
+            href="/dashboard?mode=user"
             className="flex items-center gap-3.5 px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-900 transition-colors"
           >
             <UserCheck size={19} className="text-slate-450" />
@@ -226,7 +226,7 @@ export function AdminShell({ children, active, title }: AdminShellProps) {
 
           <div className="flex items-center gap-4">
             <Link
-              href="/dashboard"
+              href="/dashboard?mode=user"
               className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition-all"
             >
               <UserCheck size={13} />

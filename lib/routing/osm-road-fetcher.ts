@@ -1,7 +1,31 @@
 import { haversineKm } from "@/lib/routing/geo";
 import type { RouteNode } from "@/lib/routing/types";
 
-const OVERPASS_URL = "https://overpass.openstreetmap.fr/api/interpreter";
+const OVERPASS_URLS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.openstreetmap.fr/api/interpreter",
+];
+
+async function fetchOverpass(query: string, timeoutMs = 60000): Promise<Response | null> {
+  for (const url of OVERPASS_URLS) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain",
+          "User-Agent": "YatraAI/1.0",
+        },
+        body: query,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.ok) return res;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
 
 function corridorBbox(
   originLat: number,
@@ -85,16 +109,8 @@ export async function fetchOsmRoadNodesBetween(
 out skel ${maxNodes * 20};`;
 
   try {
-    const res = await fetch(OVERPASS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-        "User-Agent": "YatraAI/1.0 (route-fetcher)",
-      },
-      body: query,
-    });
-
-    if (!res.ok) return [];
+    const res = await fetchOverpass(query, 25000);
+    if (!res) return [];
 
     const data = (await res.json()) as OverpassResponse;
     const elements = data.elements || [];
@@ -162,6 +178,87 @@ out skel ${maxNodes * 20};`;
     }
 
     return selected;
+  } catch {
+    return [];
+  }
+}
+
+export interface OsmRoadSurface {
+  highway: string;
+  surface?: string;
+  smoothness?: string;
+  width?: string;
+  centerLat: number;
+  centerLon: number;
+}
+
+export async function fetchOsmRoadSurface(
+  originLat: number,
+  originLon: number,
+  destLat: number,
+  destLon: number
+): Promise<OsmRoadSurface[]> {
+  const bbox = corridorBbox(originLat, originLon, destLat, destLon);
+  const bb = bboxStr(bbox);
+  const query = `[out:json][timeout:60];
+(
+  way["highway"](${bb});
+);
+out center tags 2000;`;
+  try {
+    const res = await fetchOverpass(query);
+    if (!res) return [];
+    const data = (await res.json()) as OverpassResponse;
+    const results: OsmRoadSurface[] = [];
+    for (const el of data.elements) {
+      if (el.type === "way" && el.tags?.highway) {
+        results.push({
+          highway: el.tags.highway,
+          surface: el.tags.surface,
+          smoothness: el.tags.smoothness,
+          width: el.tags.width,
+          centerLat: (el as any).center?.lat ?? 0,
+          centerLon: (el as any).center?.lon ?? 0,
+        });
+      }
+    }
+    return results;
+  } catch {
+    return [];
+  }
+}
+
+export interface OsmRiverWay {
+  centerLat: number;
+  centerLon: number;
+}
+
+export async function fetchOsmRivers(
+  originLat: number,
+  originLon: number,
+  destLat: number,
+  destLon: number
+): Promise<OsmRiverWay[]> {
+  const bbox = corridorBbox(originLat, originLon, destLat, destLon);
+  const bb = bboxStr(bbox);
+  const query = `[out:json][timeout:60];
+(
+  way["waterway"="river"](${bb});
+  way["waterway"="stream"](${bb});
+);
+out center 1000;`;
+  try {
+    const res = await fetchOverpass(query);
+    if (!res) return [];
+    const data = (await res.json()) as OverpassResponse;
+    return data.elements
+      .filter((el): el is OverpassWay & { center: { lat: number; lon: number } } =>
+        el.type === "way" && !!(el as any).center
+      )
+      .map((el) => ({
+        centerLat: (el as any).center.lat,
+        centerLon: (el as any).center.lon,
+      }));
   } catch {
     return [];
   }

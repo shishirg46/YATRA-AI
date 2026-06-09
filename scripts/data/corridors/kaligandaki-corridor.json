@@ -1,0 +1,25 @@
+{
+  "id": "kaligandaki-corridor",
+  "name": "Kaligandaki Corridor (Pokhara–Mustang)",
+  "description": "From Pokhara north through the Kaligandaki valley to Mustang/Muktinath, one of Nepal's deepest river gorges.",
+  "highway": "kaligandaki",
+  "vehicleAccess": ["motorcycle", "jeep"],
+  "nodes": [
+    { "name": "Pokhara (Bagar)", "lat": 28.2096, "lon": 83.9856, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 827 },
+    { "name": "Hemja", "lat": 28.2333, "lon": 83.9500, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 850 },
+    { "name": "Kusma (Parbat)", "lat": 28.2167, "lon": 83.7333, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 900 },
+    { "name": "Maldhunga (Parbat)", "lat": 28.2333, "lon": 83.6833, "type": "JUNCTION", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 950 },
+    { "name": "Beni Bazar", "lat": 28.3500, "lon": 83.5667, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 900 },
+    { "name": "Tatopani (Myagdi)", "lat": 28.4667, "lon": 83.6500, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 1100 },
+    { "name": "Ghasa", "lat": 28.5833, "lon": 83.6500, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 2000 },
+    { "name": "Lete", "lat": 28.6167, "lon": 83.6500, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": false, "elevationM": 2300 },
+    { "name": "Kali Gandaki River crossing", "lat": 28.6333, "lon": 83.6500, "type": "JUNCTION", "strategicImportance": "RIVER_CROSSING", "isHub": false, "elevationM": 2400 },
+    { "name": "Larjung (Kobang)", "lat": 28.6833, "lon": 83.6333, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": false, "elevationM": 2600 },
+    { "name": "Marpha", "lat": 28.7500, "lon": 83.6667, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 2670 },
+    { "name": "Jomsom", "lat": 28.7833, "lon": 83.7333, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 2800 },
+    { "name": "Kagbeni", "lat": 28.8333, "lon": 83.7833, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 2840 },
+    { "name": "Muktinath (Ranipauwa)", "lat": 28.8167, "lon": 83.8667, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 3800 },
+    { "name": "Lo Manthang (Upper Mustang)", "lat": 29.1833, "lon": 83.9500, "type": "TOWN", "strategicImportance": "MOUNTAIN_PASS", "isHub": true, "elevationM": 3840 }
+  ],
+  "edges": []
+}

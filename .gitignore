@@ -30,3 +30,10 @@ pnpm-debug.log*
 # Build artifacts
 public/styles/
 ollama/
+
+# Project documentation (auto-generated, not for version control)
+PROJECT.md
+
+# Generated data files
+nepal-route-graph.json
+scripts/seed-full-graph.sql

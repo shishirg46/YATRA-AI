@@ -85,6 +85,51 @@ export const MemberStatus = {
 export type MemberStatus = (typeof MemberStatus)[keyof typeof MemberStatus]
 
 
+export const NodeAccessibility = {
+  YEAR_ROUND: 'YEAR_ROUND',
+  SEASONAL: 'SEASONAL',
+  DIFFICULT: 'DIFFICULT',
+  IMPASSABLE: 'IMPASSABLE'
+} as const
+
+export type NodeAccessibility = (typeof NodeAccessibility)[keyof typeof NodeAccessibility]
+
+
+export const StrategicImportance = {
+  MAJOR_HIGHWAY: 'MAJOR_HIGHWAY',
+  REGIONAL_HUB: 'REGIONAL_HUB',
+  BORDER_CROSSING: 'BORDER_CROSSING',
+  TOURIST_GATEWAY: 'TOURIST_GATEWAY',
+  MOUNTAIN_PASS: 'MOUNTAIN_PASS',
+  RIVER_CROSSING: 'RIVER_CROSSING',
+  TRANSIT_HUB: 'TRANSIT_HUB',
+  LOCAL_ROAD: 'LOCAL_ROAD'
+} as const
+
+export type StrategicImportance = (typeof StrategicImportance)[keyof typeof StrategicImportance]
+
+
+export const RoadCondition = {
+  GOOD: 'GOOD',
+  FAIR: 'FAIR',
+  POOR: 'POOR',
+  DIRT_TRACK: 'DIRT_TRACK',
+  IMPASSABLE: 'IMPASSABLE'
+} as const
+
+export type RoadCondition = (typeof RoadCondition)[keyof typeof RoadCondition]
+
+
+export const RoadSurface = {
+  PAVED: 'PAVED',
+  GRAVEL: 'GRAVEL',
+  DIRT: 'DIRT',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type RoadSurface = (typeof RoadSurface)[keyof typeof RoadSurface]
+
+
 export const PlaceType = {
   PROVINCE: 'PROVINCE',
   DISTRICT: 'DISTRICT',

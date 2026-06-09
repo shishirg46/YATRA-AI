@@ -1,7 +1,8 @@
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
 import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
-import { ensureRecentRealtimeData } from "@/lib/disaster-pipeline";
+import { ensureRecentRealtimeData, calculateIndependentHazardScores } from "@/lib/disaster-pipeline";
+import type { IndependentHazardScores } from "@/lib/disaster-pipeline";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
@@ -20,8 +21,11 @@ import type {
   RouteInstruction,
   DetourInfo,
   RouteStop,
+  TripIntelligence,
 } from "@/lib/routing/types";
 import { haversineKm } from "@/lib/routing/geo";
+import { analyzeRouteSegments } from "@/lib/analysis/segment-analyzer";
+import type { SegmentProfile } from "@/lib/analysis/segment-analyzer";
 
 export type { GeoPoint } from "@/lib/routing/types";
 
@@ -48,6 +52,7 @@ export interface Route {
   placesAlongRoute?: DetourInfo[];
   rankedStops?: RouteStop[];
   turnByTurn?: RouteInstruction[];
+  tripIntelligence?: TripIntelligence;
 }
 
 export interface RouteHazards {
@@ -66,6 +71,7 @@ export interface RouteSegment {
   riskScore: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
   hazards: string[];
+  hazardProfile?: IndependentHazardScores;
   weather?: string;
   realtime?: {
     floodIndex: number;
@@ -117,6 +123,11 @@ export interface RouteSegment {
     alerts: string[];
     reason?: string;
   };
+  gradient?: number | null;
+  roadSurface?: { highway: string; surface: string | null; riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME" } | null;
+  riverProximityKm?: number | null;
+  elevationStart?: number | null;
+  elevationEnd?: number | null;
 }
 
 export interface RouteIntelligenceResult {
@@ -212,12 +223,23 @@ export async function generateRouteIntelligence(
       roadRoutes = await fetchRoadRoutesFallback(origin, resolvedDest, vehicle);
 
       if (roadRoutes.length === 0) {
-        const snapped = await snapToNearestRoad(resolvedDest.lat, resolvedDest.lon);
-        if (snapped && (snapped.distance > 100 || resolvedDest.lat !== snapped.lat || resolvedDest.lon !== snapped.lon)) {
-          const snappedDest = { lat: snapped.lat, lon: snapped.lon, name: snapped.name };
-          roadRoutes = await fetchRoadRoutesFallback(origin, snappedDest, vehicle);
+        const [snappedOrigin, snappedDest] = await Promise.all([
+          snapToNearestRoad(origin.lat, origin.lon),
+          snapToNearestRoad(resolvedDest.lat, resolvedDest.lon),
+        ]);
+
+        const effectiveOrigin = snappedOrigin && snappedOrigin.distance <= 5000
+          ? { lat: snappedOrigin.lat, lon: snappedOrigin.lon, name: origin.name }
+          : origin;
+        const effectiveDest = snappedDest && snappedDest.distance <= 5000
+          ? { lat: snappedDest.lat, lon: snappedDest.lon, name: resolvedDest.name }
+          : resolvedDest;
+
+        if (effectiveOrigin.lat !== origin.lat || effectiveOrigin.lon !== origin.lon ||
+            effectiveDest.lat !== resolvedDest.lat || effectiveDest.lon !== resolvedDest.lon) {
+          roadRoutes = await fetchRoadRoutesFallback(effectiveOrigin, effectiveDest, vehicle);
           if (roadRoutes.length > 0) {
-            resolvedDest = snappedDest;
+            resolvedDest = effectiveDest;
           }
         }
       }
@@ -599,10 +621,29 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
     });
   }
 
+  const fineSegments = await withTimeout(
+    analyzeRouteSegments(
+      route.waypoints.map((w) => ({ lat: w.lat, lon: w.lon })),
+      { lat: route.waypoints[0]?.lat ?? 0, lon: route.waypoints[0]?.lon ?? 0 },
+      {
+        lat: route.waypoints[route.waypoints.length - 1]?.lat ?? 0,
+        lon: route.waypoints[route.waypoints.length - 1]?.lon ?? 0,
+      }
+    ),
+    30000
+  ).catch(() => [] as SegmentProfile[]);
+
   const segmentRisks = await Promise.all(
     segments.map(async (segment) => {
       const centerLat = (segment.startPoint.lat + segment.endPoint.lat) / 2;
       const centerLon = (segment.startPoint.lon + segment.endPoint.lon) / 2;
+
+      const nearestFine = fineSegments.length > 0
+        ? fineSegments.reduce((best, fs) => {
+            const d = haversineKm(centerLat, centerLon, fs.midpoint.lat, fs.midpoint.lon);
+            return d < best.dist ? { fs, dist: d } : best;
+          }, { fs: fineSegments[0]!, dist: Infinity } as { fs: SegmentProfile; dist: number })
+        : null;
 
       const district = getDistrictFromCoords(centerLat, centerLon);
 
@@ -640,6 +681,25 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
         },
         realtimeDisasters,
         historicalDisasters,
+        gradientOverride: nearestFine?.fs.gradient ?? null,
+      });
+
+      // NEW: Compute independent per-hazard scores (landslide, flood, weather, road, seismic)
+      const independentScores = calculateIndependentHazardScores({
+        sampledPoints,
+        weather: {
+          rain_mm_per_hr: weather?.rainfall ?? 0,
+          wind_kph: (weather?.windSpeed ?? 0) * 3.6,
+        },
+        realtimeDisasters,
+        historicalDisasters,
+        avgLat: centerLat,
+        avgGradient: nearestFine?.fs.gradient ?? null,
+        hasRiverProximity: (nearestFine?.fs.riverProximityKm ?? Infinity) < 2,
+        surfaceType: nearestFine?.fs.roadSurface?.surface ?? null,
+        reliabilityScore: null, // will be populated from edge data at routing time
+        landslideRisk: currentHazard?.landslideIndex ?? null,
+        floodRisk: currentHazard?.floodIndex ?? null,
       });
 
       const disasterClusters = [
@@ -695,6 +755,7 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
         riskScore,
         riskLevel: scoreToLevel(riskScore),
         hazards: [...new Set(hazards)],
+        hazardProfile: independentScores,
         weather: weather?.description,
         realtime: {
           floodIndex: currentHazard?.floodIndex ?? 0,
@@ -730,6 +791,11 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
           },
         },
         hazardAssessment,
+        gradient: nearestFine?.fs.gradient ?? null,
+        roadSurface: nearestFine?.fs.roadSurface ?? undefined,
+        riverProximityKm: nearestFine?.fs.riverProximityKm ?? null,
+        elevationStart: nearestFine?.fs.elevationStart ?? null,
+        elevationEnd: nearestFine?.fs.elevationEnd ?? null,
       };
     })
   );
@@ -740,6 +806,38 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
   const floodZones = [...new Set(segmentRisks.filter(s => s.hazards.includes("Flood risk")).map(s => s.startPoint.name || "Unknown"))];
   const activeAlerts = [...new Set(segmentRisks.flatMap(s => s.hazards))];
   const weatherRisk = segmentRisks.find(s => s.weather)?.weather || "unknown";
+
+  // Build segment hazard profiles lookup
+  const segmentHazards: Record<number, IndependentHazardScores> = {};
+  for (const s of segmentRisks) {
+    if (s.hazardProfile) {
+      segmentHazards[s.index] = s.hazardProfile;
+    }
+  }
+
+  // Generate monsoon advisory
+  const month = new Date().getMonth() + 1;
+  const isMonsoon = month >= 6 && month <= 9;
+  const monsoonWarning = isMonsoon && segmentRisks.some((s) => (s.hazardProfile?.roadConditionRisk ?? 0) > 50)
+    ? "Monsoon season — road conditions may be poor on unpaved segments. Check for active road closures."
+    : isMonsoon
+    ? "Monsoon season — expect rain and possible delays on mountain roads."
+    : null;
+
+  // Driver advisories
+  const driverAdvisories: string[] = [];
+  if (segmentRisks.some((s) => (s.hazardProfile?.landslideExposure ?? 0) > 60)) {
+    driverAdvisories.push("⚠ High landslide exposure on route — exercise caution in hill/mountain segments");
+  }
+  if (segmentRisks.some((s) => (s.hazardProfile?.floodExposure ?? 0) > 60)) {
+    driverAdvisories.push("⚠ High flood exposure — avoid low-lying segments during heavy rain");
+  }
+  if (segmentRisks.some((s) => (s.hazardProfile?.roadConditionRisk ?? 0) > 60)) {
+    driverAdvisories.push("⚠ Poor road condition on some segments — 4WD recommended");
+  }
+  if (landslideZones.length > 0) {
+    driverAdvisories.push(`Landslide-prone areas: ${landslideZones.join(", ")}`);
+  }
 
   return {
     ...route,
@@ -753,6 +851,15 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
       weatherRisk,
       historicalRisk: avgRisk,
     },
+    tripIntelligence: {
+      optimalDepartureTime: isMonsoon ? "Early morning (6-8 AM) before afternoon rains" : null,
+      monsoonWarning,
+      driverAdvisories,
+      segmentHazards,
+      seasonalNote: isMonsoon
+        ? "June-September monsoon — mountain roads may be affected by landslides and rain"
+        : "October-May dry season — generally favourable travel conditions across Nepal",
+    },
   };
 }
 
@@ -761,6 +868,7 @@ function calculateSegmentHazardRisk(input: {
   weather?: { rain_mm_per_hr?: number; wind_kph?: number };
   realtimeDisasters?: { type: "flood" | "landslide" | "earthquake"; lat: number; lon: number }[];
   historicalDisasters?: { type: "flood" | "landslide"; lat: number; lon: number; count: number }[];
+  gradientOverride?: number | null;
 }): {
   riskPercent: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH";
@@ -801,13 +909,21 @@ function calculateSegmentHazardRisk(input: {
     if (h.count > 1) alerts.push(`Past ${h.type} zone nearby`);
   }
 
-  const center = points[Math.floor(points.length / 2)];
-  if (center) {
-    if (center.lat > 27.1) terrainRisk = 0.25;
-    else if (center.lat > 26.7) terrainRisk = 0.15;
+  if (input.gradientOverride !== undefined && input.gradientOverride !== null) {
+    const absGrad = Math.abs(input.gradientOverride);
+    if (absGrad > 20) terrainRisk = 0.45;
+    else if (absGrad > 12) terrainRisk = 0.3;
+    else if (absGrad > 6) terrainRisk = 0.2;
     else terrainRisk = 0.1;
   } else {
-    terrainRisk = 0.12;
+    const center = points[Math.floor(points.length / 2)];
+    if (center) {
+      if (center.lat > 27.1) terrainRisk = 0.25;
+      else if (center.lat > 26.7) terrainRisk = 0.15;
+      else terrainRisk = 0.1;
+    } else {
+      terrainRisk = 0.12;
+    }
   }
 
   const hasAnyInput = points.length > 0 || rain > 0 || wind > 0 || realtime.length > 0 || historical.length > 0;

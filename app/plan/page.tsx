@@ -9,6 +9,12 @@ import { useSearchParams, useRouter }             from "next/navigation";
 import Link                                       from "next/link";
 import { AppShell } from "@/components/app-shell";
 import RouteMapLoader from "@/components/route-map-loader";
+import SegmentDataTable from "./_components/SegmentDataTable";
+import ScoreRing from "./_components/ScoreRing";
+import Section from "./_components/Section";
+import QuickRouteCheck from "./_components/QuickRouteCheck";
+import DestSearch from "./_components/DestSearch";
+import MemberSearch from "./_components/MemberSearch";
 import {
   Mountain, Search, X, Calendar, MapPin, Users, User,
   ArrowLeft, Loader2, Shield, AlertTriangle, Zap, XCircle,
@@ -113,6 +119,20 @@ interface PlanReport {
       sources: string[];
     }>;
   };
+  segmentDetails?: Array<{
+    index: number;
+    from: string; to: string;
+    fromLat: number; fromLon: number; toLat: number; toLon: number;
+    distanceKm: number;
+    riskLevel: string; riskScore: number;
+    gradient: number | null;
+    roadSurface: { highway: string; surface: string | null; riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME" } | null;
+    riverProximityKm: number | null;
+    elevationStart: number | null; elevationEnd: number | null;
+    hazards: string[];
+    floodIndex: number; landslideIndex: number; earthquakeIndex: number;
+    temperature: number; rainfall: number; windSpeed: number;
+  }>;
   destinationPillar?: {
     historicProfile: string;
     realtimeSnapshot: string;
@@ -171,23 +191,7 @@ const REC_COLOR: Record<string, string> = {
 
 // ── Small components ──────────────────────────────────────────────────────────
 
-function ScoreRing({ score, size = 72 }: { score: number; size?: number }) {
-  const color = score >= 80 ? "#34d399" : score >= 60 ? "#f59e0b" : score >= 40 ? "#fb923c" : "#f87171";
-  const r = size * 0.4; const circ = 2 * Math.PI * r; const half = size / 2;
-  return (
-    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-        <circle cx={half} cy={half} r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="4.5"/>
-        <circle cx={half} cy={half} r={r} fill="none" stroke={color} strokeWidth="4.5"
-          strokeDasharray={`${(score/100)*circ} ${circ}`} strokeLinecap="round"/>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display font-bold text-white" style={{ fontSize: size * 0.22 }}>{score}</span>
-        <span className="font-body text-slate-500" style={{ fontSize: size * 0.12 }}>/100</span>
-      </div>
-    </div>
-  );
-}
+
 
 function weatherEmoji(code: number) {
   if (code === 0) return "☀️";
@@ -201,303 +205,37 @@ function weatherEmoji(code: number) {
 }
 
 // Quick route safety check component
-function QuickRouteCheck({ destination, travelDate, originLat, originLon }: {
-  destination: DestinationResult;
-  travelDate: string;
-  originLat: number | null;
-  originLon: number | null;
+
+
+// ── Route preview map (collapsible) ──────────────────────────────────────────
+
+function RoutePreviewMap({ startLat, startLon, endLat, endLon, originName, destinationName, riskLevel }: {
+  startLat: number; startLon: number; endLat: number; endLon: number;
+  originName: string; destinationName: string; riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
 }) {
-  const [loading, setLoading] = useState(true);
-  const [result, setResult] = useState<{
-    season: string;
-    route?: { risk: string; reason: string; seasonalContext: string; floodRisk: number; landslideRisk: number };
-    seasonalRisks: { name: string; severity: string; description: string }[];
-    recommendations: string[];
-  } | null>(null);
-
-  useEffect(() => {
-    if (!destination || !travelDate) return;
-
-    async function checkRoute() {
-      setLoading(true);
-      try {
-        const res = await fetch("/api/routes/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            origin: originLat && originLon ? { lat: originLat, lon: originLon } : null,
-            destination: {
-              id: destination.id,
-              lat: destination.latitude || 0,
-              lon: destination.longitude || 0,
-              name: destination.name,
-              district: destination.district,
-              province: destination.province,
-            },
-            travelDate,
-          }),
-        });
-        if (res.ok) {
-          setResult(await res.json());
-        }
-      } catch (err) {
-        console.error("Route check failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    const timer = setTimeout(checkRoute, 500);
-    return () => clearTimeout(timer);
-  }, [destination, travelDate, originLat, originLon]);
-
-  if (loading) {
-    return (
-      <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
-        <div className="flex items-center gap-2">
-          <Loader2 size={14} className="text-amber-400 animate-spin" />
-          <span className="font-body text-xs text-slate-400">Checking route safety for {new Date(travelDate).toLocaleDateString("en-NP", { month: "long", day: "numeric" })}...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!result) return null;
-
-  const riskColor = result.route?.risk === "HIGH" ? "text-orange-400 bg-orange-400/10 border-orange-400/20"
-    : result.route?.risk === "MEDIUM" ? "text-amber-400 bg-amber-400/10 border-amber-400/20"
-    : "text-emerald-400 bg-emerald-400/10 border-emerald-400/20";
-
-  const riskIcon = result.route?.risk === "HIGH" ? Zap
-    : result.route?.risk === "MEDIUM" ? AlertTriangle
-    : Shield;
-
+  const [showMap, setShowMap] = useState(false);
   return (
-    <div className="space-y-3">
-      {/* Season indicator */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
-        <Calendar size={12} className="text-amber-400" />
-        <span className="font-body text-xs text-slate-300">
-          {result.season} · {new Date(travelDate).toLocaleDateString("en-NP", { month: "long", day: "numeric", year: "numeric" })}
-        </span>
-      </div>
-
-      {/* Route risk indicator */}
-      {result.route && (
-        <div className={`p-3 rounded-xl border ${riskColor}`}>
-          <div className="flex items-center gap-2 mb-1">
-            {(() => { const Icon = riskIcon; return <Icon size={14} />; })()}
-            <span className="font-body text-sm font-semibold uppercase">{result.route.risk} Risk</span>
-          </div>
-          <p className="font-body text-xs text-slate-300 leading-relaxed">{result.route.reason}</p>
-        </div>
-      )}
-
-      {/* Seasonal risks */}
-      {result.seasonalRisks.length > 0 && (
-        <div className="space-y-2">
-          {result.seasonalRisks.slice(0, 2).map((risk, i) => (
-            <div key={i} className="flex items-start gap-2 px-3 py-2 rounded-lg bg-slate-800/30 border border-slate-700/30">
-              <AlertTriangle size={12} className={risk.severity === "HIGH" ? "text-orange-400" : "text-amber-400"} />
-              <div>
-                <p className="font-body text-xs text-white">{risk.name}</p>
-                <p className="font-body text-[10px] text-slate-500">{risk.description.slice(0, 80)}...</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Quick recommendations */}
-      {result.recommendations.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {result.recommendations.slice(0, 2).map((rec, i) => (
-            <span key={i} className="px-2 py-1 rounded-lg bg-slate-800/40 border border-slate-700/50 font-body text-[10px] text-slate-400">
-              {rec}
-            </span>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, icon: Icon, children, defaultOpen = true, accent = false }: {
-  title: string; icon: typeof Shield; children: React.ReactNode; defaultOpen?: boolean; accent?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div className={`plan-card rounded-2xl overflow-hidden ${accent ? "border-red-500/25" : ""}`}
-      style={accent ? { borderColor: "rgba(239,68,68,0.25)" } : {}}>
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-colors">
+    <div className="plan-card rounded-2xl overflow-hidden">
+      <button onClick={() => setShowMap(!showMap)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/[0.02] transition-colors">
         <div className="flex items-center gap-2">
-          <Icon size={15} className={accent ? "text-red-400" : "text-amber-400"} />
-          <span className="font-display font-bold text-white text-sm">{title}</span>
+          <MapPin size={15} className="text-amber-400" />
+          <span className="font-display font-bold text-white text-sm">Map View</span>
         </div>
-        {open ? <ChevronUp size={15} className="text-slate-500"/> : <ChevronDown size={15} className="text-slate-500"/>}
+        <div className="flex items-center gap-2">
+          <span className="font-body text-[10px] text-slate-500">{showMap ? "Hide" : "Show"}</span>
+          {showMap ? <ChevronUp size={15} className="text-slate-500"/> : <ChevronDown size={15} className="text-slate-500"/>}
+        </div>
       </button>
-      {open && <div className="px-5 pb-5 border-t border-slate-800 space-y-3">{children}</div>}
-    </div>
-  );
-}
-
-// ── Destination search ────────────────────────────────────────────────────────
-
-function DestSearch({ value, onChange }: {
-  value: DestinationResult | null; onChange: (d: DestinationResult | null) => void;
-}) {
-  const [q, setQ]             = useState(value?.name ?? "");
-  const [results, setResults] = useState<DestinationResult[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [open, setOpen]       = useState(false);
-  const timer                 = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const ref                   = useRef<HTMLDivElement>(null);
-
-  // Sync input text when value is set externally (e.g. from URL params)
-  useEffect(() => {
-    if (value?.name) setQ(value.name);
-  }, [value?.name]);
-
-  useEffect(() => {
-    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
-    document.addEventListener("mousedown", fn);
-    return () => document.removeEventListener("mousedown", fn);
-  }, []);
-
-  useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    if (!q.trim() || q === value?.name) { setResults([]); return; }
-    timer.current = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/destinations/search?q=${encodeURIComponent(q)}`, { credentials: "include" });
-        if (res.ok) { setResults(await res.json()); setOpen(true); }
-      } catch { /* silent */ } finally { setLoading(false); }
-    }, 300);
-  }, [q]);
-
-  return (
-    <div ref={ref} className="relative">
-      <div className="relative">
-        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-        <input type="text" placeholder="Search destination…" value={q}
-          onChange={(e) => { setQ(e.target.value); if (value) onChange(null); }}
-          onFocus={() => results.length > 0 && setOpen(true)}
-          className="plan-input w-full pl-10 pr-9 py-3 text-sm rounded-xl" required />
-        {loading
-          ? <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin"/>
-          : q ? <button onClick={() => { onChange(null); setQ(""); setResults([]); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"><X size={14}/></button>
-          : null}
-      </div>
-      {open && results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 z-[120] rounded-xl overflow-hidden shadow-2xl"
-          style={{ background: "rgba(10,15,30,0.98)", border: "1px solid rgba(255,255,255,0.1)" }}>
-          {results.map((d) => (
-            <button key={d.id} onClick={() => { onChange(d); setQ(d.name); setOpen(false); setResults([]); }}
-              className="w-full flex items-start gap-2 px-4 py-3 hover:bg-white/5 transition-colors text-left border-b border-slate-800/60 last:border-0">
-              <MapPin size={13} className="text-amber-400 flex-shrink-0 mt-0.5"/>
-              <div>
-                <p className="font-body text-sm text-white">{d.name}</p>
-                <p className="font-body text-xs text-slate-500">{d.district}, {d.province}{d.altitude ? ` · ${d.altitude.toLocaleString()}m` : ""}</p>
-              </div>
-            </button>
-          ))}
+      {showMap && (
+        <div className="border-t border-slate-800 p-5">
+          <RouteMapLoader
+            startLat={startLat} startLon={startLon}
+            endLat={endLat} endLon={endLon}
+            originName={originName} destinationName={destinationName}
+            riskLevel={riskLevel}
+          />
         </div>
-      )}
-    </div>
-  );
-}
-
-// ── Member search ─────────────────────────────────────────────────────────────
-
-function MemberSearch({ members, onChange }: {
-  members: MemberResult[];
-  onChange: (m: MemberResult[]) => void;
-}) {
-  const [q,        setQ]        = useState("");
-  const [results,  setResults]  = useState<MemberResult[]>([]);
-  const [loading,  setLoading]  = useState(false);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (timer.current) clearTimeout(timer.current);
-    if (!q.trim()) { setResults([]); return; }
-    timer.current = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/friends/search?q=${encodeURIComponent(q)}`, { credentials: "include" });
-        if (res.ok) setResults(await res.json());
-      } catch { /* silent */ } finally { setLoading(false); }
-    }, 300);
-  }, [q]);
-
-  function add(u: MemberResult) {
-    if (!u.username) return;
-    if (members.some((m) => m.id === u.id)) return;
-    onChange([...members, u]);
-    setQ(""); setResults([]);
-  }
-
-  function remove(id: string) { onChange(members.filter((m) => m.id !== id)); }
-
-  return (
-    <div className="space-y-3">
-      <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
-        <input type="text" placeholder="Search by name…" value={q} onChange={(e) => setQ(e.target.value)}
-          className="plan-input w-full pl-9 pr-9 py-2.5 text-sm rounded-xl"/>
-        {loading
-          ? <Loader2 size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin"/>
-          : q ? <button onClick={() => { setQ(""); setResults([]); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"><X size={13}/></button>
-          : null}
-      </div>
-
-      {results.length > 0 && (
-        <div className="space-y-1">
-          {results.map((u) => {
-            const added = members.some((m) => m.id === u.id);
-            return (
-              <div key={u.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                <div>
-                  <p className="font-body text-sm text-white">{u.name}</p>
-                  {u.username && <p className="font-body text-xs text-slate-500">@{u.username}</p>}
-                </div>
-                <button type="button" onClick={() => add(u)} disabled={added || !u.username}
-                  className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-body font-medium transition-all ${added ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-400 cursor-default" : "border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"}`}>
-                  {added ? <><CheckCircle2 size={11}/> Added</> : <><UserPlus size={11}/> Add</>}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {members.length > 0 && (
-        <div className="space-y-2">
-          <p className="font-body text-xs text-slate-500 uppercase tracking-widest">Partners ({members.length})</p>
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-700/40">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-amber-400/15 border border-amber-400/25 flex items-center justify-center flex-shrink-0">
-                  <span className="font-display font-bold text-amber-400 text-xs">{m.name[0]?.toUpperCase()}</span>
-                </div>
-                <div>
-                  <p className="font-body text-sm text-white">{m.name}</p>
-                  {m.username && <p className="font-body text-xs text-slate-500">@{m.username}</p>}
-                </div>
-              </div>
-              <button type="button" onClick={() => remove(m.id)} className="p-1 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-all">
-                <X size={13}/>
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {members.length === 0 && !q && (
-        <p className="font-body text-xs text-slate-600 text-center py-3">
-          Search for travel partners by name. Their health profiles will be included in the safety analysis.
-        </p>
       )}
     </div>
   );
@@ -524,6 +262,7 @@ function PlanInner() {
   const [report,      setReport]      = useState<PlanReport | null>(null);
   const [error,       setError]       = useState<string | null>(null);
   const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
   const [showAllRiskFactors, setShowAllRiskFactors] = useState(false);
   const [showAllRecommendations, setShowAllRecommendations] = useState(false);
   const [showAllHealthAdvisories, setShowAllHealthAdvisories] = useState(false);
@@ -782,7 +521,10 @@ function PlanInner() {
     const recommendationsVisible = showAllRecommendations ? report.recommendations : report.recommendations.slice(0, 4);
 
     return (
-      <div className="max-w-3xl mx-auto px-4 pb-16 space-y-4">
+      <div className="w-full pb-16">
+        <div className="max-w-7xl mx-auto">
+
+        {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between py-4">
           <button onClick={() => setReport(null)} className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors font-body text-sm">
             <ArrowLeft size={15}/> Edit plan
@@ -821,13 +563,9 @@ function PlanInner() {
         {/* ── HERO ──────────────────────────────────────────────────────────── */}
         <div className={`plan-card rounded-2xl overflow-hidden ${isUnsafe ? "border-red-500/20" : ""}`}
           style={isUnsafe ? { borderColor: "rgba(239,68,68,0.2)" } : {}}>
-
-          {/* Top bar: destination name + altitude badge */}
           <div className="px-5 pt-5 pb-3 flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h1 className="font-display text-xl font-bold text-white truncate">
-                {report.destination.name}
-              </h1>
+              <h1 className="font-display text-xl font-bold text-white truncate">{report.destination.name}</h1>
               <p className="font-body text-xs text-slate-500 mt-0.5">
                 <MapPin size={11} className="inline mr-1 -mt-0.5" />
                 {report.destination.district}, {report.destination.province}
@@ -836,8 +574,6 @@ function PlanInner() {
             </div>
             <ScoreRing score={report.overallScore} size={68}/>
           </div>
-
-          {/* Safety badge + date + confidence row */}
           <div className="px-5 pb-2 flex items-center gap-2 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-body text-xs font-bold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
               <LevelIcon size={12}/>{cfg.label}
@@ -848,12 +584,8 @@ function PlanInner() {
             </span>
             <span className="font-body text-[11px] text-slate-500">{report.season}</span>
             <span className="font-body text-[11px] text-slate-600">{Math.round(report.confidence * 100)}% confidence</span>
-            {isGroup && (
-              <span className="font-body text-[11px] text-slate-500">Group avg: {report.groupAvgScore}/100</span>
-            )}
+            {isGroup && <span className="font-body text-[11px] text-slate-500">Group avg: {report.groupAvgScore}/100</span>}
           </div>
-
-          {/* AI Verdict */}
           {report.ai.verdict && (
             <div className="mx-5 mb-3 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50">
               <div className="flex items-start gap-2">
@@ -862,10 +594,7 @@ function PlanInner() {
               </div>
             </div>
           )}
-
-          {/* ── AT A GLANCE — 4 quick-summary cards ───────────────────────── */}
           <div className="px-5 pb-5 grid grid-cols-2 gap-2">
-            {/* Weather */}
             {report.liveWeather && (
               <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -893,8 +622,6 @@ function PlanInner() {
                 </div>
               </div>
             )}
-
-            {/* Hazard */}
             {report.liveHazard && (
               <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -918,8 +645,6 @@ function PlanInner() {
                 </div>
               </div>
             )}
-
-            {/* Route risk */}
             {report.routeRisk && (
               <div className={`rounded-xl p-3 border ${report.routeRisk.risk === "HIGH" || report.routeRisk.risk === "MEDIUM" ? "bg-orange-500/8 border-orange-500/20" : "bg-emerald-500/8 border-emerald-500/20"}`}>
                 <div className="flex items-center justify-between mb-2">
@@ -936,8 +661,6 @@ function PlanInner() {
                 <p className="font-body text-[11px] text-slate-400 leading-relaxed line-clamp-2">{report.routeRisk.reason}</p>
               </div>
             )}
-
-            {/* Trip type */}
             <div className="rounded-xl bg-slate-800/60 border border-slate-700/50 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Users size={11} className="text-indigo-400" />
@@ -952,396 +675,409 @@ function PlanInner() {
               )}
             </div>
           </div>
-
-          {/* Seasonal context */}
           <div className="mx-5 mb-4 px-3 py-2 rounded-lg bg-slate-800/30 border border-slate-700/30 flex items-start gap-2">
             <Calendar size={12} className="text-slate-500 flex-shrink-0 mt-0.5" />
             <p className="font-body text-[11px] text-slate-400 leading-relaxed">{report.seasonalContext}</p>
           </div>
         </div>
 
-        {/* ── WHY UNSAFE — shown immediately after hero ────────────────────── */}
-        {isUnsafe && report.ai.whyUnsafe && (
-          <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(239,68,68,0.35)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-6 h-6 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center">
-                <AlertCircle size={13} className="text-red-400" />
+        {/* ── Tab bar ────────────────────────────────────────────────────── */}
+        <div className="flex gap-1 mt-6 mb-4 border-b border-slate-800 overflow-x-auto">
+          {[
+            { id: "overview", label: "Overview", icon: Shield },
+            { id: "risks", label: "Risks", icon: AlertTriangle },
+            { id: "health", label: "Health", icon: Heart },
+            ...(isGroup ? [{ id: "group", label: "Group", icon: Users }] : []),
+            { id: "budget", label: "Budget", icon: Wallet },
+            { id: "advice", label: "Advice", icon: CheckCircle2 },
+          ].map((tab) => {
+            const TabIcon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-body font-semibold border-b-2 transition-all whitespace-nowrap ${
+                  isActive
+                    ? "border-amber-400 text-amber-300"
+                    : "border-transparent text-slate-500 hover:text-slate-300"
+                }`}>
+                <TabIcon size={13}/>
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Tab: Overview ────────────────────────────────────────────── */}
+        {activeTab === "overview" && (
+          <div className="space-y-4">
+            {isUnsafe && report.ai.whyUnsafe && (
+              <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(239,68,68,0.35)", background: "linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.02))" }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-6 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center">
+                    <AlertCircle size={13} className="text-red-400" />
+                  </div>
+                  <h3 className="font-display font-bold text-sm text-red-300">Not recommended — here&apos;s why</h3>
+                </div>
+                <p className="font-body text-sm text-slate-300 leading-relaxed ml-8">{report.ai.whyUnsafe}</p>
               </div>
-              <h3 className="font-display font-bold text-sm text-red-300">Not recommended — here&apos;s why</h3>
-            </div>
-            <p className="font-body text-sm text-slate-300 leading-relaxed ml-8">{report.ai.whyUnsafe}</p>
+            )}
+            {report.ai.riskExplanation && (
+              <div className="plan-card rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles size={14} className="text-amber-400"/>
+                  <h3 className="font-display font-bold text-white text-sm">AI Risk Analysis</h3>
+                </div>
+                <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.riskExplanation}</p>
+                {report.ai.topTip && (
+                  <div className="mt-3 pt-3 border-t border-slate-800 flex items-start gap-2">
+                    <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0 mt-0.5"/>
+                    <p className="font-body text-sm text-emerald-300 leading-relaxed"><strong>Top tip:</strong> {report.ai.topTip}</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {(report.overallLevel !== "SAFE" || report.conflict) && report.alternatives.length > 0 && (
+              <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(52,211,153,0.2)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingDown size={15} className="text-emerald-400"/>
+                  <h3 className="font-display font-bold text-white text-sm">Recommended alternatives</h3>
+                </div>
+                {report.ai.alternativeReason && (
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-3">
+                    <Sparkles size={13} className="text-amber-400 flex-shrink-0 mt-0.5"/>
+                    <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.alternativeReason}</p>
+                  </div>
+                )}
+                <div className="space-y-2">
+                  {report.alternatives.map((alt, i) => {
+                    const altColor = alt.safetyScore >= 80 ? "text-emerald-400" : "text-amber-400";
+                    const isTop    = i === 0;
+                    return (
+                      <div key={alt.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isTop ? "bg-emerald-500/8 border-emerald-500/25" : "bg-slate-800/40 border-slate-700/50"}`}>
+                        <div className="flex items-start gap-2 min-w-0">
+                          {isTop && <span className="text-xs mt-0.5">⭐</span>}
+                          <div className="min-w-0">
+                            <p className="font-body text-sm font-medium text-white truncate">{alt.name}</p>
+                            <p className="font-body text-xs text-slate-500">{alt.district}{alt.altitude ? ` · ${alt.altitude.toLocaleString()}m` : ""}</p>
+                            {alt.budgetFeasible && alt.estimatedNPR > 0 && (
+                              <p className="font-body text-xs text-slate-600">~NPR {alt.estimatedNPR.toLocaleString()}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className={`font-display font-bold text-lg ${altColor}`}>{alt.safetyScore}</span>
+                          <button onClick={() => {
+                            setDestination({ id: alt.id, name: alt.name, district: alt.district, province: alt.province, altitude: alt.altitude });
+                            setSavedPlanId(null);
+                            setReport(null);
+                            const params = new URLSearchParams(searchParams.toString());
+                            params.delete("planId");
+                            router.replace(`/plan?${params.toString()}`);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }} className="px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 hover:bg-amber-500/25 text-xs font-body font-medium transition-all">
+                            Plan this →
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {report.segmentDetails && report.segmentDetails.length > 0 && (
+              <SegmentDataTable segments={report.segmentDetails} />
+            )}
+            {displayOriginLat && displayOriginLon && (
+              <RoutePreviewMap
+                startLat={displayOriginLat} startLon={displayOriginLon}
+                endLat={report.destination.latitude} endLon={report.destination.longitude}
+                originName="Your Location" destinationName={report.destination.name}
+                riskLevel={report.overallLevel === "SAFE" ? "LOW" : report.overallLevel === "CAUTION" ? "MEDIUM" : report.overallLevel === "HIGH_RISK" ? "HIGH" : "EXTREME"}
+              />
+            )}
           </div>
         )}
 
-        {/* ── ALTERNATIVES — shown immediately after why unsafe ────────────── */}
-        {(report.overallLevel !== "SAFE" || report.conflict) && report.alternatives.length > 0 && (
-          <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(52,211,153,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <TrendingDown size={15} className="text-emerald-400"/>
-              <h3 className="font-display font-bold text-white text-sm">Recommended alternatives</h3>
-            </div>
-            {report.ai.alternativeReason && (
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/60 border border-slate-700/50 mb-3">
-                <Sparkles size={13} className="text-amber-400 flex-shrink-0 mt-0.5"/>
-                <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.alternativeReason}</p>
+        {/* ── Tab: Risks ──────────────────────────────────────────────── */}
+        {activeTab === "risks" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {report.riskFactors.length > 0 && (
+              <Section title={`Risk Factors (${report.riskFactors.length})`} icon={AlertTriangle} defaultOpen={isUnsafe}>
+                <div className="pt-3 space-y-2">
+                  {riskFactorsVisible.map((f, i) => {
+                    const severityPct = f.severity === "CRITICAL" ? 100 : f.severity === "HIGH" ? 75 : f.severity === "MEDIUM" ? 50 : 25;
+                    const barColor = f.severity === "CRITICAL" || f.severity === "HIGH" ? "bg-red-500" : f.severity === "MEDIUM" ? "bg-amber-500" : "bg-emerald-500";
+                    return (
+                      <div key={i} className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                        <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-body font-semibold text-sm text-white truncate">{f.name}</span>
+                            <span className={`px-1.5 py-0.5 rounded border text-[10px] font-body font-bold uppercase shrink-0 ${SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR["LOW"]}`}>{f.severity}</span>
+                          </div>
+                          <span className="font-body text-[11px] text-slate-500 font-mono shrink-0">-{f.score}pts</span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-slate-700/60 mb-1.5 overflow-hidden">
+                          <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${severityPct}%` }} />
+                        </div>
+                        <p className="font-body text-xs text-slate-400 leading-relaxed">{f.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                {report.riskFactors.length > 3 && (
+                  <button type="button" onClick={() => setShowAllRiskFactors((v) => !v)}
+                    className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30 transition-colors">
+                    {showAllRiskFactors ? "Show fewer" : `Show ${report.riskFactors.length - 3} more`}
+                  </button>
+                )}
+              </Section>
+            )}
+            {report.weatherStats && (
+              <Section title="Historical Weather" icon={CloudRain} defaultOpen={false}>
+                <p className="font-body text-xs text-slate-500 pt-2">Based on {report.weatherStats.yearsAnalysed} years</p>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {[
+                    { icon: Thermometer, label: "Avg temp", value: `${report.weatherStats.avgTempMax}°/${report.weatherStats.avgTempMin}°C` },
+                    { icon: CloudRain, label: "Avg rain", value: `${report.weatherStats.avgRainfall}mm` },
+                    { icon: Wind, label: "Avg wind", value: `${report.weatherStats.avgWindSpeed}m/s` },
+                    { icon: Snowflake, label: "Snow chance", value: `${Math.round(report.weatherStats.snowProbability * 100)}%` },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-slate-800/50 rounded-xl p-3">
+                      <div className="flex items-center gap-1.5 mb-1"><s.icon size={12} className="text-amber-400"/><span className="font-body text-xs text-slate-500">{s.label}</span></div>
+                      <p className="font-body text-sm font-semibold text-white">{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+            {Array.isArray(report.pillarScores) && report.pillarScores.length > 0 && (
+              <Section title="Pillar Scoring" icon={Shield} defaultOpen>
+                <div className="pt-3 space-y-2">
+                  {report.pillarScores.map((p) => (
+                    <div key={p.id} className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="font-body text-sm text-white font-semibold">{p.title}</p>
+                        <span className={`text-xs px-2 py-0.5 rounded-full border ${
+                          p.level === "LOW" ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
+                          : p.level === "MEDIUM" ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
+                          : "text-red-300 border-red-500/30 bg-red-500/10"
+                        }`}>{p.score}/{p.maxPoints}</span>
+                      </div>
+                      <p className="font-body text-xs text-slate-400 leading-relaxed">{p.summary}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Health ─────────────────────────────────────────────── */}
+        {activeTab === "health" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {report.ai.healthWarning && (
+              <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(244,63,94,0.2)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Heart size={14} className="text-rose-400"/>
+                  <h3 className="font-display font-bold text-white text-sm">Health Advisory</h3>
+                </div>
+                <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.healthWarning}</p>
               </div>
             )}
-            <div className="space-y-2">
-              {report.alternatives.map((alt, i) => {
-                const altColor = alt.safetyScore >= 80 ? "text-emerald-400" : "text-amber-400";
-                const isTop    = i === 0;
-                return (
-                  <div key={alt.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${isTop ? "bg-emerald-500/8 border-emerald-500/25" : "bg-slate-800/40 border-slate-700/50"}`}>
-                    <div className="flex items-start gap-2 min-w-0">
-                      {isTop && <span className="text-xs mt-0.5">⭐</span>}
-                      <div className="min-w-0">
-                        <p className="font-body text-sm font-medium text-white truncate">{alt.name}</p>
-                        <p className="font-body text-xs text-slate-500">{alt.district}{alt.altitude ? ` · ${alt.altitude.toLocaleString()}m` : ""}</p>
-                        {alt.budgetFeasible && alt.estimatedNPR > 0 && (
-                          <p className="font-body text-xs text-slate-600">~NPR {alt.estimatedNPR.toLocaleString()}</p>
-                        )}
-                      </div>
+            {report.healthAdvisories.length > 0 && (
+              <Section title={`Health Advisories (${report.healthAdvisories.length})`} icon={Heart}>
+                {healthAdvisoriesVisible.map((h, i) => (
+                  <div key={i} className={`p-3 rounded-xl border ${h.risk === "HIGH" ? "bg-red-500/8 border-red-500/20" : h.risk === "MEDIUM" ? "bg-amber-500/8 border-amber-500/20" : "bg-slate-800/40 border-slate-700/50"}`}>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className={`font-body font-semibold text-sm ${h.risk === "HIGH" ? "text-red-400" : h.risk === "MEDIUM" ? "text-amber-400" : "text-slate-300"}`}>{h.condition}</span>
+                      <span className={`px-2 py-0.5 rounded-full border text-[10px] font-body font-bold uppercase ${SEVERITY_COLOR[h.risk] ?? SEVERITY_COLOR["LOW"]}`}>{h.risk}</span>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <span className={`font-display font-bold text-lg ${altColor}`}>{alt.safetyScore}</span>
+                    <p className="font-body text-xs text-slate-400 leading-relaxed">{h.detail}</p>
+                  </div>
+                ))}
+                {report.healthAdvisories.length > 2 && (
+                  <button type="button" onClick={() => setShowAllHealthAdvisories((v) => !v)}
+                    className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30">
+                    {showAllHealthAdvisories ? "Show fewer" : `Show ${report.healthAdvisories.length - 2} more`}
+                  </button>
+                )}
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Group ─────────────────────────────────────────────── */}
+        {activeTab === "group" && isGroup && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {report.conflict ? (
+              <Section title="Group Conflict — Conservative Analysis" icon={AlertTriangle} accent>
+                <div className="pt-3 space-y-3">
+                  {report.ai.groupConflict && (
+                    <div className="flex items-start gap-2 p-3 rounded-xl bg-orange-500/8 border border-orange-500/20">
+                      <AlertCircle size={13} className="text-orange-400 flex-shrink-0 mt-0.5"/>
+                      <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.groupConflict}</p>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {report.memberAnalyses.map((m) => {
+                      const mc = LEVEL_CFG[m.level as keyof typeof LEVEL_CFG] ?? LEVEL_CFG["SAFE"];
+                      const MIcon = mc.icon;
+                      return (
+                        <div key={m.userId} className={`flex items-center justify-between px-3 py-2.5 rounded-xl border ${m.level === "HIGH_RISK" || m.level === "EXTREME" ? "bg-red-500/8 border-red-500/20" : "bg-slate-800/40 border-slate-700/50"}`}>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+                              <span className="font-display font-bold text-slate-300 text-xs">{m.name[0]?.toUpperCase()}</span>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="font-body text-sm text-white truncate">{m.name}</p>
+                                {m.isLeader && <span className="px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 font-body text-[10px] font-semibold">Leader</span>}
+                              </div>
+                              {m.healthFlags.length > 0 && <p className="font-body text-xs text-slate-500 truncate">{m.healthFlags[0]}</p>}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className={`font-display font-bold text-base ${mc.color}`}>{m.score}</span>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-bold ${mc.color} ${mc.bg} ${mc.border}`}>
+                              <MIcon size={9}/>{mc.label}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="font-body text-xs text-slate-600">
+                    Conservative rule: group safety = worst member score ({report.overallScore}/100).
+                  </p>
+                </div>
+              </Section>
+            ) : report.memberAnalyses.length > 1 && (
+              <Section title={`Group Analysis — ${report.memberAnalyses.length} members`} icon={Users}>
+                <div className="space-y-2 pt-3">
+                  {report.memberAnalyses.map((m) => {
+                    const mc = LEVEL_CFG[m.level as keyof typeof LEVEL_CFG] ?? LEVEL_CFG["SAFE"];
+                    const MIcon = mc.icon;
+                    return (
+                      <div key={m.userId} className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+                            <span className="font-display font-bold text-slate-300 text-xs">{m.name[0]?.toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <p className="font-body text-sm text-white">{m.name}</p>
+                              {m.isLeader && <span className="px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 font-body text-[10px] font-semibold">Leader</span>}
+                            </div>
+                            {m.topRisks.length > 0 && <p className="font-body text-xs text-slate-500">{m.topRisks[0]}</p>}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className={`font-display font-bold text-base ${mc.color}`}>{m.score}</span>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-bold ${mc.color} ${mc.bg} ${mc.border}`}>
+                            <MIcon size={9}/>{mc.label}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Section>
+            )}
+          </div>
+        )}
+
+        {/* ── Tab: Budget ────────────────────────────────────────────── */}
+        {activeTab === "budget" && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {report.budget.specified > 0 && (
+              <div className={`plan-card rounded-2xl p-5 ${report.budget.feasible ? "border-emerald-500/20" : "border-orange-500/20"}`}
+                style={{ borderColor: report.budget.feasible ? "rgba(52,211,153,0.2)" : "rgba(251,146,60,0.2)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Wallet size={14} className={report.budget.feasible ? "text-emerald-400" : "text-orange-400"}/>
+                  <h3 className="font-display font-bold text-white text-sm">Budget</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {[
+                    { label: "Your budget", value: `NPR ${report.budget.specified.toLocaleString()}` },
+                    { label: "Est. cost", value: `NPR ${report.budget.estimatedTotal.toLocaleString()}` },
+                    { label: isGroup ? "Per person" : "Duration", value: isGroup ? `NPR ${report.budget.perPerson.toLocaleString()}` : `${report.budget.estimatedDays} days` },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-slate-800/50 rounded-xl p-2.5 text-center">
+                      <p className="font-body text-xs text-slate-500 mb-1">{s.label}</p>
+                      <p className="font-body text-sm font-semibold text-white">{s.value}</p>
+                    </div>
+                  ))}
+                </div>
+                {!report.budget.feasible && <p className="font-body text-sm text-orange-400 mb-2">Shortfall: NPR {report.budget.shortfall.toLocaleString()}</p>}
+                {report.ai.budgetAdvice && <p className="font-body text-sm text-slate-400 leading-relaxed">{report.ai.budgetAdvice}</p>}
+              </div>
+            )}
+            {(report.overallLevel !== "SAFE" || report.conflict) && report.alternatives.length > 0 && (
+              <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(52,211,153,0.2)" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <TrendingDown size={15} className="text-emerald-400"/>
+                  <h3 className="font-display font-bold text-white text-sm">Alternatives</h3>
+                </div>
+                <div className="space-y-2">
+                  {report.alternatives.map((alt, i) => (
+                    <div key={alt.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                      <div>
+                        <p className="font-body text-sm text-white">{alt.name}</p>
+                        <p className="font-body text-xs text-slate-500">
+                          {alt.safetyScore}/100 · ~NPR {alt.estimatedNPR.toLocaleString()}
+                        </p>
+                      </div>
                       <button onClick={() => {
                         setDestination({ id: alt.id, name: alt.name, district: alt.district, province: alt.province, altitude: alt.altitude });
-                        setSavedPlanId(null);
-                        setReport(null);
+                        setSavedPlanId(null); setReport(null);
                         const params = new URLSearchParams(searchParams.toString());
                         params.delete("planId");
                         router.replace(`/plan?${params.toString()}`);
                         window.scrollTo({ top: 0, behavior: "smooth" });
-                      }} className="px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 hover:bg-amber-500/25 text-xs font-body font-medium transition-all">
+                      }} className="px-3 py-1 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 hover:bg-amber-500/25 text-xs font-body font-medium transition-all">
                         Plan this →
                       </button>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ── GROUP conflict ───────────────────────────────────────────────── */}
-        {isGroup && report.conflict && (
-          <Section title="Group Conflict — Conservative Analysis" icon={AlertTriangle} accent>
-            <div className="pt-3 space-y-3">
-              {report.ai.groupConflict && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-orange-500/8 border border-orange-500/20">
-                  <AlertCircle size={13} className="text-orange-400 flex-shrink-0 mt-0.5"/>
-                  <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.groupConflict}</p>
+                  ))}
                 </div>
-              )}
-              <div className="space-y-2">
-                {report.memberAnalyses.map((m) => {
-                  const mc = LEVEL_CFG[m.level as keyof typeof LEVEL_CFG] ?? LEVEL_CFG["SAFE"];
-                  const MIcon = mc.icon;
-                  return (
-                    <div key={m.userId} className={`flex items-center justify-between px-3 py-2.5 rounded-xl border ${m.level === "HIGH_RISK" || m.level === "EXTREME" ? "bg-red-500/8 border-red-500/20" : "bg-slate-800/40 border-slate-700/50"}`}>
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
-                          <span className="font-display font-bold text-slate-300 text-xs">{m.name[0]?.toUpperCase()}</span>
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <p className="font-body text-sm text-white truncate">{m.name}</p>
-                            {m.isLeader && <span className="px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 font-body text-[10px] font-semibold">Leader</span>}
-                          </div>
-                          {m.healthFlags.length > 0 && <p className="font-body text-xs text-slate-500 truncate">{m.healthFlags[0]}</p>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className={`font-display font-bold text-base ${mc.color}`}>{m.score}</span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-bold ${mc.color} ${mc.bg} ${mc.border}`}>
-                          <MIcon size={9}/>{mc.label}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="font-body text-xs text-slate-600">
-                Conservative rule: group safety = worst member score ({report.overallScore}/100). All members must be SAFE or CAUTION to proceed.
-              </p>
-            </div>
-          </Section>
-        )}
-
-        {/* ── Group members (no conflict) ──────────────────────────────────── */}
-        {isGroup && !report.conflict && report.memberAnalyses.length > 1 && (
-          <Section title={`Group Analysis — ${report.memberAnalyses.length} members`} icon={Users}>
-            <div className="space-y-2 pt-3">
-              {report.memberAnalyses.map((m) => {
-                const mc    = LEVEL_CFG[m.level as keyof typeof LEVEL_CFG] ?? LEVEL_CFG["SAFE"];
-                const MIcon = mc.icon;
-                return (
-                  <div key={m.userId} className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
-                        <span className="font-display font-bold text-slate-300 text-xs">{m.name[0]?.toUpperCase()}</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <p className="font-body text-sm text-white">{m.name}</p>
-                          {m.isLeader && <span className="px-1.5 py-0.5 rounded-full bg-amber-400/15 text-amber-400 font-body text-[10px] font-semibold">Leader</span>}
-                        </div>
-                        {m.topRisks.length > 0 && <p className="font-body text-xs text-slate-500">{m.topRisks[0]}</p>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className={`font-display font-bold text-base ${mc.color}`}>{m.score}</span>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-body font-bold ${mc.color} ${mc.bg} ${mc.border}`}>
-                        <MIcon size={9}/>{mc.label}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Section>
-        )}
-
-        {/* ── AI Risk explanation ──────────────────────────────────────────── */}
-        {report.ai.riskExplanation && (
-          <div className="plan-card rounded-2xl p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles size={14} className="text-amber-400"/>
-              <h3 className="font-display font-bold text-white text-sm">AI Risk Analysis</h3>
-            </div>
-            <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.riskExplanation}</p>
-            {report.ai.topTip && (
-              <div className="mt-3 pt-3 border-t border-slate-800 flex items-start gap-2">
-                <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0 mt-0.5"/>
-                <p className="font-body text-sm text-emerald-300 leading-relaxed"><strong>Top tip:</strong> {report.ai.topTip}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* ── Interactive route map ────────────────────────────────────── */}
-        {displayOriginLat && displayOriginLon && (
-          <div className="plan-card rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <MapPin size={15} className="text-amber-400" />
-              <span className="font-display font-bold text-white text-sm">Route Preview</span>
-            </div>
-            <RouteMapLoader
-              startLat={displayOriginLat}
-              startLon={displayOriginLon}
-              endLat={report.destination.latitude}
-              endLon={report.destination.longitude}
-              originName="Your Location"
-              destinationName={report.destination.name}
-              riskLevel={report.overallLevel === "SAFE" ? "LOW" : report.overallLevel === "CAUTION" ? "MEDIUM" : report.overallLevel === "HIGH_RISK" ? "HIGH" : "EXTREME"}
-            />
-          </div>
-        )}
-
-        {/* ── Pillar scorecard ─────────────────────────────────────────────── */}
-        {Array.isArray(report.pillarScores) && report.pillarScores.length > 0 && (
-          <Section title="Pillar Scoring Model" icon={Shield} defaultOpen>
-            <div className="pt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-              {report.pillarScores.map((p) => (
-                <div key={p.id} className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-3">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <p className="font-body text-sm text-white font-semibold">{p.title}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                      p.level === "LOW"
-                        ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
-                        : p.level === "MEDIUM"
-                        ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
-                        : "text-red-300 border-red-500/30 bg-red-500/10"
-                    }`}>
-                      {p.score}/{p.maxPoints}
-                    </span>
-                  </div>
-                  <p className="font-body text-xs text-slate-400 leading-relaxed">{p.summary}</p>
-                  {p.id === "route_historic" && report.routePillar && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-1">
-                      <p className="font-body text-[11px] text-slate-500">{report.routePillar.highway}</p>
-                      {(report.routePillar.segmentFlags ?? []).slice(0, 2).map((f, i) => (
-                        <p key={`${f.where}-${i}`} className="font-body text-[11px] text-slate-300">
-                          {f.where}: {f.effect}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-                  {p.id === "route_realtime" && report.routeRisk && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
-                      <p className="font-body text-[11px] text-slate-300">{report.routeRisk.reason}</p>
-                    </div>
-                  )}
-                  {p.id === "destination_safety" && report.destinationPillar && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-1">
-                      <p className="font-body text-[11px] text-slate-300">{report.destinationPillar.historicProfile}</p>
-                      <p className="font-body text-[11px] text-slate-400">{report.destinationPillar.realtimeSnapshot}</p>
-                    </div>
-                  )}
-                  {p.id === "weather_safety" && report.weatherPillar && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/50">
-                      <p className="font-body text-[11px] text-slate-300">
-                        Temp Δ {report.weatherPillar.deltas.temperature.toFixed(1)}°C · Altitude Δ {Math.round(report.weatherPillar.deltas.altitude)}m ·
-                        Humidity Δ {report.weatherPillar.deltas.humidity.toFixed(1)}%
-                      </p>
-                    </div>
-                  )}
-                  {p.id === "personal_safety" && report.personalPillar && (
-                    <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-1">
-                      <p className="font-body text-[11px] text-slate-300">{report.personalPillar.clearance}</p>
-                      <p className="font-body text-[11px] text-slate-400">{report.personalPillar.soloSummary}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Health warning ───────────────────────────────────────────────── */}
-        {report.ai.healthWarning && (
-          <div className="plan-card rounded-2xl p-5" style={{ borderColor: "rgba(244,63,94,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Heart size={14} className="text-rose-400"/>
-              <h3 className="font-display font-bold text-white text-sm">Health Advisory</h3>
-            </div>
-            <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.healthWarning}</p>
-          </div>
-        )}
-
-        {/* ── Weather stats ────────────────────────────────────────────────── */}
-        {report.weatherStats && (
-          <Section title="Historical Weather for This Period" icon={CloudRain} defaultOpen={false}>
-            <p className="font-body text-xs text-slate-500 pt-2">Based on {report.weatherStats.yearsAnalysed} years</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
-              {[
-                { icon: Thermometer, label: "Avg temp",    value: `${report.weatherStats.avgTempMax}°/${report.weatherStats.avgTempMin}°C` },
-                { icon: CloudRain,   label: "Avg rain",    value: `${report.weatherStats.avgRainfall}mm` },
-                { icon: Wind,        label: "Avg wind",    value: `${report.weatherStats.avgWindSpeed}m/s` },
-                { icon: Snowflake,   label: "Snow chance", value: `${Math.round(report.weatherStats.snowProbability * 100)}%` },
-              ].map((s) => (
-                <div key={s.label} className="bg-slate-800/50 rounded-xl p-3">
-                  <div className="flex items-center gap-1.5 mb-1"><s.icon size={12} className="text-amber-400"/><span className="font-body text-xs text-slate-500">{s.label}</span></div>
-                  <p className="font-body text-sm font-semibold text-white">{s.value}</p>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Risk factors ─────────────────────────────────────────────────── */}
-        {report.riskFactors.length > 0 && (
-          <Section title={`Risk Factors (${report.riskFactors.length})`} icon={AlertTriangle} defaultOpen={isUnsafe}>
-            <div className="pt-3 space-y-2">
-              {riskFactorsVisible.map((f, i) => {
-                const severityPct = f.severity === "CRITICAL" ? 100 : f.severity === "HIGH" ? 75 : f.severity === "MEDIUM" ? 50 : 25;
-                const barColor = f.severity === "CRITICAL" || f.severity === "HIGH" ? "bg-red-500" : f.severity === "MEDIUM" ? "bg-amber-500" : "bg-emerald-500";
-                return (
-                  <div key={i} className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="font-body font-semibold text-sm text-white truncate">{f.name}</span>
-                        <span className={`px-1.5 py-0.5 rounded border text-[10px] font-body font-bold uppercase shrink-0 ${SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR["LOW"]}`}>{f.severity}</span>
+        {/* ── Tab: Advice ────────────────────────────────────────────── */}
+        {activeTab === "advice" && (
+          <div className="space-y-4">
+            {report.recommendations.length > 0 && (
+              <div className="plan-card rounded-2xl p-5">
+                <h3 className="font-display font-bold text-white text-sm mb-3">Recommendations</h3>
+                <div className="space-y-2">
+                  {recommendationsVisible.map((r, i) => {
+                    const Icon = REC_ICON[r.type] ?? Package;
+                    const color = REC_COLOR[r.type] ?? "text-slate-400";
+                    return (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-700/60 ${color}`}><Icon size={13}/></div>
+                        <div>
+                          <span className={`font-body text-[10px] font-bold uppercase tracking-wider ${color}`}>{r.type}</span>
+                          <p className="font-body text-sm text-slate-300 mt-0.5 leading-relaxed">{r.text}</p>
+                        </div>
                       </div>
-                      <span className="font-body text-[11px] text-slate-500 font-mono shrink-0">-{f.score}pts</span>
-                    </div>
-                    <div className="w-full h-1.5 rounded-full bg-slate-700/60 mb-1.5 overflow-hidden">
-                      <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${severityPct}%` }} />
-                    </div>
-                    <p className="font-body text-xs text-slate-400 leading-relaxed">{f.description}</p>
-                  </div>
-                );
-              })}
-            </div>
-            {report.riskFactors.length > 3 && (
-              <button
-                type="button"
-                onClick={() => setShowAllRiskFactors((v) => !v)}
-                className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30 transition-colors"
-              >
-                {showAllRiskFactors ? "Show fewer" : `Show ${report.riskFactors.length - 3} more`}
-              </button>
-            )}
-          </Section>
-        )}
-
-        {/* ── Health advisories ────────────────────────────────────────────── */}
-        {report.healthAdvisories.length > 0 && (
-          <Section title={`Health Advisories (${report.healthAdvisories.length})`} icon={Heart}>
-            {healthAdvisoriesVisible.map((h, i) => (
-              <div key={i} className={`p-3 rounded-xl border ${h.risk === "HIGH" ? "bg-red-500/8 border-red-500/20" : h.risk === "MEDIUM" ? "bg-amber-500/8 border-amber-500/20" : "bg-slate-800/40 border-slate-700/50"}`}>
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className={`font-body font-semibold text-sm ${h.risk === "HIGH" ? "text-red-400" : h.risk === "MEDIUM" ? "text-amber-400" : "text-slate-300"}`}>{h.condition}</span>
-                  <span className={`px-2 py-0.5 rounded-full border text-[10px] font-body font-bold uppercase ${SEVERITY_COLOR[h.risk] ?? SEVERITY_COLOR["LOW"]}`}>{h.risk}</span>
+                    );
+                  })}
                 </div>
-                <p className="font-body text-xs text-slate-400 leading-relaxed">{h.detail}</p>
+                {report.recommendations.length > 4 && (
+                  <button type="button" onClick={() => setShowAllRecommendations((v) => !v)}
+                    className="w-full mt-2 py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30">
+                    {showAllRecommendations ? "Show fewer" : `Show ${report.recommendations.length - 4} more`}
+                  </button>
+                )}
               </div>
-            ))}
-            {report.healthAdvisories.length > 2 && (
-              <button
-                type="button"
-                onClick={() => setShowAllHealthAdvisories((v) => !v)}
-                className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30"
-              >
-                {showAllHealthAdvisories ? "Show fewer health advisories" : `Show ${report.healthAdvisories.length - 2} more health advisories`}
-              </button>
             )}
-          </Section>
-        )}
-
-        {/* ── Recommendations ──────────────────────────────────────────────── */}
-        {report.recommendations.length > 0 && (
-          <Section title={`Recommendations (${report.recommendations.length})`} icon={CheckCircle2} defaultOpen={false}>
-            {recommendationsVisible.map((r, i) => {
-              const Icon  = REC_ICON[r.type]  ?? Package;
-              const color = REC_COLOR[r.type] ?? "text-slate-400";
-              return (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 bg-slate-700/60 ${color}`}><Icon size={13}/></div>
-                  <div>
-                    <span className={`font-body text-[10px] font-bold uppercase tracking-wider ${color}`}>{r.type}</span>
-                    <p className="font-body text-sm text-slate-300 mt-0.5 leading-relaxed">{r.text}</p>
-                  </div>
-                </div>
-              );
-            })}
-            {report.recommendations.length > 4 && (
-              <button
-                type="button"
-                onClick={() => setShowAllRecommendations((v) => !v)}
-                className="w-full py-2 rounded-xl border border-slate-700/50 bg-slate-800/30 text-slate-300 text-xs font-body hover:bg-slate-700/30"
-              >
-                {showAllRecommendations ? "Show fewer recommendations" : `Show ${report.recommendations.length - 4} more recommendations`}
-              </button>
-            )}
-          </Section>
-        )}
-
-        {/* ── Budget ───────────────────────────────────────────────────────── */}
-        {report.budget.specified > 0 && (
-          <div className={`plan-card rounded-2xl p-5 ${report.budget.feasible ? "border-emerald-500/20" : "border-orange-500/20"}`}
-            style={{ borderColor: report.budget.feasible ? "rgba(52,211,153,0.2)" : "rgba(251,146,60,0.2)" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <Wallet size={14} className={report.budget.feasible ? "text-emerald-400" : "text-orange-400"}/>
-              <h3 className="font-display font-bold text-white text-sm">Budget</h3>
-            </div>
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              {[
-                { label: "Your budget",    value: `NPR ${report.budget.specified.toLocaleString()}` },
-                { label: "Est. trip cost", value: `NPR ${report.budget.estimatedTotal.toLocaleString()}` },
-                { label: isGroup ? "Per person" : "Duration", value: isGroup ? `NPR ${report.budget.perPerson.toLocaleString()}` : `${report.budget.estimatedDays} days` },
-              ].map((s) => (
-                <div key={s.label} className="bg-slate-800/50 rounded-xl p-2.5 text-center">
-                  <p className="font-body text-xs text-slate-500 mb-1">{s.label}</p>
-                  <p className="font-body text-sm font-semibold text-white">{s.value}</p>
-                </div>
-              ))}
-            </div>
-            {!report.budget.feasible && <p className="font-body text-sm text-orange-400 mb-2">Shortfall: NPR {report.budget.shortfall.toLocaleString()}</p>}
-            {report.ai.budgetAdvice && <p className="font-body text-sm text-slate-400 leading-relaxed">{report.ai.budgetAdvice}</p>}
           </div>
         )}
 
+      </div>
       </div>
     );
   }
@@ -1350,7 +1086,8 @@ function PlanInner() {
 
   if (submitting) {
     return (
-      <div className="max-w-3xl mx-auto px-4 pb-16 space-y-4">
+      <div className="w-full pb-16">
+        <div className="max-w-7xl mx-auto">
         {/* Skeleton: hero card */}
         <div className="plan-card rounded-2xl p-6 animate-pulse">
           <div className="flex items-start justify-between gap-4">
@@ -1391,133 +1128,155 @@ function PlanInner() {
           </div>
         </div>
       </div>
+      </div>
     );
   }
 
   return (
-    <div className="max-w-xl mx-auto px-4 pb-16">
-      <div className="plan-card plan-form-card rounded-2xl p-6 md:p-8">
-        <div className="mb-6">
-          <h2 className="font-display text-2xl font-bold text-white mb-1">
-            Plan your <em className="shimmer-text not-italic">trip</em>
-          </h2>
-          <p className="font-body text-sm text-slate-400">Your health profile is loaded automatically. Fill in the required fields.</p>
-        </div>
+    <div className="w-full pb-16">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-        {error && (
-          <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-body text-sm">{error}</div>
-        )}
-
-        {locationWarning && (
-          <div className="mb-5 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 font-body text-sm flex items-start gap-2">
-            <AlertCircle size={16} className="flex-shrink-0 mt-0.5"/>
-            <div>{locationWarning}</div>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          {/* Destination */}
-          <div className="grid gap-2">
-            <label className="font-body text-xs text-slate-400 uppercase tracking-widest">
-              Destination <span className="text-red-400">*</span>
-            </label>
-            <DestSearch value={destination} onChange={setDestination}/>
-            {destination && (
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                <CheckCircle2 size={12} className="text-emerald-400"/>
-                <span className="font-body text-xs text-emerald-400">{destination.name}{destination.district ? `, ${destination.district}` : ""}{destination.altitude ? ` · ${destination.altitude.toLocaleString()}m` : ""}</span>
+          {/* ── Left sidebar — sticky form ── */}
+          <div className="w-full lg:w-96 lg:sticky lg:top-24 flex-shrink-0">
+            <div className="plan-card rounded-2xl p-5 space-y-4">
+              <div>
+                <h2 className="font-display text-xl font-bold text-white">
+                  Plan your <em className="shimmer-text not-italic">trip</em>
+                </h2>
+                <p className="font-body text-xs text-slate-400 mt-1">Health profile loaded automatically.</p>
               </div>
-            )}
-          </div>
 
-          {/* Travel date */}
-          <div className="grid gap-2">
-            <label className="font-body text-xs text-slate-400 uppercase tracking-widest">
-              Travel date <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
-              <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
-              <input type="date" min={today} value={travelDate} onChange={(e) => setTravelDate(e.target.value)}
-                required className="plan-input w-full pl-10 pr-3 py-3 text-sm rounded-xl" style={{ colorScheme: "dark" }}/>
-            </div>
-            <p className="font-body text-xs text-slate-600">Required — historical data is analysed for this specific date</p>
-          </div>
+              {error && (
+                <div className="px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-body text-xs">{error}</div>
+              )}
 
-          {/* Quick route safety check */}
-          {destination && travelDate && (
-            <QuickRouteCheck destination={destination} travelDate={travelDate} originLat={originLat} originLon={originLon} />
-          )}
+              {locationWarning && (
+                <div className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 font-body text-xs flex items-start gap-2">
+                  <AlertCircle size={12} className="flex-shrink-0 mt-0.5"/>
+                  <div>{locationWarning}</div>
+                </div>
+              )}
 
-          {/* Trip type */}
-          <div className="grid gap-2">
-            <label className="font-body text-xs text-slate-400 uppercase tracking-widest">Trip type</label>
-            <div className="grid grid-cols-2 gap-3">
-              {([
-                { id: "SOLO",  icon: User,  label: "Solo",  desc: "Individual analysis" },
-                { id: "GROUP", icon: Users, label: "Group", desc: "Consensus safety" },
-              ] as const).map((t) => (
-                <button key={t.id} type="button" onClick={() => setTripType(t.id)}
-                  className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${tripType === t.id ? "bg-amber-400/10 border-amber-400/35 text-amber-300" : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600"}`}>
-                  <t.icon size={18}/>
-                  <div>
-                    <p className="font-body text-sm font-medium">{t.label}</p>
-                    <p className="font-body text-xs opacity-60">{t.desc}</p>
+              <form onSubmit={handleSubmit} className="space-y-4">
+
+                {/* Destination */}
+                <div className="grid gap-1.5">
+                  <label className="font-body text-[10px] text-slate-500 uppercase tracking-widest">
+                    Destination <span className="text-red-400">*</span>
+                  </label>
+                  <DestSearch value={destination} onChange={setDestination}/>
+                  {destination && (
+                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <CheckCircle2 size={10} className="text-emerald-400"/>
+                      <span className="font-body text-[11px] text-emerald-400 truncate">{destination.name}{destination.district ? `, ${destination.district}` : ""}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Travel date */}
+                <div className="grid gap-1.5">
+                  <label className="font-body text-[10px] text-slate-500 uppercase tracking-widest">
+                    Travel date <span className="text-red-400">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
+                    <input type="date" min={today} value={travelDate} onChange={(e) => setTravelDate(e.target.value)}
+                      required className="plan-input w-full pl-9 pr-3 py-2.5 text-sm rounded-xl" style={{ colorScheme: "dark" }}/>
                   </div>
+                </div>
+
+                {/* Trip type */}
+                <div className="grid gap-1.5">
+                  <label className="font-body text-[10px] text-slate-500 uppercase tracking-widest">Trip type</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {([
+                      { id: "SOLO",  icon: User,  label: "Solo",  desc: "Individual" },
+                      { id: "GROUP", icon: Users, label: "Group", desc: "Consensus" },
+                    ] as const).map((t) => (
+                      <button key={t.id} type="button" onClick={() => setTripType(t.id)}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${tripType === t.id ? "bg-amber-400/10 border-amber-400/35 text-amber-300" : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600"}`}>
+                        <t.icon size={15}/>
+                        <div>
+                          <p className="font-body text-xs font-medium">{t.label}</p>
+                          <p className="font-body text-[10px] opacity-60">{t.desc}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Group members — required for GROUP */}
+                {tripType === "GROUP" && (
+                  <div className="grid gap-1.5">
+                    <label className="font-body text-[10px] text-slate-500 uppercase tracking-widest">
+                      Partners <span className="text-red-400">*</span>
+                      <span className="text-slate-600 normal-case tracking-normal font-normal ml-1">— at least one</span>
+                    </label>
+                    <div className="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                      <MemberSearch members={members} onChange={setMembers}/>
+                    </div>
+                  </div>
+                )}
+
+                {/* Budget */}
+                <div className="grid gap-1.5">
+                  <label className="font-body text-[10px] text-slate-500 uppercase tracking-widest">
+                    Budget (NPR) <span className="text-slate-600 normal-case tracking-normal font-normal">— optional</span>
+                  </label>
+                  <div className="relative">
+                    <Wallet size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
+                    <input type="number" min="0" placeholder="e.g. 15000" value={budgetNPR}
+                      onChange={(e) => setBudgetNPR(e.target.value)}
+                      className="plan-input w-full pl-9 pr-3 py-2.5 text-sm rounded-xl"/>
+                  </div>
+                </div>
+
+                <button type="submit" disabled={submitting || !destination || !travelDate || (tripType === "GROUP" && members.length === 0)}
+                  className="amber-btn w-full py-3 flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
+                  {submitting
+                    ? <><Loader2 size={14} className="animate-spin"/> Analysing…</>
+                    : <><Sparkles size={14}/> Analyse Trip Safety <ArrowRight size={13}/></>}
                 </button>
-              ))}
+              </form>
             </div>
           </div>
 
-          {/* Group members — required for GROUP */}
-          {tripType === "GROUP" && (
-            <div className="grid gap-2">
-              <label className="font-body text-xs text-slate-400 uppercase tracking-widest">
-                Travel partners <span className="text-red-400">*</span>
-                <span className="text-slate-600 normal-case tracking-normal font-normal ml-1">— at least one required</span>
-              </label>
-              <div className="p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                <MemberSearch members={members} onChange={setMembers}/>
+          {/* ── Right main content — preview & info ── */}
+          <div className="flex-1 min-w-0 space-y-4">
+            {destination && travelDate && (
+              <div className="plan-card rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Navigation size={14} className="text-amber-400"/>
+                  <h3 className="font-display font-bold text-white text-sm">Route Preview</h3>
+                </div>
+                <QuickRouteCheck destination={destination} travelDate={travelDate} originLat={originLat} originLon={originLon} />
               </div>
-              <p className="font-body text-xs text-slate-600">
-                Group safety uses conservative scoring — the group score equals the lowest individual score.
-              </p>
-            </div>
-          )}
-
-          {/* Budget */}
-          <div className="grid gap-2">
-            <label className="font-body text-xs text-slate-400 uppercase tracking-widest">
-              Budget (NPR) <span className="text-slate-600 normal-case tracking-normal font-normal">— optional</span>
-            </label>
-            <div className="relative">
-              <Wallet size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"/>
-              <input type="number" min="0" placeholder="e.g. 15000" value={budgetNPR}
-                onChange={(e) => setBudgetNPR(e.target.value)}
-                className="plan-input w-full pl-10 pr-3 py-3 text-sm rounded-xl"/>
-            </div>
-            {budgetNPR && tripType === "GROUP" && members.length > 0 && (
-              <p className="font-body text-xs text-slate-500">
-                ≈ NPR {Math.round(parseInt(budgetNPR) / (members.length + 1)).toLocaleString()} per person ({members.length + 1} travellers)
-              </p>
             )}
+
+            {!destination && (
+              <div className="plan-card rounded-2xl p-8 text-center">
+                <Mountain size={40} className="text-slate-700 mx-auto mb-3"/>
+                <h3 className="font-display font-bold text-white text-base mb-1">Plan Your Adventure</h3>
+                <p className="font-body text-sm text-slate-500 max-w-md mx-auto">
+                  Select a destination and fill in the details on the left to get a comprehensive safety analysis.
+                </p>
+              </div>
+            )}
+
+            <div className="plan-card rounded-2xl p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <Sparkles size={14} className="text-amber-400 flex-shrink-0"/>
+                <p className="font-body text-sm text-slate-400 leading-relaxed">
+                  Your health profile, fitness level, and chronic conditions are loaded from your account.
+                  Partners&apos; profiles are fetched when you add them. The group score uses conservative
+                  scoring — the group score equals the lowest individual score.
+                </p>
+              </div>
+            </div>
           </div>
 
-          {/* Info */}
-          <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-800/60 border border-slate-700/50">
-            <Sparkles size={13} className="text-amber-400 flex-shrink-0 mt-0.5"/>
-            <p className="font-body text-xs text-slate-400 leading-relaxed">
-              Your health profile, fitness level, chronic conditions, and home location are loaded from your account. Partners&apos; profiles are fetched when you add them.
-            </p>
-          </div>
-
-          <button type="submit" disabled={submitting || !destination || !travelDate || (tripType === "GROUP" && members.length === 0)}
-            className="amber-btn w-full py-3.5 flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed">
-            {submitting
-              ? <><Loader2 size={15} className="animate-spin"/> Analysing {destination?.name}…</>
-              : <><Sparkles size={15}/> Analyse Trip Safety <ArrowRight size={14}/></>}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
@@ -1527,7 +1286,7 @@ function PlanInner() {
 
 export default function PlanPage() {
   return (
-    <AppShell active="plan" title="Plan a Trip" subpage contentClassName="pt-20 max-w-3xl mx-auto px-4 pb-20 relative z-10">
+    <AppShell active="plan" title="Plan a Trip" subpage contentClassName="pt-20 w-full px-4 md:px-6 lg:px-8 pb-20 relative z-10">
       <Suspense fallback={<div className="flex justify-center pt-20"><Loader2 size={32} className="text-amber-400 animate-spin"/></div>}>
         <PlanInner/>
       </Suspense>

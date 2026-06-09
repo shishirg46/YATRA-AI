@@ -450,6 +450,74 @@ export type EnumPlaceTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
 }
 
+export type EnumNodeAccessibilityNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NodeAccessibility | Prisma.EnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel> | $Enums.NodeAccessibility | null
+}
+
+export type EnumStrategicImportanceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.StrategicImportance | Prisma.EnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel> | $Enums.StrategicImportance | null
+}
+
+export type EnumNodeAccessibilityNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NodeAccessibility | Prisma.EnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNodeAccessibilityNullableWithAggregatesFilter<$PrismaModel> | $Enums.NodeAccessibility | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel>
+}
+
+export type EnumStrategicImportanceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.StrategicImportance | Prisma.EnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumStrategicImportanceNullableWithAggregatesFilter<$PrismaModel> | $Enums.StrategicImportance | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel>
+}
+
+export type EnumRoadSurfaceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadSurface | Prisma.EnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel> | $Enums.RoadSurface | null
+}
+
+export type EnumRoadConditionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadCondition | Prisma.EnumRoadConditionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel> | $Enums.RoadCondition | null
+}
+
+export type EnumRoadSurfaceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadSurface | Prisma.EnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadSurfaceNullableWithAggregatesFilter<$PrismaModel> | $Enums.RoadSurface | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel>
+}
+
+export type EnumRoadConditionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadCondition | Prisma.EnumRoadConditionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadConditionNullableWithAggregatesFilter<$PrismaModel> | $Enums.RoadCondition | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel>
+}
+
 export type IntFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel>
@@ -1005,6 +1073,74 @@ export type NestedEnumPlaceTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumPlaceTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumNodeAccessibilityNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NodeAccessibility | Prisma.EnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel> | $Enums.NodeAccessibility | null
+}
+
+export type NestedEnumStrategicImportanceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.StrategicImportance | Prisma.EnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel> | $Enums.StrategicImportance | null
+}
+
+export type NestedEnumNodeAccessibilityNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NodeAccessibility | Prisma.EnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NodeAccessibility[] | Prisma.ListEnumNodeAccessibilityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNodeAccessibilityNullableWithAggregatesFilter<$PrismaModel> | $Enums.NodeAccessibility | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNodeAccessibilityNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumStrategicImportanceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.StrategicImportance | Prisma.EnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.StrategicImportance[] | Prisma.ListEnumStrategicImportanceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumStrategicImportanceNullableWithAggregatesFilter<$PrismaModel> | $Enums.StrategicImportance | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumStrategicImportanceNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumRoadSurfaceNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadSurface | Prisma.EnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel> | $Enums.RoadSurface | null
+}
+
+export type NestedEnumRoadConditionNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadCondition | Prisma.EnumRoadConditionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel> | $Enums.RoadCondition | null
+}
+
+export type NestedEnumRoadSurfaceNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadSurface | Prisma.EnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadSurface[] | Prisma.ListEnumRoadSurfaceFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadSurfaceNullableWithAggregatesFilter<$PrismaModel> | $Enums.RoadSurface | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoadSurfaceNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumRoadConditionNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoadCondition | Prisma.EnumRoadConditionFieldRefInput<$PrismaModel> | null
+  in?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.RoadCondition[] | Prisma.ListEnumRoadConditionFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumRoadConditionNullableWithAggregatesFilter<$PrismaModel> | $Enums.RoadCondition | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoadConditionNullableFilter<$PrismaModel>
 }
 
 export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {

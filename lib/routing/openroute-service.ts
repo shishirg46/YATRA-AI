@@ -151,15 +151,15 @@ function buildCoordinateString(points: GeoPoint[]): string {
 
 function buildOrsUrl(vehicle: VehicleProfile, coordinates: string, alternatives: boolean): string {
   const profile = VEHICLE_MAP[vehicle];
-  let url = `${ORS_BASE}/directions/${profile}?api_key=${getApiKey()}&start=${coordinates.split("|")[0]}&end=${coordinates.split("|").slice(-1)[0]}`;
+  const parts = coordinates.split("|");
+  let url = `${ORS_BASE}/directions/${profile}?api_key=${getApiKey()}&start=${parts[0]}&end=${parts.slice(-1)[0]}`;
 
-  if (coordinates.includes("|")) {
-    const parts = coordinates.split("|");
-    if (parts.length > 2) {
-      const intermediates = parts.slice(1, -1).join("|");
-      url += `&intermediates=${intermediates}`;
-    }
+  if (parts.length > 2) {
+    const intermediates = parts.slice(1, -1).join("|");
+    url += `&intermediates=${intermediates}`;
   }
+
+  url += `&radiuses=${parts.map(() => "5000").join("|")}`;
 
   if (alternatives) {
     url += "&alternative_routes=true&alternative_routes.target_count=3";
