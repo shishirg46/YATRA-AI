@@ -119,6 +119,7 @@ export default function DashboardPage() {
   const [page, setPage]               = useState(1);
   const [assessStatus, setAssessStatus] = useState<{ hoursAgo: number | null; isStale: boolean } | null>(null);
   const [locating, setLocating] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [destinationSummary, setDestinationSummary] = useState<DestinationSummary | null>(null);
   const [showMap, setShowMap] = useState(false);
@@ -157,56 +158,46 @@ export default function DashboardPage() {
       return;
     }
 
-    const executeGeoRequest = () => {
-      setLocating(true);
-      setLocationError(null);
+    setLocating(true);
+    setLocationError(null);
+    setRetryAttempt(0);
 
-      let bestPos: GeolocationPosition | null = null;
+    const MAX_ATTEMPTS = 3;
 
-      const stopWatching = () => {
-        if (watchIdRef.current !== null) {
-          navigator.geolocation.clearWatch(watchIdRef.current);
-          watchIdRef.current = null;
-        }
-        setLocating(false);
-      };
-
-      const resolveLocation = async (latitude: number, longitude: number, accuracy: number) => {
-        const resolved = await resolveFromGps(latitude, longitude, accuracy);
-        if (!resolved) {
-          setLocationError("Could not resolve your location.");
-        }
-      };
-
-      const timeoutId = setTimeout(() => {
-        stopWatching();
-        if (bestPos) {
-          void resolveLocation(bestPos.coords.latitude, bestPos.coords.longitude, bestPos.coords.accuracy);
-        } else {
-          setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
-        }
-      }, 12000);
-
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (pos) => {
-          if (!bestPos || pos.coords.accuracy < bestPos.coords.accuracy) {
-            bestPos = pos;
-          }
-          if (pos.coords.accuracy < 80) {
-            clearTimeout(timeoutId);
-            stopWatching();
-            void resolveLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+    const attemptGps = (attempt: number) => {
+      setRetryAttempt(attempt);
+      navigator.geolocation.getCurrentPosition(
+        async (pos: GeolocationPosition) => {
+          const accuracy = pos.coords.accuracy;
+          if (accuracy <= 300 || attempt >= MAX_ATTEMPTS) {
+            setLocating(false);
+            setRetryAttempt(0);
+            const resolved = await resolveFromGps(pos.coords.latitude, pos.coords.longitude, accuracy);
+            if (!resolved) {
+              setLocationError("Could not resolve your location. Please try again or set your location manually.");
+            }
+          } else {
+            attemptGps(attempt + 1);
           }
         },
-        (err) => {
-          if (!bestPos) {
-            clearTimeout(timeoutId);
-            stopWatching();
-            if (err.code === 1) setLocationError("Permission denied.");
-            else setLocationError("Location unavailable.");
+        (err: GeolocationPositionError) => {
+          setLocating(false);
+          setRetryAttempt(0);
+          if (err.code === err.PERMISSION_DENIED) {
+            setLocationError("Permission denied. Please allow location access in browser settings.");
+          } else if (err.code === err.POSITION_UNAVAILABLE) {
+            setLocationError("Location unavailable. Please try again in an open area.");
+          } else if (err.code === err.TIMEOUT) {
+            setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
+          } else {
+            setLocationError(err.message || "Failed to get location.");
           }
         },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        {
+          enableHighAccuracy: attempt < MAX_ATTEMPTS,
+          maximumAge: 0,
+          timeout: attempt === 1 ? 15000 : attempt === 2 ? 30000 : 45000,
+        },
       );
     };
 
@@ -217,14 +208,14 @@ export default function DashboardPage() {
           setLocationError("Location is blocked by browser for localhost:3000. Change it to Allow in site settings, then tap Enable.");
           return;
         }
-        executeGeoRequest();
+        attemptGps(1);
       }).catch(() => {
-        executeGeoRequest();
+        attemptGps(1);
       });
       return;
     }
 
-    executeGeoRequest();
+    attemptGps(1);
   }
 
   // Do not auto-request on mount; request only from explicit user action.
@@ -671,7 +662,7 @@ export default function DashboardPage() {
                 <p className="location-card__eyebrow">Current Origin</p>
                 <div className="location-card__title-row">
                   <p className="location-card__title">
-                    {manualLocationName || (userLocation ? "Detected Location" : "Not Set")}
+                    {(manualLocationName?.replace(/,+\s*$/, "") ?? (userLocation ? "Detected Location" : "Not Set"))}
                   </p>
                   {(resolvingOrigin || locating) && (
                     <span className="location-card__badge text-accent">Resolving…</span>
@@ -693,10 +684,13 @@ export default function DashboardPage() {
                   className="location-card__button"
                 >
                   {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
-                  {locating ? "Locating..." : "Auto-Detect"}
+                  {locating ? (retryAttempt > 0 ? `GPS fix (${retryAttempt}/${3})...` : "Locating...") : "Auto-Detect"}
                 </button>
                 <button
-                  onClick={() => setPickingLocation(true)}
+                  onClick={() => {
+                    setLocationError(null);
+                    setPickingLocation(true);
+                  }}
                   className="location-card__button"
                 >
                   <Search size={12} />
