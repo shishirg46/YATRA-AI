@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isPointInNepal } from "@/lib/routing/geo";
+import { findNearestRouteNode } from "@/lib/routing/spatial";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/rate-limit";
@@ -126,6 +127,39 @@ async function onboardingHandler(req: NextRequest) {
         message: { contains: '"_type":"PROFILE"' },
       },
     });
+
+    // Snap home location to nearest route node for routing accuracy
+    const snapLat = locationLat ?? 0;
+    const snapLng = locationLng ?? 0;
+    if (snapLat !== 0 || snapLng !== 0) {
+      try {
+        const nearest = await findNearestRouteNode(snapLat, snapLng, 50);
+        if (nearest) {
+          await prisma.userSavedLocation.upsert({
+            where: {
+              userId: session.user.id,
+            },
+            create: {
+              userId: session.user.id,
+              placeName: district,
+              latitude: snapLat,
+              longitude: snapLng,
+              nearestRouteNodeId: nearest.id,
+              accuracyMeters: null,
+              source: "onboarding",
+            },
+            update: {
+              latitude: snapLat,
+              longitude: snapLng,
+              nearestRouteNodeId: nearest.id,
+              source: "onboarding",
+            },
+          });
+        }
+      } catch (e) {
+        console.warn("[onboarding] Failed to snap to route node:", e);
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {

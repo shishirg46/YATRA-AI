@@ -37,3 +37,8 @@ PROJECT.md
 # Generated data files
 nepal-route-graph.json
 scripts/seed-full-graph.sql
+scripts/data/dor-road-network.densified.json
+
+
+nominatim/
+*.osrm*

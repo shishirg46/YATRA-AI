@@ -107,10 +107,57 @@ export function useResolvedOrigin() {
 
   const resolveFromManual = useCallback(
     async (placeName: string, lat: number, lon: number) => {
-      // resolveFromGps handles both resolution and persistence
-      return resolveFromGps(lat, lon, undefined, placeName);
+      setResolving(true);
+      setError(null);
+      const selected: ResolvedOriginState = {
+        lat,
+        lon,
+        displayLat: lat,
+        displayLon: lon,
+        name: placeName,
+        source: "manual",
+        rawLat: lat,
+        rawLon: lon,
+        accuracyMeters: undefined,
+      };
+      saveOrigin(selected);
+
+      try {
+        const res = await fetch("/api/user/location", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ placeName, lat, lon }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Could not save manual location");
+
+        const resolved: ResolvedOriginState = {
+          lat,
+          lon,
+          displayLat: data.displayLat ?? lat,
+          displayLon: data.displayLon ?? lon,
+          name: data.name,
+          routeNodeId: data.routeNodeId,
+          routeNodeName: data.routeNodeName,
+          source: data.source ?? "manual-snapped",
+          note: data.note,
+          rawLat: lat,
+          rawLon: lon,
+          accuracyMeters: undefined,
+        };
+
+        saveOrigin(resolved);
+        return resolved;
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Manual location resolution failed";
+        setError(msg);
+        return selected;
+      } finally {
+        setResolving(false);
+      }
     },
-    [resolveFromGps]
+    [saveOrigin]
   );
 
   const loadSavedHome = useCallback(async () => {

@@ -11,7 +11,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
 
   datasource: {
-    url: DATABASE_URL, // ✅ REQUIRED for CLI
+    url: DATABASE_URL,
   },
 
   migrations: {

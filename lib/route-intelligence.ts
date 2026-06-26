@@ -5,7 +5,8 @@ import { ensureRecentRealtimeData, calculateIndependentHazardScores } from "@/li
 import type { IndependentHazardScores } from "@/lib/disaster-pipeline";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
-import { buildSegmentedRoute } from "@/lib/routing/route-service";
+import { buildSegmentedRoute, buildRouteAlternatives } from "@/lib/routing/route-service";
+import { roadCodeName } from "@/lib/routing/route-abstraction";
 import { resolveDestination } from "@/lib/routing/place-resolver";
 import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
 import { createRouteBuffer } from "@/lib/routing/route-buffer";
@@ -13,11 +14,13 @@ import { findPlacesAlongRoute } from "@/lib/routing/places-along-route";
 import { rankPlacesForRoute } from "@/lib/routing/route-ranking";
 import { findNearestLocation } from "@/lib/routing/spatial";
 import { snapToNearestRoad } from "@/lib/routing/osrm-nearest";
+import { labelPolylineSegments } from "@/lib/routing/geometry-projection";
 import type {
   BuiltRoute,
   VehicleProfile,
   GeoPoint,
   RouteCoordinate,
+  RouteNode,
   RouteInstruction,
   DetourInfo,
   RouteStop,
@@ -71,6 +74,10 @@ export interface RouteSegment {
   riskScore: number;
   riskLevel: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
   hazards: string[];
+  roadCode?: string;
+  roadName?: string;
+  fromJunction?: string;
+  toJunction?: string;
   hazardProfile?: IndependentHazardScores;
   weather?: string;
   realtime?: {
@@ -139,12 +146,204 @@ export interface RouteIntelligenceResult {
   generatedAt: string;
 }
 
-export async function generateRouteIntelligence(
+/**
+ * Ultra-fast route builder — the routing kernel.
+ *
+ * Returns structural route data (waypoints, geometry, polyline, turn-by-turn)
+ * with NO hazard analysis, NO place enrichment, NO DB writes.
+ *
+ * Target: <3s.  This is the ONLY synchronous path exposed to the API handler.
+ *
+ * Design rules:
+ *   - A* + ORS geometry only
+ *   - NO createRouteBuffer / findPlacesAlongRoute / rankPlacesForRoute
+ *   - NO saveRouteTemplate
+ *   - NO ensureRecentRealtimeData
+ *   - NO fallback chain (stored routes, ORS alternatives, snap-to-road)
+ *   - DOR alternatives via buildRouteAlternatives (synchronous, sub-100ms)
+ *   - If A* fails → return empty (handler decides next step)
+ */
+export async function buildRouteUltraFast(
+  origin: GeoPoint,
+  destination: GeoPoint,
+  departureDate: string,
+  options?: { destinationId?: string; vehicle?: VehicleProfile },
+  signal?: AbortSignal,  // hard cancellation for HTTP only
+): Promise<{
+  routes: Route[];
+  resolvedDest: GeoPoint;
+  generatedAt: string;
+}> {
+  const vehicle = options?.vehicle ?? "car";
+
+  let resolvedDest = destination;
+  try {
+    const resolved = await withTimeout(
+      resolveDestination({
+        destinationId: options?.destinationId,
+        destinationName: destination.name,
+        destinationLat: destination.lat,
+        destinationLon: destination.lon,
+      }),
+      10_000,
+    );
+    resolvedDest = {
+      lat: resolved.place.lat,
+      lon: resolved.place.lon,
+      name: resolved.place.name,
+    };
+  } catch {
+    // Keep provided coordinates when resolution times out or fails
+  }
+
+  let routes: Route[] = [];
+
+  try {
+    // Try DOR first for semantic route structure; fall back to OSRM if unavailable
+    let built: BuiltRoute;
+    try {
+      built = await withTimeout(
+        buildSegmentedRoute({
+          originLat: origin.lat,
+          originLon: origin.lon,
+          originName: origin.name,
+          destinationLat: resolvedDest.lat,
+          destinationLon: resolvedDest.lon,
+          destinationName: resolvedDest.name ?? destination.name,
+          destinationId: options?.destinationId,
+          vehicle,
+          dorRoutingMode: "balanced",
+        }),
+        10_000,
+      );
+      if (built.provenance?.validationStatus === "empty") throw new Error("DOR empty");
+    } catch {
+      built = await withTimeout(
+        buildSegmentedRoute({
+          originLat: origin.lat,
+          originLon: origin.lon,
+          originName: origin.name,
+          destinationLat: resolvedDest.lat,
+          destinationLon: resolvedDest.lon,
+          destinationName: resolvedDest.name ?? destination.name,
+          destinationId: options?.destinationId,
+          vehicle,
+        }),
+        10_000,
+      );
+    }
+
+    // ORS geometry: cached hit is instant, miss adds ~1-3s
+    let roadRoute: Awaited<ReturnType<typeof fetchRouteGeometry>> | undefined;
+    try {
+      roadRoute = await withTimeout(
+        fetchRouteGeometry(
+          { lat: origin.lat, lon: origin.lon, name: origin.name },
+          { lat: resolvedDest.lat, lon: resolvedDest.lon, name: resolvedDest.name },
+          vehicle,
+          undefined, // waypoints
+          signal,    // hard cancellation for ORS HTTP
+        ),
+        10_000,
+      );
+    } catch {
+      // ORS failure is non-fatal — fall back to A*-only polyline
+    }
+
+    // Compute display segments from ground-truth ORS geometry
+    // (display-only — never feeds back into routing inputs)
+    let displayChain: RouteNode[] | undefined;
+    if (roadRoute?.coordinates?.length) {
+      try {
+        const labeled = await labelPolylineSegments(
+          roadRoute.coordinates,
+          { lat: origin.lat, lon: origin.lon, name: origin.name },
+          { lat: resolvedDest.lat, lon: resolvedDest.lon, name: resolvedDest.name },
+        );
+        if (labeled.chain.length >= 2) {
+          displayChain = labeled.chain;
+        }
+      } catch (err) {
+        console.warn("[route-ultrafast] polyline projection failed:", err);
+      }
+    }
+
+    const primaryRoute = builtRouteToIntelligenceRoute(
+      built,
+      { ...origin, name: origin.name ?? built.origin.name },
+      { ...resolvedDest, name: resolvedDest.name ?? built.destination.name },
+      roadRoute,
+      undefined,  // no placesAlongRoute (ultra-fast)
+      undefined,  // no rankedStops (ultra-fast)
+      displayChain,
+    );
+
+    // Generate diverse alternatives via DOR with different preferRoad values
+    try {
+      const extras = buildRouteAlternatives(
+        origin.lat, origin.lon,
+        resolvedDest.lat, resolvedDest.lon,
+        origin.name ?? "Origin",
+        resolvedDest.name ?? destination.name ?? "Destination",
+        undefined,
+      );
+      const primaryChain = built.abstraction?.roadChain?.join("|") ?? "";
+      const altRoutes: Route[] = [];
+      for (let i = 0; i < extras.length; i++) {
+        const altChain = extras[i].abstraction.roadChain.join("|");
+        if (altChain === primaryChain) continue; // dedup with primary
+        if (altRoutes.some((r) => r.name === extras[i].label)) continue; // dedup among alts
+        altRoutes.push(
+          alternativeToRoute(extras[i], i + 1, origin, resolvedDest, roadRoute),
+        );
+      }
+      routes = [primaryRoute, ...altRoutes];
+    } catch {
+      routes = [primaryRoute];
+    }
+  } catch (err) {
+    console.warn("[route-ultrafast] A* build failed:", err);
+  }
+
+  // Lightweight fallback: straight-line route when A* yields nothing
+  if (routes.length === 0) {
+    try {
+      const fallback = generateFallbackRoute(origin, resolvedDest);
+      routes = [await ensureSegmentedWaypoints(fallback, origin, resolvedDest)];
+    } catch {
+      routes = [generateFallbackRoute(origin, resolvedDest)];
+    }
+  }
+
+  return {
+    routes,
+    resolvedDest,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Build the core route (waypoints, geometry, polyline) WITHOUT hazard analysis.
+ *
+ * This is the fast path — it resolves the destination, builds segmented routes,
+ * fetches ORS geometry, finds places along route, and ranks stops.
+ * No external hazard APIs are called in this phase.
+ *
+ * Designed to complete in <15s under normal conditions.
+ */
+export async function buildRouteCore(
   origin: GeoPoint,
   destination: GeoPoint,
   departureDate: string,
   options?: { destinationId?: string; vehicle?: VehicleProfile }
-): Promise<RouteIntelligenceResult> {
+): Promise<{
+  origin: GeoPoint;
+  destination: GeoPoint;
+  departureDate: string;
+  routes: Route[];
+  resolvedDest: GeoPoint;
+  generatedAt: string;
+}> {
   ensureRecentRealtimeData().catch(() => {});
 
   const vehicle = options?.vehicle ?? "car";
@@ -208,7 +407,7 @@ export async function generateRouteIntelligence(
         { ...resolvedDest, name: resolvedDest.name ?? built.destination.name },
         roadRoute,
         placesAlongRoute,
-        rankedStops
+        rankedStops,
       ),
     ];
   } catch (err) {
@@ -260,8 +459,26 @@ export async function generateRouteIntelligence(
     await saveRouteTemplate(origin, resolvedDest, routes[0]).catch(() => null);
   }
 
+  return {
+    origin,
+    destination,
+    departureDate,
+    routes,
+    resolvedDest,
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+export async function generateRouteIntelligence(
+  origin: GeoPoint,
+  destination: GeoPoint,
+  departureDate: string,
+  options?: { destinationId?: string; vehicle?: VehicleProfile }
+): Promise<RouteIntelligenceResult> {
+  const core = await buildRouteCore(origin, destination, departureDate, options);
+
   const analyzedRoutes = await Promise.all(
-    routes.map(async (route) => await analyzeRouteHazards(route, departureDate))
+    core.routes.map(async (route) => await analyzeRouteHazards(route, departureDate))
   );
 
   const bestRoute = analyzedRoutes
@@ -269,12 +486,12 @@ export async function generateRouteIntelligence(
     .sort((a, b) => a.riskScore - b.riskScore)[0] ?? null;
 
   return {
-    origin,
-    destination,
-    departureDate,
+    origin: core.origin,
+    destination: core.destination,
+    departureDate: core.departureDate,
     routes: analyzedRoutes,
     bestRoute,
-    generatedAt: new Date().toISOString(),
+    generatedAt: core.generatedAt,
   };
 }
 
@@ -1031,18 +1248,132 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T
   }
 }
 
+/**
+ * Build RouteSegment[] from a display chain (polyline-projected named nodes).
+ * Each pair of consecutive nodes becomes one segment.
+ * Road identity (roadCode, roadName, junctions) is forward-filled from road transition nodes.
+ */
+function buildSegmentsFromDisplayChain(chain: RouteNode[]): RouteSegment[] {
+  const segments: RouteSegment[] = [];
+  let currentRoadCode: string | undefined;
+  let currentRoadName: string | undefined;
+
+  for (let i = 1; i < chain.length; i++) {
+    const from = chain[i - 1];
+    const to = chain[i];
+
+    if (to.roadCode) {
+      currentRoadCode = to.roadCode;
+      currentRoadName = to.name;
+    }
+
+    const seg: RouteSegment = {
+      index: i - 1,
+      startPoint: { lat: from.lat, lon: from.lon, name: from.name },
+      endPoint: { lat: to.lat, lon: to.lon, name: to.name },
+      distance: Math.round(haversineKm(from.lat, from.lon, to.lat, to.lon) * 1000),
+      riskScore: 0,
+      riskLevel: "MEDIUM",
+      hazards: [],
+    };
+
+    if (currentRoadCode) {
+      seg.roadCode = currentRoadCode;
+      seg.roadName = currentRoadName;
+    }
+    if (from.junction) seg.fromJunction = from.junction;
+    if (to.junction) seg.toJunction = to.junction;
+
+    segments.push(seg);
+  }
+  return segments;
+}
+
+/**
+ * Convert a RouteAlternative (from buildRouteAlternatives) into a Route.
+ * Used to surface multiple routing options in the UI.
+ */
+function alternativeToRoute(
+  alt: import("@/lib/routing/types").RouteAlternative,
+  index: number,
+  origin: GeoPoint,
+  destination: GeoPoint,
+  primaryPolyline?: { coordinates: RouteCoordinate[]; encodedPolyline?: string },
+): Route {
+  const hs = alt.abstraction.highwaySegments;
+
+  // Build waypoints from highway segment endpoints
+  const waypoints: RouteWaypoint[] = [];
+  let distAcc = 0;
+  for (let i = 0; i < hs.length; i++) {
+    const seg = hs[i];
+    if (i === 0) {
+      waypoints.push({
+        lat: seg.fromLat,
+        lon: seg.fromLon,
+        name: seg.fromPlace,
+        distanceFromStart: 0,
+      });
+    }
+    waypoints.push({
+      lat: seg.toLat,
+      lon: seg.toLon,
+      name: seg.toPlace,
+      distanceFromStart: Math.round((distAcc + seg.distanceKm * 1000)),
+    });
+    distAcc += seg.distanceKm * 1000;
+  }
+  if (waypoints.length === 0) {
+    waypoints.push(
+      { lat: origin.lat, lon: origin.lon, name: origin.name, distanceFromStart: 0 },
+      { lat: destination.lat, lon: destination.lon, name: destination.name, distanceFromStart: Math.round(alt.abstraction.totalDistanceKm * 1000) },
+    );
+  }
+
+  const segments: RouteSegment[] = hs.map((s, i) => ({
+    index: i,
+    startPoint: { lat: s.fromLat, lon: s.fromLon, name: s.fromPlace },
+    endPoint: { lat: s.toLat, lon: s.toLon, name: s.toPlace },
+    distance: Math.round(s.distanceKm * 1000),
+    riskScore: 0,
+    riskLevel: "MEDIUM" as const,
+    hazards: [],
+    roadCode: s.roadCode,
+    roadName: roadCodeName(s.roadCode),
+  }));
+
+  return {
+    id: `alternative-${index + 1}`,
+    name: alt.label,
+    description: alt.description ?? `${index + 1} alternative route option`,
+    waypoints,
+    distance: Math.round(alt.abstraction.totalDistanceKm * 1000),
+    duration: Math.round((alt.abstraction.totalDistanceKm / 50) * 3600 * 1000),
+    riskScore: 0.5,
+    riskLevel: "MEDIUM",
+    hazards: { landslideZones: [], floodZones: [], activeAlerts: [], weatherRisk: "unknown", historicalRisk: 0.5 },
+    segments,
+    source: "dor-alternative",
+    encodedPolyline: primaryPolyline?.encodedPolyline,
+  };
+}
+
 function builtRouteToIntelligenceRoute(
   built: BuiltRoute,
   origin: GeoPoint,
   destination: GeoPoint,
   roadRoute?: { coordinates: RouteCoordinate[]; encodedPolyline?: string; legs?: { steps: RouteInstruction[] }[] },
   placesAlongRoute?: DetourInfo[],
-  rankedStops?: RouteStop[]
+  rankedStops?: RouteStop[],
+  displayChain?: RouteNode[],  // XOR with built.nodes — display-only labeling
 ): Route {
+  const routeNodes = displayChain ?? built.nodes;
+  const routeSource = displayChain ? "polyline-projection" : built.source;
+
   let distAcc = 0;
-  const nodeWaypoints: RouteWaypoint[] = built.nodes.map((n, i) => {
+  const nodeWaypoints: RouteWaypoint[] = routeNodes.map((n, i) => {
     if (i > 0) {
-      distAcc += haversineKm(built.nodes[i - 1].lat, built.nodes[i - 1].lon, n.lat, n.lon) * 1000;
+      distAcc += haversineKm(routeNodes[i - 1].lat, routeNodes[i - 1].lon, n.lat, n.lon) * 1000;
     }
     return { lat: n.lat, lon: n.lon, name: n.name, distanceFromStart: Math.round(distAcc) };
   });
@@ -1055,18 +1386,37 @@ function builtRouteToIntelligenceRoute(
       }))
     : nodeWaypoints;
 
-  const segments: RouteSegment[] = built.segments.map((s) => ({
-    index: s.index,
-    startPoint: { lat: s.from.lat, lon: s.from.lon, name: s.from.name },
-    endPoint: { lat: s.to.lat, lon: s.to.lon, name: s.to.name },
-    distance: s.distance,
-    riskScore: 0,
-    riskLevel: (s.riskLevel ?? "MEDIUM") as RouteSegment["riskLevel"],
-    hazards: s.hazards ?? [],
-  }));
+  // Build segments from abstraction (DOR priority), displayChain (ORS), or raw built.segments
+  const segments: RouteSegment[] =
+    built.abstraction?.highwaySegments?.length && built.provenance?.engine === "dor"
+      ? built.abstraction.highwaySegments.map((hs, i) => ({
+          index: i,
+          startPoint: { lat: hs.fromLat, lon: hs.fromLon, name: hs.fromPlace },
+          endPoint: { lat: hs.toLat, lon: hs.toLon, name: hs.toPlace },
+          distance: Math.round(hs.distanceKm * 1000),
+          riskScore: 0,
+          riskLevel: "MEDIUM" as RouteSegment["riskLevel"],
+          hazards: [],
+          roadCode: hs.roadCode,
+          roadName: roadCodeName(hs.roadCode),
+        }))
+      : displayChain
+        ? buildSegmentsFromDisplayChain(displayChain)
+        : built.segments.map((s) => ({
+            index: s.index,
+            startPoint: { lat: s.from.lat, lon: s.from.lon, name: s.from.name },
+            endPoint: { lat: s.to.lat, lon: s.to.lon, name: s.to.name },
+            distance: s.distance,
+            riskScore: 0,
+            riskLevel: (s.riskLevel ?? "MEDIUM") as RouteSegment["riskLevel"],
+            hazards: s.hazards ?? [],
+          }));
 
-  const corridorLabel = built.nodes.length > 2 ? built.nodes.map((n) => n.name).join(" → ") : null;
-  const routeName = corridorLabel ?? generateRouteName(origin, destination, nodeWaypoints);
+  const highwayLabel = built.abstraction?.highwaySegments?.length
+    ? built.abstraction.highwaySegments.map((hs) => `${hs.roadCode}: ${hs.fromPlace}→${hs.toPlace}`).join(" → ")
+    : null;
+  const corridorLabel = routeNodes.length > 2 ? routeNodes.map((n) => n.name).join(" → ") : null;
+  const routeName = highwayLabel ?? corridorLabel ?? generateRouteName(origin, destination, nodeWaypoints);
 
   const turnByTurn: RouteInstruction[] = [];
   if (roadRoute?.legs) {
@@ -1076,7 +1426,7 @@ function builtRouteToIntelligenceRoute(
   }
 
   return {
-    id: `segmented-${built.source}`,
+    id: `segmented-${routeSource}`,
     name: routeName,
     description: built.resolutionNote ? `${routeName} (${built.resolutionNote})` : `${routeName} via real roads`,
     waypoints: polylineWaypoints,
@@ -1086,7 +1436,7 @@ function builtRouteToIntelligenceRoute(
     riskLevel: "MEDIUM",
     hazards: { landslideZones: [], floodZones: [], activeAlerts: [], weatherRisk: "unknown", historicalRisk: 0.5 },
     segments,
-    source: built.source,
+    source: routeSource,
     encodedPolyline: roadRoute?.encodedPolyline,
     placesAlongRoute,
     rankedStops: rankedStops?.slice(0, 10),

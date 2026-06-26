@@ -8,7 +8,6 @@ import { routeCache, routeGeometryCache, makeRouteCacheKey } from "@/lib/routing
 import { isRouteSafeForVehicle, getVehicleProfile } from "@/lib/routing/nepal-profiles";
 import { findNearestRouteNode } from "@/lib/routing/node-graph";
 import {
-  getAllKnownPlaces,
   resolveDestination,
   resolveOrigin,
 } from "@/lib/routing/place-resolver";
@@ -17,18 +16,39 @@ import {
   buildIntermediateNodes,
   loadTemplateNodes,
 } from "@/lib/routing/waypoint-builder";
+import { runRoute, type RouteResult as DorRouteResult } from "@/scripts/route-engine";
+
+import {
+  abstractionFromRouteResult,
+  classifyRouteIntent,
+  generateRouteDescription,
+  roadCodeName,
+  type EdgeShape,
+} from "@/lib/routing/route-abstraction";
+import {
+  explainRoute,
+  compareAlternatives,
+} from "@/lib/routing/route-explanation";
+import { extractRouteNames } from "@/lib/routing/route-name-extractor";
 
 import type {
   BuildRouteInput,
   BuiltRoute,
   BuiltRouteSegment,
+  NamedRoute,
   PerSegmentRoute,
   ResolvedPlace,
   RouteNode,
   RouteInstruction,
   VehicleProfile,
   GeoPoint,
+  RouteIntent,
+  RouteAlternative,
+  RouteAbstraction,
+  RouteProvenance,
 } from "@/lib/routing/types";
+import { RouteExplanation } from "@/lib/routing/route-explanation";
+import type { GraphEdge } from "@/lib/routing/segment-graph";
 
 async function findNearestRouteNodeFromCoords(lat: number, lon: number) {
   return findNearestRouteNode(lat, lon, 50);
@@ -285,34 +305,118 @@ async function ensureMultiStopChain(
     };
   }
 
-  const places = await getAllKnownPlaces();
-  let best: RouteNode | null = null;
-  let bestScore = -Infinity;
-  for (const loc of places) {
-    if (loc.id === origin.id || loc.id === destination.id) continue;
-    const progress =
-      haversineKm(origin.lat, origin.lon, loc.latitude, loc.longitude) / Math.max(totalKm, 1);
-    if (progress <= 0.08 || progress >= 0.92) continue;
-    const score = 100 - progress * 20;
-    if (score > bestScore) {
-      bestScore = score;
-      best = {
-        lat: loc.latitude,
-        lon: loc.longitude,
-        name: loc.name,
-        locationId: loc.id,
-      };
+  return { chain, source: nodeSource };
+}
+
+// ─── Route Alternative Builder (Stage 7) ──────────────────────────
+
+interface ModeRun {
+  mode: "fastest" | "balanced" | "highway-preferred";
+  intent: RouteIntent;
+}
+
+const MODE_RUNS: ModeRun[] = [
+  { mode: "fastest", intent: "fastest" },
+  { mode: "balanced", intent: "balanced" },
+  { mode: "highway-preferred", intent: "highway" },
+];
+
+/** Road codes to try as preferRoad for alternative diversity. */
+const PREFER_ROAD_COMBOS: (string | undefined)[] = [
+  undefined,        // default — no preference
+  "NH09",           // Madan Bhandari Highway
+  "NH08",           // Koshi Highway
+  "NH01",           // Mahendra Highway
+  "NH16",           // Sagarmatha Highway
+];
+
+function buildRouteDisplaySegments(abstraction: RouteAbstraction): RouteAlternative["displaySegments"] {
+  return abstraction.highwaySegments.map((s) => ({
+    roadCode: s.roadCode,
+    roadName: roadCodeName(s.roadCode),
+    fromPlace: s.fromPlace,
+    toPlace: s.toPlace,
+    distanceKm: s.distanceKm,
+  }));
+}
+
+function pickRouteLabel(intent: RouteIntent, abstraction: RouteAbstraction): string {
+  const roads = abstraction.highwaySegments.map((s) => roadCodeName(s.roadCode));
+  const unique = [...new Set(roads)];
+  const roadInfo = unique.length > 0 ? `via ${unique.join(", ")}` : "";
+
+  const intentLabel = intent === "fastest"
+    ? "Fastest"
+    : intent === "scenic"
+      ? "Scenic"
+      : intent === "highway"
+        ? "Highway"
+        : "Balanced";
+  return `${intentLabel} route ${roadInfo}`.trim();
+}
+
+export function buildRouteAlternatives(
+  startLat: number,
+  startLon: number,
+  endLat: number,
+  endLon: number,
+  originName: string,
+  destinationName: string,
+  preferRoad?: string,
+): RouteAlternative[] {
+  const seen = new Set<string>();
+  const alternatives: RouteAlternative[] = [];
+
+  // Try combinations of mode × preferRoad for genuine diversity
+  const roadCombos = PREFER_ROAD_COMBOS.includes(preferRoad)
+    ? PREFER_ROAD_COMBOS
+    : [preferRoad, ...PREFER_ROAD_COMBOS.filter((r) => r !== undefined)];
+
+  for (const config of MODE_RUNS) {
+    for (const roadCombo of [...new Set(roadCombos)]) {
+      const result = runRoute({
+        startLat,
+        startLon,
+        endLat,
+        endLon,
+        mode: config.mode,
+        preferRoad: roadCombo,
+      });
+
+      if (!result.found || result.statistics.totalDistanceKm <= 0) continue;
+
+      // Deduplicate by road-chain signature
+      const sig = result.roadSequence.map((rs) => rs.roadCode).join("|");
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+
+      const intent = classifyRouteIntent(result.statistics.metrics, config.mode);
+      const abstraction = abstractionFromRouteResult(
+        result.path.nodes,
+        result.path.edges as unknown as EdgeShape[],
+        result.roadSequence,
+        result.statistics,
+        originName,
+        destinationName,
+        intent,
+        startLat,
+        startLon,
+      );
+
+      alternatives.push({
+        label: pickRouteLabel(intent, abstraction),
+        intent,
+        abstraction,
+        description: generateRouteDescription(abstraction.highwaySegments),
+        displaySegments: buildRouteDisplaySegments(abstraction),
+      });
     }
   }
 
-  if (best) {
-    return {
-      chain: assembleNodeChain(origin, [best], destination),
-      source: "corridor-fallback",
-    };
-  }
+  // Limit to top 3 most diverse (shortest chain → most chain difference)
+  alternatives.sort((a, b) => a.abstraction.totalDistanceKm - b.abstraction.totalDistanceKm);
 
-  return { chain, source: nodeSource };
+  return alternatives.slice(0, 4);
 }
 
 export async function buildSegmentedRoute(input: BuildRouteInput): Promise<BuiltRoute> {
@@ -361,6 +465,7 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     let duration: number;
     let instructions: RouteInstruction[] | undefined;
     let alternatives: BuiltRoute["alternatives"];
+    let provenance: RouteProvenance;
 
     if (input.perSegmentRouting) {
       const perSeg = await applyPerSegmentRouting(chain, vehicle);
@@ -370,6 +475,12 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
       duration = perSeg.duration;
       instructions = perSeg.instructions;
       alternatives = undefined;
+      provenance = {
+        engine: "osrm",
+        validationStatus: perSeg.distance > 0 ? "passed" : "fallback",
+        isTraceValid: false,
+        isMetricComplete: false,
+      };
     } else {
       const osrm = await applyOsrmToChain(chain, source, vehicle);
       polyline = osrm.polyline;
@@ -377,6 +488,13 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
       duration = osrm.duration;
       instructions = osrm.instructions;
       alternatives = osrm.alternatives;
+      provenance = {
+        engine: osrm.source?.startsWith("estimated") ? "estimated" : "osrm",
+        validationStatus: osrm.source?.startsWith("estimated") ? "fallback" : "passed",
+        fallbackReason: osrm.source?.startsWith("estimated") ? "osrm_fetch_failed" : undefined,
+        isTraceValid: false,
+        isMetricComplete: false,
+      };
     }
 
     const segments = buildSegmentsFromNodes(chain);
@@ -390,6 +508,10 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
       displayWaypoints[last] = { ...displayWaypoints[last], lat: destination.displayLat ?? destination.lat, lon: destination.displayLon ?? destination.lon, name: destination.name };
     }
 
+    const enriched = input.includeNamedPlaces && polyline.length >= 2
+      ? await extractRouteNames(input.originLat, input.originLon, input.destinationLat!, input.destinationLon!, polyline).catch(() => undefined)
+      : undefined;
+
     return {
       origin, destination,
       nodes: chain,
@@ -398,7 +520,9 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
       instructions, alternatives,
       segmentRoutes,
       source,
+      provenance,
       resolutionNote: [originNote, destNote].filter(Boolean).join("; "),
+      namedRoute: enriched ?? undefined,
     };
   }
 
@@ -413,10 +537,152 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
 
   let chain = assembleNodeChain(origin, intermediates, destination);
   let source = nodeSource;
-
   const expanded = await ensureMultiStopChain(origin, destination, chain, source);
   chain = expanded.chain;
   source = expanded.source;
+
+  if (input.dorRoutingMode) {
+    const dorResult: DorRouteResult = runRoute({
+      startLat: origin.lat,
+      startLon: origin.lon,
+      endLat: destination.lat,
+      endLon: destination.lon,
+      mode: input.dorRoutingMode,
+      preferRoad: input.dorPreferRoad,
+    });
+
+    if (!dorResult.found) {
+      return {
+        origin, destination,
+        nodes: chain,
+        waypoints: [],
+        segments: [],
+        polyline: [],
+        distance: 0,
+        duration: 0,
+        instructions: [],
+        source: `dor:${input.dorRoutingMode}:not-found`,
+        provenance: {
+          engine: "dor",
+          mode: input.dorRoutingMode,
+          validationStatus: "empty",
+          isTraceValid: false,
+          isMetricComplete: false,
+        },
+        resolutionNote: [originNote, destNote].filter(Boolean).join("; "),
+      };
+    }
+
+    const dorNodes: RouteNode[] = dorResult.path.nodes.map((n: any) => ({
+      lat: n.centroidLat,
+      lon: n.centroidLon,
+      name: `${n.roadCode} ${n.startPlace}→${n.endPlace}`,
+      roadCode: n.roadCode,
+      routeNodeId: n.id,
+    }));
+
+    const dorPolyline: Array<{ lat: number; lon: number }> = dorResult.path.nodes.map((n: any) => ({
+      lat: n.centroidLat,
+      lon: n.centroidLon,
+    }));
+
+    const distanceKm = dorResult.statistics.totalDistanceKm;
+    const dorSegments: BuiltRouteSegment[] = dorNodes.slice(0, -1).map((from, i) => ({
+      index: i,
+      from,
+      to: dorNodes[i + 1],
+      distance: Math.round(haversineKm(from.lat, from.lon, dorNodes[i + 1].lat, dorNodes[i + 1].lon) * 1000),
+      roadCode: (dorResult.path.edges[i] as unknown as GraphEdge | undefined)?.roadCode,
+    }));
+
+    const displayWaypoints = dorNodes.map((n, order) => ({ ...n, order }));
+    if (displayWaypoints.length > 0) {
+      displayWaypoints[0] = {
+        ...displayWaypoints[0],
+        lat: origin.displayLat ?? origin.lat,
+        lon: origin.displayLon ?? origin.lon,
+        name: origin.name,
+      };
+      const last = displayWaypoints.length - 1;
+      displayWaypoints[last] = {
+        ...displayWaypoints[last],
+        lat: destination.displayLat ?? destination.lat,
+        lon: destination.displayLon ?? destination.lon,
+        name: destination.name,
+      };
+    }
+
+    const roadChanges = dorResult.statistics.roadChanges;
+    const roadSequenceStr = dorResult.roadSequence.map((r: any) => `${r.roadCode} (${r.fromPlace}→${r.toPlace})`);
+
+    // ── Route Abstraction Layer (Stage 7) ──
+    const dorIntent = classifyRouteIntent(dorResult.statistics.metrics, input.dorRoutingMode);
+    const dorAbstraction = abstractionFromRouteResult(
+      dorResult.path.nodes,
+      dorResult.path.edges as unknown as EdgeShape[],
+      dorResult.roadSequence,
+      dorResult.statistics,
+      origin.name,
+      destination.name,
+      dorIntent,
+      input.originLat,
+      input.originLon,
+    );
+    const dorAlternatives = dorResult.found
+      ? buildRouteAlternatives(
+          origin.lat, origin.lon,
+          destination.lat, destination.lon,
+          origin.name,
+          destination.name,
+          input.dorPreferRoad,
+        )
+      : [];
+
+    // ── Route Explanation Layer (Stage 8) ──
+    const dorProvenance: RouteProvenance = {
+      engine: "dor",
+      mode: input.dorRoutingMode,
+      validationStatus: "passed",
+      isTraceValid: true,
+      isMetricComplete: true,
+    };
+    const dorExplanation: RouteExplanation | undefined = dorResult.found
+      ? explainRoute(dorResult, dorAbstraction, input.dorRoutingMode ?? "balanced", dorProvenance)
+      : undefined;
+    if (dorExplanation && dorAlternatives.length > 0) {
+      const { reasons } = compareAlternatives(dorAbstraction, dorAlternatives);
+      dorExplanation.alternativeComparisons = reasons;
+    }
+
+    const dorEnriched = input.includeNamedPlaces && dorPolyline.length >= 2
+      ? await extractRouteNames(input.originLat, input.originLon, input.destinationLat!, input.destinationLon!, dorPolyline).catch(() => undefined)
+      : undefined;
+
+    return {
+      origin, destination,
+      nodes: dorNodes,
+      waypoints: displayWaypoints,
+      segments: dorSegments,
+      polyline: dorPolyline,
+      distance: Math.round(distanceKm * 1000),
+      duration: Math.max(1800, Math.round((distanceKm / 35) * 3600)),
+      instructions: [],
+      source: `dor:${input.dorRoutingMode}`,
+      provenance: {
+        engine: "dor",
+        mode: input.dorRoutingMode,
+        validationStatus: "passed",
+        isTraceValid: true,
+        isMetricComplete: true,
+      },
+      resolutionNote: `Road changes: ${roadChanges}. Sequence: ${roadSequenceStr.join(" → ")}`,
+      dorMetrics: dorResult.statistics.metrics,
+      abstraction: dorAbstraction,
+      routeAlternatives: dorAlternatives,
+      explanation: dorExplanation,
+      namedRoute: dorEnriched ?? undefined,
+    };
+  }
 
   let segmentRoutes: PerSegmentRoute[] | undefined;
   let polyline: Array<{ lat: number; lon: number }>;
@@ -424,6 +690,7 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
   let duration: number;
   let instructions: RouteInstruction[] | undefined;
   let alternatives: BuiltRoute["alternatives"];
+  let provenance: RouteProvenance;
 
   if (input.perSegmentRouting) {
     const perSeg = await applyPerSegmentRouting(chain, vehicle);
@@ -433,6 +700,12 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     duration = perSeg.duration;
     instructions = perSeg.instructions;
     alternatives = undefined;
+    provenance = {
+      engine: "osrm",
+      validationStatus: perSeg.distance > 0 ? "passed" : "fallback",
+      isTraceValid: false,
+      isMetricComplete: false,
+    };
   } else {
     const osrm = await applyOsrmToChain(chain, source, vehicle);
     polyline = osrm.polyline;
@@ -440,6 +713,13 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     duration = osrm.duration;
     instructions = osrm.instructions;
     alternatives = osrm.alternatives;
+    provenance = {
+      engine: osrm.source?.startsWith("estimated") ? "estimated" : "osrm",
+      validationStatus: osrm.source?.startsWith("estimated") ? "fallback" : "passed",
+      fallbackReason: osrm.source?.startsWith("estimated") ? "osrm_fetch_failed" : undefined,
+      isTraceValid: false,
+      isMetricComplete: false,
+    };
   }
 
   const segments = buildSegmentsFromNodes(chain);
@@ -466,6 +746,10 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     };
   }
 
+  const fallbackEnriched = input.includeNamedPlaces && polyline.length >= 2
+    ? await extractRouteNames(input.originLat, input.originLon, input.destinationLat!, input.destinationLon!, polyline).catch(() => undefined)
+    : undefined;
+
   return {
     origin,
     destination,
@@ -479,7 +763,9 @@ export async function buildSegmentedRoute(input: BuildRouteInput): Promise<Built
     alternatives,
     segmentRoutes,
     source: source,
+    provenance,
     resolutionNote: [originNote, destNote].filter(Boolean).join("; "),
+    namedRoute: fallbackEnriched ?? undefined,
   };
 }
 
@@ -592,6 +878,9 @@ export function toMapPayload(built: BuiltRoute) {
     })),
     source: built.source,
     resolutionNote: built.resolutionNote,
+    abstraction: built.abstraction ?? null,
+    namedRoute: built.namedRoute ?? null,
+    provenance: built.provenance,
   };
 }
 

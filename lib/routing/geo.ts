@@ -11,6 +11,48 @@ export function haversineKm(lat1: number, lon1: number, lat2: number, lon2: numb
   return R * c;
 }
 
+export function haversineM(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  return haversineKm(lat1, lon1, lat2, lon2) * 1000;
+}
+
+/**
+ * Distance from point (px, py) in projected meter space to
+ * the line segment from (ax, ay) to (bx, by).
+ */
+export function pointToSegmentDistM(
+  px: number, py: number,
+  ax: number, ay: number,
+  bx: number, by: number,
+): number {
+  const abx = bx - ax;
+  const aby = by - ay;
+  const len2 = abx * abx + aby * aby;
+  if (len2 < 1e-12) return Math.sqrt((px - ax) ** 2 + (py - ay) ** 2);
+
+  let t = ((px - ax) * abx + (py - ay) * aby) / len2;
+  t = Math.max(0, Math.min(1, t));
+
+  const cx = ax + t * abx;
+  const cy = ay + t * aby;
+  return Math.sqrt((px - cx) ** 2 + (py - cy) ** 2);
+}
+
+/**
+ * Initial bearing from point1 to point2 (degrees, 0–360).
+ * Uses haversine formula. 0 = north, 90 = east, 180 = south, 270 = west.
+ */
+export function bearingDeg(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const rLat1 = (lat1 * Math.PI) / 180;
+  const rLat2 = (lat2 * Math.PI) / 180;
+  const y = Math.sin(dLon) * Math.cos(rLat2);
+  const x =
+    Math.cos(rLat1) * Math.sin(rLat2) -
+    Math.sin(rLat1) * Math.cos(rLat2) * Math.cos(dLon);
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+  return ((brng % 360) + 360) % 360;
+}
+
 export function isValidLatLon(lat: number, lon: number): boolean {
   return (
     Number.isFinite(lat) &&

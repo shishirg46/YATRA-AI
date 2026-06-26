@@ -78,10 +78,18 @@ export async function fetchWeather(lat: number, lon: number): Promise<WeatherSna
     return cached.value;
   }
 
-  const result = await fetchOpenMeteo(lat, lon);
-  setWeatherCache(cacheKey, result);
+  const dhm = await fetchDhmWeather(lat, lon);
+  if (dhm) { setWeatherCache(cacheKey, dhm); return dhm; }
 
-  return result;
+  const om = await fetchOpenMeteo(lat, lon);
+  if (om) { setWeatherCache(cacheKey, om); return om; }
+
+  const owm = await fetchOwmWeather(lat, lon);
+  if (owm) { setWeatherCache(cacheKey, owm); return owm; }
+
+  const fb = fallback("all-unreachable");
+  setWeatherCache(cacheKey, fb);
+  return fb;
 }
 
 /**
@@ -98,7 +106,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
 
     if (!res.ok) {
       console.warn(`[weather] DHM API ${res.status}`);
-      return fallback("dhm-error");
+      return null;
     }
 
     const data = (await res.json()) as DhmForecastResponse;
@@ -108,7 +116,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
       : [];
 
     if (hourly.length === 0) {
-      return fallback("dhm-no-data");
+      return null;
     }
 
     const current = hourly[0];
@@ -167,7 +175,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
     };
   } catch (err) {
     console.warn(`[weather] DHM fetch failed:`, err);
-    return fallback("dhm-unreachable");
+    return null;
   }
 }
 
@@ -175,13 +183,13 @@ async function fetchOpenMeteo(lat: number, lon: number): Promise<WeatherSnapshot
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,weather_code`;
     const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return fetchDhmWeather(lat, lon);
+    if (!res.ok) return null;
 
     const data = await res.json() as {
       current?: { temperature_2m: number; relative_humidity_2m: number; precipitation: number; wind_speed_10m: number; weather_code: number };
     };
 
-    if (!data.current) return fetchDhmWeather(lat, lon);
+    if (!data.current) return null;
 
     const code = data.current.weather_code;
     const desc = code === 0 ? "Clear" : [1, 2, 3].includes(code) ? "Partly cloudy" : [45, 48].includes(code) ? "Foggy" : [51, 53, 55].includes(code) ? "Drizzle" : [61, 63, 65].includes(code) ? "Rain" : [71, 73, 75].includes(code) ? "Snow" : [95, 96, 99].includes(code) ? "Thunderstorm" : "Fair";
@@ -198,7 +206,38 @@ async function fetchOpenMeteo(lat: number, lon: number): Promise<WeatherSnapshot
       officialSource: false,
     };
   } catch {
-    return fetchDhmWeather(lat, lon);
+    return null;
+  }
+}
+
+async function fetchOwmWeather(lat: number, lon: number): Promise<WeatherSnapshot | null> {
+  const apiKey = process.env.OPENWEATHER_API_KEY;
+  if (!apiKey) return null;
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) return null;
+    const data = await res.json() as {
+      main?: { temp: number; humidity: number; pressure: number };
+      wind?: { speed: number };
+      weather?: { description: string }[];
+      rain?: { "1h"?: number };
+    };
+    if (!data.main) return null;
+    return {
+      temperature: data.main.temp,
+      humidity: data.main.humidity,
+      rainfall: data.rain?.["1h"] ?? 0,
+      windSpeed: data.wind?.speed ?? 0,
+      pressure: data.main.pressure,
+      description: data.weather?.[0]?.description ?? "Fair",
+      source: "openweathermap",
+      timestamp: new Date().toISOString(),
+      sourceLabel: "OpenWeatherMap",
+      officialSource: false,
+    };
+  } catch {
+    return null;
   }
 }
 

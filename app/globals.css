@@ -3,6 +3,9 @@
 @import "shadcn/tailwind.css";
 @import "leaflet/dist/leaflet.css";
 
+@source not "../nominatim";
+@source not "../yatra-osrm";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

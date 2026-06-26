@@ -1,12 +1,15 @@
 import { prisma } from "@/lib/prisma";
 
+// LEGACY graph validation — uses route_edge_legacy table for shadow-mode comparison
 async function validateGraph() {
-  console.log("=== Nepal Route Graph Validation ===\n");
+  console.log("=== Nepal Route Graph Validation (LEGACY) ===\n");
 
   const nodeCount = await prisma.routeNode.count({ where: { isActive: true } });
-  const edgeCount = await prisma.routeEdge.count();
+  const edgeCount = await prisma.$queryRawUnsafe<Array<{ count: bigint }>>(
+    `SELECT COUNT(*)::bigint as count FROM route_edge_legacy`
+  ).then(r => Number(r[0]?.count ?? 0));
   console.log(`Nodes: ${nodeCount}`);
-  console.log(`Edges: ${edgeCount}\n`);
+  console.log(`Edges (legacy): ${edgeCount}\n`);
 
   // 1. Find dead-end nodes (degree 1)
   const deadEnds = await prisma.$queryRawUnsafe<Array<{ id: string; name: string; type: string }>>(`
@@ -14,7 +17,7 @@ async function validateGraph() {
     FROM route_node n
     WHERE n."isActive" = true
     AND (
-      (SELECT COUNT(*) FROM route_edge e WHERE e."fromNodeId" = n.id OR e."toNodeId" = n.id) = 1
+      (SELECT COUNT(*) FROM route_edge_legacy e WHERE e."fromNodeId" = n.id OR e."toNodeId" = n.id) = 1
     )
     ORDER BY n.name;
   `);
@@ -40,7 +43,7 @@ async function validateGraph() {
       fn."longitude" AS "fromLon",
       tn."latitude" AS "toLat",
       tn."longitude" AS "toLon"
-    FROM route_edge e
+    FROM route_edge_legacy e
     JOIN route_node fn ON fn.id = e."fromNodeId"
     JOIN route_node tn ON tn.id = e."toNodeId"
     WHERE e."distanceKm" > 40
@@ -106,7 +109,7 @@ async function validateGraph() {
 
   // 6. Edge attributes summary
   const edgeAttrCheck = await prisma.$queryRawUnsafe<Array<{ attribute: string; present: bigint; total: bigint }>>(`
-    SELECT 'surface_type' as attribute, COUNT(*)::int as present, (SELECT COUNT(*) FROM route_edge)::int as total FROM route_edge WHERE "surfaceType" IS NOT NULL
+    SELECT 'surface_type' as attribute, COUNT(*)::int as present, (SELECT COUNT(*) FROM route_edge_legacy)::int as total FROM route_edge_legacy WHERE "surfaceType" IS NOT NULL
     UNION ALL
     SELECT 'road_condition', COUNT(*)::int, (SELECT COUNT(*) FROM route_edge)::int FROM route_edge WHERE "roadCondition" IS NOT NULL
     UNION ALL

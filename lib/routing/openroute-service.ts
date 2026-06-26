@@ -1,6 +1,7 @@
 import type { GeoPoint, RoadRoute, RouteCoordinate, RouteInstruction, RouteLeg, VehicleProfile } from "./types";
 
-const ORS_BASE = "https://api.openrouteservice.org/v2";
+const ORS_BASE = process.env.OPENROUTESERVICE_URL ?? "https://api.openrouteservice.org/v2";
+const OSRM_BASE = process.env.OSRM_URL ?? "http://localhost:5000";
 const TIMEOUT_MS = 25_000;
 const MAX_RETRIES = 2;
 
@@ -10,18 +11,35 @@ const VEHICLE_MAP: Record<VehicleProfile, string> = {
   jeep: "driving-hgv",
 };
 
+type RoutingProvider = "openrouteservice" | "osrm";
+
+function getRoutingProvider(): RoutingProvider {
+  const provider = process.env.ROUTING_PROVIDER?.toLowerCase();
+  if (provider === "osrm") return "osrm";
+  if (provider === "openrouteservice" || provider === "ors") return "openrouteservice";
+  return process.env.OPENROUTESERVICE_API_KEY ? "openrouteservice" : "osrm";
+}
+
 function getApiKey(): string {
   const key = process.env.OPENROUTESERVICE_API_KEY;
   if (!key) throw new Error("OPENROUTESERVICE_API_KEY is not configured");
   return key;
 }
 
-async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES): Promise<Response> {
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  retries = MAX_RETRIES,
+  externalSignal?: AbortSignal,
+): Promise<Response> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
+      const combined = externalSignal
+        ? AbortSignal.any([externalSignal, AbortSignal.timeout(TIMEOUT_MS)])
+        : AbortSignal.timeout(TIMEOUT_MS);
       const res = await fetch(url, {
         ...options,
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: combined,
       });
       return res;
     } catch (err) {
@@ -169,12 +187,113 @@ function buildOrsUrl(vehicle: VehicleProfile, coordinates: string, alternatives:
   return url;
 }
 
+function buildOsrmUrl(points: GeoPoint[], alternatives: boolean): string {
+  const coordString = points.map((p) => `${p.lon},${p.lat}`).join(";");
+  const url = new URL(`${OSRM_BASE}/route/v1/driving/${coordString}`);
+  url.searchParams.set("overview", "full");
+  url.searchParams.set("geometries", "geojson");
+  url.searchParams.set("steps", "true");
+  url.searchParams.set("alternatives", alternatives ? "true" : "false");
+  return url.toString();
+}
+
+function parseOsrmRoute(route: {
+  distance: number;
+  duration: number;
+  geometry: { coordinates: [number, number][] };
+  legs: Array<{
+    steps: Array<{
+      distance: number;
+      duration: number;
+      name: string;
+      maneuver: { instruction?: string; location: [number, number]; type: string };
+    }>;
+  }>;
+}): RoadRoute {
+  const coords: RouteCoordinate[] = route.geometry.coordinates.map(([lon, lat]) => ({ lat, lon }));
+
+  const legs: RouteLeg[] = route.legs.map((leg) => ({
+    distance: leg.steps.reduce((sum, step) => sum + step.distance, 0),
+    duration: leg.steps.reduce((sum, step) => sum + step.duration, 0),
+    summary: leg.steps.map((step) => step.maneuver.instruction || step.name || step.maneuver.type).join(" > "),
+    steps: leg.steps.map((step) => ({
+      text: step.maneuver.instruction || step.name || step.maneuver.type,
+      distance: Math.round(step.distance),
+      duration: Math.round(step.duration),
+      type: step.maneuver.type,
+      lat: step.maneuver.location[1],
+      lon: step.maneuver.location[0],
+      streetName: step.name,
+    })),
+  }));
+
+  return {
+    coordinates: coords,
+    distance: Math.round(route.distance),
+    duration: Math.round(route.duration),
+    encodedPolyline: polylineEncode(coords),
+    legs,
+  };
+}
+
+async function fetchOsrmRoadRoute(
+  start: GeoPoint,
+  end: GeoPoint,
+  vehicle: VehicleProfile,
+  options?: { alternatives?: boolean; waypoints?: GeoPoint[] },
+  externalSignal?: AbortSignal,
+): Promise<RoadRoute[]> {
+  const points = [start, ...(options?.waypoints || []), end];
+  const url = buildOsrmUrl(points, options?.alternatives ?? false);
+
+  const res = await fetchWithRetry(url, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  }, MAX_RETRIES, externalSignal);
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "unknown error");
+    throw new Error(`OSRM API error ${res.status}: ${text}`);
+  }
+
+  const data = await res.json() as {
+    code?: string;
+    routes?: Array<{
+      distance: number;
+      duration: number;
+      geometry: { coordinates: [number, number][] };
+      legs: Array<{
+        steps: Array<{
+          distance: number;
+          duration: number;
+          name: string;
+          maneuver: { instruction?: string; location: [number, number]; type: string };
+        }>;
+      }>;
+    }>;
+  };
+
+  if (data.code !== "Ok" || !data.routes || data.routes.length === 0) {
+    throw new Error("OSRM returned no routes");
+  }
+
+  return data.routes.map(parseOsrmRoute);
+}
+
 export async function fetchRoadRoute(
   start: GeoPoint,
   end: GeoPoint,
   vehicle: VehicleProfile = "car",
-  options?: { alternatives?: boolean; waypoints?: GeoPoint[] }
+  options?: { alternatives?: boolean; waypoints?: GeoPoint[] },
+  externalSignal?: AbortSignal,
 ): Promise<RoadRoute[]> {
+  const provider = getRoutingProvider();
+  if (provider === "osrm") {
+    return fetchOsrmRoadRoute(start, end, vehicle, options, externalSignal);
+  }
+
   const points = [start, ...(options?.waypoints || []), end];
   const coordsStr = buildCoordinateString(points);
   const url = buildOrsUrl(vehicle, coordsStr, options?.alternatives ?? false);
@@ -184,7 +303,7 @@ export async function fetchRoadRoute(
     headers: {
       Accept: "application/json, application/geo+json",
     },
-  });
+  }, MAX_RETRIES, externalSignal);
 
   if (!res.ok) {
     const text = await res.text().catch(() => "unknown error");
@@ -234,8 +353,9 @@ export async function fetchRouteGeometry(
   start: GeoPoint,
   end: GeoPoint,
   vehicle: VehicleProfile = "car",
-  waypoints?: GeoPoint[]
+  waypoints?: GeoPoint[],
+  externalSignal?: AbortSignal,
 ): Promise<RoadRoute> {
-  const routes = await fetchRoadRoute(start, end, vehicle, { waypoints });
+  const routes = await fetchRoadRoute(start, end, vehicle, { waypoints }, externalSignal);
   return routes[0];
 }

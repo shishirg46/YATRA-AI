@@ -1,4 +1,4 @@
-const OSRM_BASE = "https://router.project-osrm.org";
+const OSRM_BASE = process.env.OSRM_URL ?? "http://localhost:5000";
 const TIMEOUT_MS = 10_000;
 
 interface OsrmNearestResponse {

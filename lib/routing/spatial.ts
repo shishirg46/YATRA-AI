@@ -121,12 +121,13 @@ export async function findNearestDestination(
   lat: number,
   lon: number,
   maxKm = 50
-): Promise<(SpatialResult & { district: string; province: string }) | null> {
+): Promise<(SpatialResult & { district: string; province: string; category: string; destinationTier: number | null; popularityScore: number | null }) | null> {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
   const rows = await prisma.$queryRawUnsafe<
-    (SpatialResult & { district: string; province: string })[]
+    (SpatialResult & { district: string; province: string; category: string; destinationTier: number | null; popularityScore: number | null })[]
   >(
     `SELECT id, name, latitude AS lat, longitude AS lon, district, province,
+            "category", "destinationTier", "popularityScore",
             ${HAVERSINE_SQL("latitude", "longitude", String(lat), String(lon))}
      FROM "destination"
      WHERE ${haversineWhere("latitude", "longitude", String(lat), String(lon), maxKm)}
@@ -189,6 +190,49 @@ export async function findNearestLocationsBatch(
     }
   }
   return map;
+}
+
+/**
+ * PostGIS-powered nearest-place lookup using ST_DWithin + KNN GiST (geom <->).
+ * Filters to settlement types (CITY, TOWN, VILLAGE) for place sequencing.
+ */
+export type PlaceResult = SpatialResult & {
+  type: string;
+  adminLevel: number | null;
+  nameEn: string | null;
+  nameNe: string | null;
+};
+
+export async function findNearestPlacePG(
+  lat: number,
+  lon: number,
+  radiusMeters = 3000,
+): Promise<PlaceResult | null> {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
+
+  const rows = await prisma.$queryRawUnsafe<PlaceResult[]>(
+    `SELECT
+       id,
+       name,
+       "nameEn" AS "nameEn",
+       "nameNe" AS "nameNe",
+       latitude AS lat,
+       longitude AS lon,
+       type,
+       "adminLevel" AS "adminLevel",
+       ST_Distance(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography) / 1000 AS "distanceKm"
+     FROM "place"
+     WHERE geom IS NOT NULL
+       AND type IN ('CITY', 'TOWN', 'VILLAGE')
+       AND ST_DWithin(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)
+     ORDER BY geom <-> ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography
+     LIMIT 1`,
+    lon,
+    lat,
+    radiusMeters,
+  );
+
+  return rows[0] ?? null;
 }
 
 export { haversineKm } from "@/lib/routing/geo";

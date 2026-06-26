@@ -15,3 +15,6 @@ export * from "@/lib/routing/places-along-route";
 export * from "@/lib/routing/detour-intelligence";
 export * from "@/lib/routing/route-ranking";
 export * from "@/lib/routing/route-cache";
+export * from "@/lib/routing/route-abstraction";
+export * from "@/lib/routing/route-explanation";
+export * from "@/lib/routing/route-name-extractor";

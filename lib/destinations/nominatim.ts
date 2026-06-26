@@ -52,7 +52,8 @@ export async function searchPlace(
   }
 
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+    const baseUrl = process.env.NOMINATIM_URL || "https://nominatim.openstreetmap.org";
+    const response = await fetch(`${baseUrl}/search?${params}`, {
       headers: {
         Accept: "application/json",
         "Accept-Language": "en-US",
@@ -89,7 +90,8 @@ export async function reverseGeocode(
   });
 
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+    const baseUrl = process.env.NOMINATIM_URL || "https://nominatim.openstreetmap.org";
+    const response = await fetch(`${baseUrl}/reverse?${params}`, {
       headers: {
         Accept: "application/json",
         "Accept-Language": "en-US",

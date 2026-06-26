@@ -1,3 +1,5 @@
+import type { RouteExplanation } from "@/lib/routing/route-explanation";
+
 export interface GeoPoint {
   lat: number;
   lon: number;
@@ -21,6 +23,14 @@ export interface RouteNode {
   name: string;
   locationId?: string | null;
   routeNodeId?: string | null;
+  roadCode?: string;
+  junction?: string;
+}
+
+export interface CorridorLabel {
+  displayName: string;
+  startIdx: number;
+  endIdx: number;
 }
 
 export type VehicleProfile = "car" | "motorcycle" | "jeep";
@@ -135,6 +145,7 @@ export interface BuiltRouteSegment {
   riskScore?: number;
   hazards?: string[];
   hazardProfile?: HazardProfile;
+  roadCode?: string;
 }
 
 export interface TripIntelligence {
@@ -178,8 +189,150 @@ export interface BuiltRoute {
   }>;
   segmentRoutes?: PerSegmentRoute[];
   source: string;
+  provenance: RouteProvenance;
   resolutionNote?: string;
   tripIntelligence?: TripIntelligence;
+  dorMetrics?: {
+    deviationScore: number;
+    roadChangeRatePer100km: number;
+    continuityScore: number;
+    weightEfficiency: number;
+  };
+  abstraction?: RouteAbstraction;
+  routeAlternatives?: RouteAlternative[];
+  explanation?: RouteExplanation;
+  namedRoute?: NamedRoute;
+}
+
+export type DorRoutingMode = "strict-road" | "balanced" | "fastest" | "highway-preferred";
+
+// ─── Route Abstraction Layer (Stage 7) ────────────────────────────
+
+export type RouteIntent = "fastest" | "scenic" | "highway" | "balanced";
+
+export interface HighwaySegment {
+  roadCode: string;
+  fromPlace: string;
+  toPlace: string;
+  fromPlaceSource: "raw" | "sanitized" | "gazetteer";
+  toPlaceSource: "raw" | "sanitized" | "gazetteer";
+  distanceKm: number;
+  nodeCount: number;
+  fromLat: number;
+  fromLon: number;
+  toLat: number;
+  toLon: number;
+}
+
+export interface RouteAbstraction {
+  origin: string;
+  destination: string;
+  totalDistanceKm: number;
+  totalWeight: number;
+  highwaySegments: HighwaySegment[];
+  roadChain: string[];
+  roadChanges: number;
+  metrics?: {
+    deviationScore: number;
+    roadChangeRatePer100km: number;
+    continuityScore: number;
+    weightEfficiency: number;
+  };
+  intent?: RouteIntent;
+}
+
+export interface RouteAlternativeSegment {
+  roadCode: string;
+  roadName: string;
+  fromPlace: string;
+  toPlace: string;
+  distanceKm: number;
+}
+
+export interface RouteAlternative {
+  label: string;
+  intent: RouteIntent;
+  abstraction: RouteAbstraction;
+  description?: string;
+  displaySegments?: RouteAlternativeSegment[];
+}
+
+// ─── Route Provenance Contract Layer (Stage 8.5) ───────────────────
+
+export interface RouteProvenance {
+  engine: "dor" | "osrm" | "estimated" | "legacy-graph" | "template";
+  mode?: DorRoutingMode;
+  validationStatus: "passed" | "fallback" | "empty";
+  fallbackReason?: string;
+  isTraceValid: boolean;
+  isMetricComplete: boolean;
+}
+
+// ─── Route Explanation types live in route-explanation.ts ─────────
+// Re-exported via lib/routing/index.ts
+
+export type PlaceType = "city" | "town" | "village" | "municipality" | "hamlet" | "suburb";
+
+export interface NamedPlace {
+  name: string;
+  lat: number;
+  lon: number;
+  type: PlaceType;
+}
+
+export interface NamedRoute {
+  coordinates: Array<{ lat: number; lon: number }>;
+  namedPlaces: string[];
+  distance: number;
+  duration: number;
+  roads?: RoadGenerationResult["roads"];
+}
+
+export interface GeneratedRoad {
+  id: number;
+  sequence: string[];
+  segments: string[];
+  coordinates: Array<{ lat: number; lon: number }>;
+  distance: number;
+  duration: number;
+}
+
+export interface RoadGenerationResult {
+  roads: GeneratedRoad[];
+}
+
+// ─── Enhanced Road Types with Named Sub-Coordinates ───────────────
+
+export interface NamedCoordinate {
+  coord: { lat: number; lon: number };
+  placeName: string | null;
+  placeType: string | null;
+}
+
+export interface EnhancedRoadSegment {
+  index: number;
+  fromName: string;
+  toName: string;
+  fromCoord: { lat: number; lon: number };
+  toCoord: { lat: number; lon: number };
+  subCoords: NamedCoordinate[];
+  direction: string;
+  distance: number;
+  duration: number;
+}
+
+export interface EnhancedRoad {
+  id: number;
+  name: string;
+  direction: string;
+  distance: number;
+  duration: number;
+  fullCoordinates: Array<{ lat: number; lon: number }>;
+  segments: EnhancedRoadSegment[];
+}
+
+export interface EnhancedRoadResult {
+  roads: EnhancedRoad[];
 }
 
 export interface BuildRouteInput {
@@ -200,4 +353,7 @@ export interface BuildRouteInput {
   perSegmentRouting?: boolean;
   dynamicOsmRouting?: boolean;
   vehicle?: VehicleProfile;
+  dorRoutingMode?: DorRoutingMode;
+  dorPreferRoad?: string;
+  includeNamedPlaces?: boolean;
 }

@@ -148,21 +148,36 @@ export default function ExplorePage() {
       setLocationError("Geolocation is not supported in this browser.");
       return;
     }
+
     setLocating(true);
     setLocationError(null);
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLocating(false);
-        void resolveFromGps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
-      },
-      (err) => {
-        setLocating(false);
-        if (err.code === 1) setLocationError("Permission denied.");
-        else setLocationError("Location unavailable.");
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
+    const handleSuccess = async (pos: GeolocationPosition) => {
+      setLocating(false);
+      const resolved = await resolveFromGps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+      if (!resolved) {
+        setLocationError("Could not resolve your location. Please try again or set your location manually.");
+      }
+    };
+
+    const handleError = (err: GeolocationPositionError) => {
+      setLocating(false);
+      if (err.code === err.PERMISSION_DENIED) {
+        setLocationError("Permission denied. Please allow location access in browser settings.");
+      } else if (err.code === err.POSITION_UNAVAILABLE) {
+        setLocationError("Location unavailable. Please try again in an open area.");
+      } else if (err.code === err.TIMEOUT) {
+        setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
+      } else {
+        setLocationError(err.message || "Failed to get location.");
+      }
+    };
+
+    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 15000,
+    });
   }
 
   // ── Derived data ────────────────────────────────────────────────────────
@@ -283,7 +298,10 @@ export default function ExplorePage() {
                   {locating ? <Loader2 size={12} className="animate-spin" /> : <MapPin size={12} />}
                   {locating ? "Locating..." : "Auto-Detect"}
                 </button>
-                <button onClick={() => setPickingLocation(true)}
+                <button onClick={() => {
+                    setLocationError(null);
+                    setPickingLocation(true);
+                  }}
                   className="location-card__button">
                   <Search size={12} /> Set Manually
                 </button>

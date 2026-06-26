@@ -90,10 +90,17 @@ async function getDestinationHandler(
 
   try {
     // ── 1. Fetch core location data + destination image ────────────────────────
-    const location = await prisma.location.findUnique({
+    let location = await prisma.location.findUnique({
       where: { id },
       include: { district: { include: { province: true } } },
     });
+
+    if (!location) {
+      location = await prisma.location.findFirst({
+        where: { name: { equals: id, mode: "insensitive" } },
+        include: { district: { include: { province: true } } },
+      });
+    }
 
     if (!location) {
       return NextResponse.json({ message: "Destination not found." }, { status: 404 });

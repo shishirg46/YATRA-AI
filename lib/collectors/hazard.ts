@@ -30,7 +30,139 @@
  *   Every source is wrapped in try/catch with a timeout.
  *   If all sources fail → seasonal Nepal defaults.
  *   Sources are queried in parallel for speed.
+ *
+ * CIRCUIT BREAKER:
+ *   Each source has an in-memory circuit breaker. If it fails N times
+ *   consecutively, it is skipped for a cooldown period. After cooldown,
+ *   it enters half-open state and one request is allowed to probe.
  */
+
+import { externalApiCache } from "@/lib/collectors/external-api-cache";
+
+// ── Circuit breaker ──────────────────────────────────────────────────────────
+
+interface CircuitState {
+  failures: number;
+  lastFailure: number;
+  cooldownUntil: number;  // 0 = closed (normal)
+  halfOpen: boolean;
+  lastAttempt: number;    // monotonic probe guard
+}
+
+const CIRCUIT_CONFIG = {
+  maxFailures: 3,          // trip after 3 consecutive failures
+  cooldownMs: 60_000,      // stay open for 60 seconds
+  halfOpenMax: 1,          // allow 1 probe in half-open
+};
+
+const circuitState = new Map<string, CircuitState>();
+
+function getCircuitKey(source: string, district: string): string {
+  return `${source}:${district}`;
+}
+
+function isCircuitOpen(source: string, district: string): boolean {
+  const key = getCircuitKey(source, district);
+  const state = circuitState.get(key);
+  if (!state) return false;
+  const now = Date.now();
+  if (state.cooldownUntil > now) return true;
+
+  if (state.halfOpen) {
+    // Minimum 10s between probe attempts (monotonic-safe)
+    if (Math.max(now, state.lastAttempt) - state.lastAttempt < 10_000) return true;
+    state.lastAttempt = now;
+    console.warn("[circuit] CB_HALFOPEN — allowing probe", { source, district });
+    return false; // allow exactly one probe
+  }
+
+  return false;
+}
+
+function recordFailure(source: string, district: string): void {
+  const key = getCircuitKey(source, district);
+  const now = Date.now();
+  const prev = circuitState.get(key);
+  const failures = (prev?.failures ?? 0) + 1;
+  if (failures >= CIRCUIT_CONFIG.maxFailures) {
+    circuitState.set(key, {
+      failures,
+      lastFailure: now,
+      cooldownUntil: now + CIRCUIT_CONFIG.cooldownMs,
+      halfOpen: false,
+      lastAttempt: 0,
+    });
+    console.warn(`[circuit] CB_OPEN — ${source} tripped for ${district}, cooling down ${CIRCUIT_CONFIG.cooldownMs}ms`);
+  } else {
+    circuitState.set(key, {
+      failures,
+      lastFailure: now,
+      cooldownUntil: 0,
+      halfOpen: false,
+      lastAttempt: 0,
+    });
+  }
+}
+
+function recordSuccess(source: string, district: string): void {
+  const key = getCircuitKey(source, district);
+  const wasOpen = circuitState.has(key);
+  circuitState.delete(key);
+  if (wasOpen) {
+    console.warn("[circuit] CB_CLOSED — recovered", { source, district });
+  }
+}
+
+function enterHalfOpen(source: string, district: string): void {
+  const key = getCircuitKey(source, district);
+  const prev = circuitState.get(key);
+  if (prev) {
+    circuitState.set(key, { ...prev, halfOpen: true, cooldownUntil: 0 });
+  }
+}
+
+// ── Retry helper ──────────────────────────────────────────────────────────────
+
+async function fetchWithRetry(
+  label: string,
+  district: string,
+  fn: (opts?: { signal?: AbortSignal }) => Promise<Response | null>,
+  retries = 2,
+  externalSignal?: AbortSignal,
+): Promise<Response | null> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    if (externalSignal?.aborted) return null;
+
+    if (attempt > 0) {
+      const backoff = Math.min(1000 * 2 ** attempt, 4000);
+      const sleep = new Promise<void>((r) => setTimeout(r, backoff));
+      const abort = externalSignal
+        ? new Promise<void>((_, reject) => {
+            externalSignal.addEventListener("abort", () => reject(new Error("ABORTED")), { once: true });
+          })
+        : null;
+      try {
+        await (abort ? Promise.race([sleep, abort]) : sleep);
+      } catch {
+        return null;
+      }
+    }
+
+    try {
+      const res = await fn({ signal: externalSignal });
+      if (res && res.ok) {
+        recordSuccess(label, district);
+        return res;
+      }
+    } catch {
+      // fall through to retry
+    }
+  }
+  recordFailure(label, district);
+  return null;
+}
+
+// ── Main entry point ──────────────────────────────────────────────────────────
 
 export interface HazardSnapshot {
   floodIndex:     number; // 0–1
@@ -46,17 +178,39 @@ export interface HazardSnapshot {
 export async function fetchHazard(
   districtName: string,
   lat: number,
-  lon: number
+  lon: number,
+  signal?: AbortSignal,
 ): Promise<HazardSnapshot> {
 
   // Query all sources in parallel — each returns partial indices or null on failure
-  const [bipad, eonet, reliefweb, usgs, airQuality] = await Promise.all([
-    fetchBipad(districtName),
-    fetchEonet(lat, lon),
-    fetchReliefWeb(districtName),
-    fetchUsgsEarthquake(lat, lon),
-    fetchAirQuality(lat, lon, districtName),
+  if (isCircuitOpen("bipad", districtName)) {
+    enterHalfOpen("bipad", districtName);
+  }
+  if (isCircuitOpen("eonet", districtName)) {
+    enterHalfOpen("eonet", districtName);
+  }
+  if (isCircuitOpen("reliefweb", districtName)) {
+    enterHalfOpen("reliefweb", districtName);
+  }
+  if (isCircuitOpen("usgs", districtName)) {
+    enterHalfOpen("usgs", districtName);
+  }
+  if (isCircuitOpen("openaq", districtName)) {
+    enterHalfOpen("openaq", districtName);
+  }
+
+  const settled = await Promise.allSettled([
+    fetchBipad(districtName, signal),
+    fetchEonet(lat, lon, signal),
+    fetchReliefWeb(districtName, signal),
+    fetchUsgsEarthquake(lat, lon, signal),
+    fetchAirQuality(lat, lon, districtName, signal),
   ]);
+  const bipad     = settled[0].status === "fulfilled" ? settled[0].value : null;
+  const eonet     = settled[1].status === "fulfilled" ? settled[1].value : null;
+  const reliefweb = settled[2].status === "fulfilled" ? settled[2].value : null;
+  const usgs      = settled[3].status === "fulfilled" ? settled[3].value : null;
+  const airQuality = settled[4].status === "fulfilled" ? settled[4].value : 0;
 
   const sources: string[] = [];
 
@@ -94,37 +248,50 @@ export async function fetchHazard(
 
 interface BipadResult { floodIndex: number; landslideIndex: number }
 
-async function fetchBipad(district: string): Promise<BipadResult | null> {
-  try {
-    const from = daysAgo(30);
-    const url  = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&date_of_incident__gte=${from}&format=json&limit=100`;
+async function fetchBipad(district: string, signal?: AbortSignal): Promise<BipadResult | null> {
+  if (isCircuitOpen("bipad", district)) return null;
+  return externalApiCache.getOrFetch(
+    `bipad:${district}`,
+    5 * 60_000,
+    async () => {
+      try {
+        const from = daysAgo(30);
+        const url  = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&date_of_incident__gte=${from}&format=json&limit=100`;
 
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(10_000),
-      headers: { Accept: "application/json" },
-      cache:   "no-store",
-    });
+        const res = await fetchWithRetry("bipad", district, async (opts) => {
+          const r = await fetch(url, {
+            signal:  opts?.signal ?? AbortSignal.timeout(10_000),
+            headers: { Accept: "application/json" },
+            cache:   "no-store",
+          });
+          return r.ok ? r : null;
+        }, 2, signal);
 
-    if (!res.ok) return null;
+        if (!res) return null;
 
-    const data = await res.json() as { results?: { incident_type?: { title?: string }; hazard?: { title?: string } }[] };
-    const incidents = data.results ?? [];
+        const data = await res.json() as { results?: { incident_type?: { title?: string }; hazard?: { title?: string } }[] };
+        const incidents = data.results ?? [];
 
-    let flood = 0, landslide = 0;
+        let flood = 0, landslide = 0;
 
-    for (const inc of incidents) {
-      const type = (inc.incident_type?.title ?? inc.hazard?.title ?? "").toLowerCase();
-      if (type.includes("flood") || type.includes("inundation") || type.includes("बाढी")) flood++;
-      if (type.includes("landslide") || type.includes("debris") || type.includes("पहिरो")) landslide++;
-    }
+        for (const inc of incidents) {
+          const type = (inc.incident_type?.title ?? inc.hazard?.title ?? "").toLowerCase();
+          if (type.includes("flood") || type.includes("inundation") || type.includes("बाढी")) flood++;
+          if (type.includes("landslide") || type.includes("debris") || type.includes("पहिरो")) landslide++;
+        }
 
-    return {
-      floodIndex:     Math.min(flood / 5, 1.0),
-      landslideIndex: Math.min(landslide / 5, 1.0),
-    };
-  } catch {
-    return null;
-  }
+        recordSuccess("bipad", district);
+        return {
+          floodIndex:     Math.min(flood / 5, 1.0),
+          landslideIndex: Math.min(landslide / 5, 1.0),
+        };
+      } catch {
+        recordFailure("bipad", district);
+        return null;
+      }
+    },
+    { timeoutMs: 20_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
 // ── Source 2: NASA EONET ─────────────────────────────────────────────────────
@@ -132,43 +299,54 @@ async function fetchBipad(district: string): Promise<BipadResult | null> {
 
 interface EonetResult { floodIndex: number; landslideIndex: number }
 
-async function fetchEonet(lat: number, lon: number): Promise<EonetResult | null> {
-  try {
-    // EONET categories: 12=Landslides, 9=Sea and Lake Ice, 10=Severe Storms, 6=Floods
-    const url = `https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=30&bbox=${lon - 2},${lat - 2},${lon + 2},${lat + 2}`;
+async function fetchEonet(lat: number, lon: number, signal?: AbortSignal): Promise<EonetResult | null> {
+  const district = "global";
+  if (isCircuitOpen("eonet", district)) return null;
+  return externalApiCache.getOrFetch(
+    `eonet:${lat.toFixed(1)}:${lon.toFixed(1)}`,
+    15 * 60_000,
+    async () => {
+      try {
+        const url = `https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=30&bbox=${lon - 2},${lat - 2},${lon + 2},${lat + 2}`;
 
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(8_000),
-      cache:  "no-store",
-    });
+        const res = await fetchWithRetry("eonet", district, async (opts) => {
+          const r = await fetch(url, {
+            signal: opts?.signal ?? AbortSignal.timeout(8_000),
+            cache:  "no-store",
+          });
+          return r.ok ? r : null;
+        }, 2, signal);
 
-    if (!res.ok) return null;
+        if (!res) return null;
 
-    const data = await res.json() as {
-      events?: { categories?: { id: string }[]; geometry?: { coordinates: number[] }[] }[]
-    };
+        const data = await res.json() as {
+          events?: { categories?: { id: string }[]; geometry?: { coordinates: number[] }[] }[]
+        };
 
-    const events = data.events ?? [];
+        const events = data.events ?? [];
 
-    let floodEvents     = 0;
-    let landslideEvents = 0;
+        let floodEvents     = 0;
+        let landslideEvents = 0;
 
-    for (const evt of events) {
-      const cats = evt.categories?.map((c) => c.id) ?? [];
-      if (cats.includes("floods"))     floodEvents++;
-      if (cats.includes("landslides")) landslideEvents++;
-      // Severe storms also raise flood risk
-      if (cats.includes("severeStorms")) floodEvents += 0.5;
-    }
+        for (const evt of events) {
+          const cats = evt.categories?.map((c) => c.id) ?? [];
+          if (cats.includes("floods"))     floodEvents++;
+          if (cats.includes("landslides")) landslideEvents++;
+          if (cats.includes("severeStorms")) floodEvents += 0.5;
+        }
 
-    // Each active EONET event in the region is significant — cap at 2 events = index 1.0
-    return {
-      floodIndex:     Math.min(floodEvents / 2, 1.0),
-      landslideIndex: Math.min(landslideEvents / 2, 1.0),
-    };
-  } catch {
-    return null;
-  }
+        recordSuccess("eonet", district);
+        return {
+          floodIndex:     Math.min(floodEvents / 2, 1.0),
+          landslideIndex: Math.min(landslideEvents / 2, 1.0),
+        };
+      } catch {
+        recordFailure("eonet", district);
+        return null;
+      }
+    },
+    { timeoutMs: 20_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
 // ── Source 3: ReliefWeb API ──────────────────────────────────────────────────
@@ -176,180 +354,218 @@ async function fetchEonet(lat: number, lon: number): Promise<EonetResult | null>
 
 interface ReliefWebResult { floodIndex: number }
 
-async function fetchReliefWeb(district: string): Promise<ReliefWebResult | null> {
-  try {
-    const body = JSON.stringify({
-      filter: {
-        operator: "AND",
-        conditions: [
-          { field: "country.iso3", value: "NPL" },
-          { field: "status",       value: "ongoing" },
-        ],
-      },
-      fields: { include: ["name", "status", "type", "date"] },
-      limit: 20,
-    });
+async function fetchReliefWeb(district: string, signal?: AbortSignal): Promise<ReliefWebResult | null> {
+  if (isCircuitOpen("reliefweb", district)) return null;
+  return externalApiCache.getOrFetch(
+    `reliefweb:${district}`,
+    30 * 60_000,
+    async () => {
+      try {
+        const body = JSON.stringify({
+          filter: {
+            operator: "AND",
+            conditions: [
+              { field: "country.iso3", value: "NPL" },
+              { field: "status",       value: "ongoing" },
+            ],
+          },
+          fields: { include: ["name", "status", "type", "date"] },
+          limit: 20,
+        });
 
-    const res = await fetch("https://api.reliefweb.int/v1/disasters?appname=yatraai", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body,
-      signal: AbortSignal.timeout(8_000),
-      cache:  "no-store",
-    });
+        const res = await fetchWithRetry("reliefweb", district, async (opts) => {
+          const r = await fetch("https://api.reliefweb.int/v1/disasters?appname=yatraai", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body,
+            signal: opts?.signal ?? AbortSignal.timeout(8_000),
+            cache:  "no-store",
+          });
+          return r.ok ? r : null;
+        }, 2, signal);
 
-    if (!res.ok) return null;
+        if (!res) return null;
 
-    const data = await res.json() as {
-      data?: { fields?: { name?: string; type?: { name?: string }[] } }[]
-    };
+        const data = await res.json() as {
+          data?: { fields?: { name?: string; type?: { name?: string }[] } }[]
+        };
 
-    const disasters = data.data ?? [];
-    let floodCount  = 0;
+        const disasters = data.data ?? [];
+        let floodCount  = 0;
 
-    for (const d of disasters) {
-      const name  = (d.fields?.name ?? "").toLowerCase();
-      const types = (d.fields?.type ?? []).map((t) => (t.name ?? "").toLowerCase());
+        for (const d of disasters) {
+          const name  = (d.fields?.name ?? "").toLowerCase();
+          const types = (d.fields?.type ?? []).map((t) => (t.name ?? "").toLowerCase());
 
-      const isFlood = types.some((t) => t.includes("flood")) ||
-                      name.includes("flood") || name.includes("monsoon");
+          const isFlood = types.some((t) => t.includes("flood")) ||
+                          name.includes("flood") || name.includes("monsoon");
 
-      // Check if this disaster mentions the district or is a general Nepal disaster
-      const mentionsDistrict = name.includes(district.toLowerCase());
+          const mentionsDistrict = name.includes(district.toLowerCase());
 
-      if (isFlood) {
-        floodCount += mentionsDistrict ? 1.5 : 0.5; // weight higher if district-specific
+          if (isFlood) {
+            floodCount += mentionsDistrict ? 1.5 : 0.5;
+          }
+        }
+
+        recordSuccess("reliefweb", district);
+        return { floodIndex: Math.min(floodCount / 3, 1.0) };
+      } catch {
+        recordFailure("reliefweb", district);
+        return null;
       }
-    }
-
-    return { floodIndex: Math.min(floodCount / 3, 1.0) };
-  } catch {
-    return null;
-  }
+    },
+    { timeoutMs: 20_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
 // ── Source 4: USGS Earthquake API ────────────────────────────────────────────
 // Earthquakes within 100km of the coordinate in the last 30 days
 
-async function fetchUsgsEarthquake(lat: number, lon: number): Promise<number | null> {
-  try {
-    // Skip if no real coordinates
-    if (lat === 0 && lon === 0) return null;
+async function fetchUsgsEarthquake(lat: number, lon: number, signal?: AbortSignal): Promise<number | null> {
+  if (lat === 0 && lon === 0) return null;
 
-    const from = daysAgo(30);
-    const url  = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${from}&latitude=${lat}&longitude=${lon}&maxradiuskm=100&minmagnitude=3.0`;
+  const district = "global";
+  if (isCircuitOpen("usgs", district)) return null;
+  return externalApiCache.getOrFetch(
+    `usgs:${lat.toFixed(1)}:${lon.toFixed(1)}`,
+    5 * 60_000,
+    async () => {
+      try {
+        const from = daysAgo(30);
+        const url  = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${from}&latitude=${lat}&longitude=${lon}&maxradiuskm=100&minmagnitude=3.0`;
 
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(8_000),
-      cache:  "no-store",
-    });
+        const res = await fetchWithRetry("usgs", district, async (opts) => {
+          const r = await fetch(url, {
+            signal: opts?.signal ?? AbortSignal.timeout(8_000),
+            cache:  "no-store",
+          });
+          return r.ok ? r : null;
+        }, 2, signal);
 
-    if (!res.ok) return null;
+        if (!res) return null;
 
-    const data = await res.json() as {
-      features?: { properties?: { mag?: number } }[]
-    };
+        const data = await res.json() as {
+          features?: { properties?: { mag?: number } }[]
+        };
 
-    const quakes = data.features ?? [];
-    if (quakes.length === 0) return 0;
+        const quakes = data.features ?? [];
+        if (quakes.length === 0) return 0;
 
-    // Find the maximum magnitude in the period
-    const maxMag = Math.max(...quakes.map((q) => q.properties?.mag ?? 0));
+        const maxMag = Math.max(...quakes.map((q) => q.properties?.mag ?? 0));
 
-    // Convert magnitude to 0–1 index
-    // Mag 3.0 = 0.1 (minor), Mag 5.0 = 0.5 (moderate), Mag 7.0+ = 1.0 (major)
-    if (maxMag >= 7.0) return 1.0;
-    if (maxMag >= 6.0) return 0.8;
-    if (maxMag >= 5.0) return 0.5;
-    if (maxMag >= 4.0) return 0.3;
-    return 0.1;
-  } catch {
-    return null;
-  }
+        if (maxMag >= 7.0) return 1.0;
+        if (maxMag >= 6.0) return 0.8;
+        if (maxMag >= 5.0) return 0.5;
+        if (maxMag >= 4.0) return 0.3;
+        return 0.1;
+      } catch {
+        recordFailure("usgs", district);
+        return null;
+      }
+    },
+    { timeoutMs: 20_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
 // ── Source 5: Air Quality — OpenAQ + OWM fallback ────────────────────────────
 // OpenAQ has ground-level sensors across Nepal (Kathmandu Valley especially)
 // Falls back to OWM air pollution API if no nearby OpenAQ sensor
 
-async function fetchAirQuality(lat: number, lon: number, district: string): Promise<number> {
-  // Try OpenAQ first — more accurate for Nepal urban areas
-  const openAQ = await fetchOpenAQ(lat, lon);
+async function fetchAirQuality(lat: number, lon: number, district: string, signal?: AbortSignal): Promise<number> {
+  const openAQ = await fetchOpenAQ(lat, lon, signal);
   if (openAQ !== null) return openAQ;
 
-  // Fall back to OWM air pollution
-  const owm = await fetchOwmAirQuality(lat, lon);
+  const owm = await fetchOwmAirQuality(lat, lon, signal);
   if (owm !== null) return owm;
 
-  // Last resort: district-based defaults
   return defaultAirQuality(district);
 }
 
-async function fetchOpenAQ(lat: number, lon: number): Promise<number | null> {
-  try {
-    if (lat === 0 && lon === 0) return null;
+async function fetchOpenAQ(lat: number, lon: number, signal?: AbortSignal): Promise<number | null> {
+  if (lat === 0 && lon === 0) return null;
 
-    // Search for measurements within 25km radius, last 24h
-    const url = `https://api.openaq.org/v2/measurements?coordinates=${lat},${lon}&radius=25000&limit=100&parameter=pm25&order_by=datetime&sort=desc`;
+  const district = "global";
+  if (isCircuitOpen("openaq", district)) return null;
+  return externalApiCache.getOrFetch(
+    `openaq:${lat.toFixed(1)}:${lon.toFixed(1)}`,
+    10 * 60_000,
+    async () => {
+      try {
+        const url = `https://api.openaq.org/v2/measurements?coordinates=${lat},${lon}&radius=25000&limit=100&parameter=pm25&order_by=datetime&sort=desc`;
 
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(8_000),
-      headers: { Accept: "application/json" },
-      cache:   "no-store",
-    });
+        const res = await fetchWithRetry("openaq", district, async (opts) => {
+          const r = await fetch(url, {
+            signal:  opts?.signal ?? AbortSignal.timeout(8_000),
+            headers: { Accept: "application/json" },
+            cache:   "no-store",
+          });
+          return r.ok ? r : null;
+        }, 2, signal);
 
-    if (!res.ok) return null;
+        if (!res) return null;
 
-    const data = await res.json() as {
-      results?: { value?: number; parameter?: string }[]
-    };
+        const data = await res.json() as {
+          results?: { value?: number; parameter?: string }[]
+        };
 
-    const readings = (data.results ?? [])
-      .filter((r) => r.parameter === "pm25" && typeof r.value === "number" && r.value > 0)
-      .map((r) => r.value as number);
+        const readings = (data.results ?? [])
+          .filter((r) => r.parameter === "pm25" && typeof r.value === "number" && r.value > 0)
+          .map((r) => r.value as number);
 
-    if (readings.length === 0) return null;
+        if (readings.length === 0) return null;
 
-    // Average the readings
-    const avgPm25 = readings.reduce((a, b) => a + b, 0) / readings.length;
+        const avgPm25 = readings.reduce((a, b) => a + b, 0) / readings.length;
 
-    // Sanity check: if OpenAQ reports hazardous but we'd expect clean air
-    // (rural Terai/hill district), log the raw readings for debugging
-    if (avgPm25 >= 100 && readings.length <= 2) {
-      console.warn(`[hazard] OpenAQ anomalous high PM2.5 avg=${avgPm25.toFixed(1)} readings=[${readings.map(r => r.toFixed(1)).join(",")}] at ${lat.toFixed(3)},${lon.toFixed(3)} — possible faulty sensor`);
-    }
+        if (avgPm25 >= 100 && readings.length <= 2) {
+          console.warn(`[hazard] OpenAQ anomalous high PM2.5 avg=${avgPm25.toFixed(1)} readings=[${readings.map(r => r.toFixed(1)).join(",")}] at ${lat.toFixed(3)},${lon.toFixed(3)} — possible faulty sensor`);
+        }
 
-    // Convert PM2.5 (μg/m³) to 0–1 index using WHO + Nepal standards
-    // WHO guideline: 15 μg/m³ annual, 25 μg/m³ 24h
-    // Nepal: Kathmandu often 60–200+ μg/m³
-    if (avgPm25 >= 150) return 1.0;   // hazardous
-    if (avgPm25 >= 100) return 0.8;   // very unhealthy
-    if (avgPm25 >= 55)  return 0.6;   // unhealthy
-    if (avgPm25 >= 35)  return 0.4;   // unhealthy for sensitive groups
-    if (avgPm25 >= 12)  return 0.2;   // moderate
-    return 0.05;                       // good
-  } catch {
-    return null;
-  }
+        recordSuccess("openaq", district);
+        if (avgPm25 >= 150) return 1.0;
+        if (avgPm25 >= 100) return 0.8;
+        if (avgPm25 >= 55)  return 0.6;
+        if (avgPm25 >= 35)  return 0.4;
+        if (avgPm25 >= 12)  return 0.2;
+        return 0.05;
+      } catch {
+        recordFailure("openaq", district);
+        return null;
+      }
+    },
+    { timeoutMs: 20_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
-async function fetchOwmAirQuality(lat: number, lon: number): Promise<number | null> {
+async function fetchOwmAirQuality(lat: number, lon: number, signal?: AbortSignal): Promise<number | null> {
   const apiKey = process.env.OPENWEATHER_API_KEY;
   if (!apiKey || lat === 0 && lon === 0) return null;
 
-  try {
-    const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
-    const res  = await fetch(url, { signal: AbortSignal.timeout(6_000), cache: "no-store" });
-    if (!res.ok) return null;
+  const district = "global";
+  if (isCircuitOpen("owm", district)) return null;
+  return externalApiCache.getOrFetch(
+    `owm:${lat.toFixed(1)}:${lon.toFixed(1)}`,
+    10 * 60_000,
+    async () => {
+      try {
+        const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+        const res = await fetchWithRetry("owm", district, async (opts) => {
+          const r = await fetch(url, { signal: opts?.signal ?? AbortSignal.timeout(6_000), cache: "no-store" });
+          return r.ok ? r : null;
+        }, 2, signal);
+        if (!res) return null;
 
-    const data = await res.json() as { list?: { main?: { aqi?: number } }[] };
-    const aqi  = data.list?.[0]?.main?.aqi ?? 2; // OWM: 1=Good 2=Fair 3=Moderate 4=Poor 5=VeryPoor
+        const data = await res.json() as { list?: { main?: { aqi?: number } }[] };
+        const aqi  = data.list?.[0]?.main?.aqi ?? 2;
 
-    const map: Record<number, number> = { 1: 0.0, 2: 0.2, 3: 0.5, 4: 0.75, 5: 1.0 };
-    return map[aqi] ?? 0.2;
-  } catch {
-    return null;
-  }
+        const map: Record<number, number> = { 1: 0.0, 2: 0.2, 3: 0.5, 4: 0.75, 5: 1.0 };
+        return map[aqi] ?? 0.2;
+      } catch {
+        recordFailure("owm", district);
+        return null;
+      }
+    },
+    { timeoutMs: 15_000, negativeTtlMs: 30_000, signal },
+  );
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

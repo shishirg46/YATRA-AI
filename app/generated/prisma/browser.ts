@@ -78,6 +78,11 @@ export type Verification = Prisma.VerificationModel
  */
 export type Destination = Prisma.DestinationModel
 /**
+ * Model DestinationPhoto
+ * 
+ */
+export type DestinationPhoto = Prisma.DestinationPhotoModel
+/**
  * Model Province
  * 
  */
@@ -127,6 +132,46 @@ export type RouteTemplate = Prisma.RouteTemplateModel
  * 
  */
 export type RouteTemplatePoint = Prisma.RouteTemplatePointModel
+/**
+ * Model OsmWay
+ * 
+ */
+export type OsmWay = Prisma.OsmWayModel
+/**
+ * Model RoadSegment
+ * 
+ */
+export type RoadSegment = Prisma.RoadSegmentModel
+/**
+ * Model RoadJunction
+ * 
+ */
+export type RoadJunction = Prisma.RoadJunctionModel
+/**
+ * Model AdminRegion
+ * 
+ */
+export type AdminRegion = Prisma.AdminRegionModel
+/**
+ * Model HazardHex
+ * 
+ */
+export type HazardHex = Prisma.HazardHexModel
+/**
+ * Model EdgeCache
+ * 
+ */
+export type EdgeCache = Prisma.EdgeCacheModel
+/**
+ * Model RouteUsageLog
+ * 
+ */
+export type RouteUsageLog = Prisma.RouteUsageLogModel
+/**
+ * Model RouteIntelligenceJob
+ * 
+ */
+export type RouteIntelligenceJob = Prisma.RouteIntelligenceJobModel
 /**
  * Model WeatherData
  * 

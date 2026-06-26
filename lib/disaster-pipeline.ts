@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
 
-export type DisasterType = "flood" | "landslide" | "earthquake";
+export type DisasterType = "flood" | "landslide" | "earthquake" | "other";
 
 export interface DisasterEventRecord {
   externalId: string;
@@ -196,7 +196,7 @@ async function fetchBipadRows(
 export function transformBipad(data: any): DisasterEventRecord[] {
   const rows = Array.isArray(data?.results) ? data.results : [];
   let droppedNoCoords = 0;
-  let droppedUnknownType = 0;
+  let unmappedType = 0;
 
   function extractCoords(item: any): { lat: number; lon: number } | null {
     const candidates = [
@@ -254,7 +254,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
       blob.includes("aftershock") ||
       blob.includes("भूकम्प")
     ) return "earthquake";
-    return null;
+    return "other";
   }
 
   const transformed = rows
@@ -265,12 +265,11 @@ export function transformBipad(data: any): DisasterEventRecord[] {
         return null;
       }
       const type = classifyType(item);
-      if (!type) {
-        droppedUnknownType += 1;
-        return null;
+      if (type === "other") {
+        unmappedType += 1;
       }
       const loss = Number(item?.loss?.estimated_loss ?? 0);
-      const severity = loss > 1_000_000 ? "high" : loss > 100_000 ? "medium" : "low";
+      const severity = type === "other" ? "low" : loss > 1_000_000 ? "high" : loss > 100_000 ? "medium" : "low";
       const people = item?.people_affected || item?.loss || {};
       return {
         externalId: String(item?.id ?? crypto.randomUUID()),
@@ -282,6 +281,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
         source: "bipad",
         metadata: {
           title: String(item?.event?.title || item?.incident_type?.title || item?.hazard?.title || item?.title || ""),
+          rawType: String(item?.event?.title || item?.incident_type?.title || item?.hazard?.title || item?.title || ""),
           district: item?.district?.title_en ?? null,
           ward: item?.ward?.title_en ?? null,
           municipality: item?.municipality?.title_en ?? null,
@@ -301,7 +301,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
     .filter((d: DisasterEventRecord | null): d is DisasterEventRecord => !!d)
     .filter((d: DisasterEventRecord) => Number.isFinite(d.lat) && Number.isFinite(d.lon));
 
-  console.log(`[disaster-ingest] transformBipad rows=${rows.length} kept=${transformed.length} droppedNoCoords=${droppedNoCoords} droppedUnknownType=${droppedUnknownType}`);
+  console.log(`[disaster-ingest] transformBipad rows=${rows.length} kept=${transformed.length} droppedNoCoords=${droppedNoCoords} unmappedType=${unmappedType}`);
   return transformed;
 }
 

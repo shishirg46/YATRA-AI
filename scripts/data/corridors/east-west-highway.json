@@ -36,7 +36,6 @@
     { "name": "Kawasoti", "lat": 27.6500, "lon": 84.2000, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 250 },
     { "name": "Gaidakot", "lat": 27.6833, "lon": 84.0833, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": true, "elevationM": 260 },
     { "name": "Tribhuwangarh (Nayagaun)", "lat": 27.7167, "lon": 83.9833, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 270 },
-    { "name": "Tansen (Palpa)", "lat": 27.8667, "lon": 83.5500, "type": "TOWN", "strategicImportance": "TOURIST_GATEWAY", "isHub": true, "elevationM": 1100 },
     { "name": "Butwal", "lat": 27.7000, "lon": 83.4500, "type": "TOWN", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 200 },
     { "name": "Sunauli (Bhairahawa border)", "lat": 27.5000, "lon": 83.3833, "type": "TOWN", "strategicImportance": "BORDER_CROSSING", "isHub": true, "elevationM": 150 },
     { "name": "Belhiya", "lat": 27.6000, "lon": 83.3500, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 170 },

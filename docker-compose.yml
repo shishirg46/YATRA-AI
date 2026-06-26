@@ -16,5 +16,54 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── Nominatim (Nepal geocoding) ─────────────────────────────────────────────
+  # Start after initial import:
+  #   docker compose up -d nominatim
+  #
+  # First-time import (takes 1-3 hours):
+  #   mkdir -p nominatim-data
+  #   wget -O nominatim-data/nepal-latest.osm.pbf \
+  #     https://download.geofabrik.de/asia/nepal-latest.osm.pbf
+  #   docker compose run --rm nominatim \
+  #     sh -c "/app/init.sh /nominatim/data/nepal-latest.osm.pbf"
+  #
+  # Set env: NOMINATIM_URL=http://localhost:8080
+  nominatim:
+    image: mediagis/nominatim:4.4
+    container_name: yatra-nominatim
+    ports:
+      - "8080:8080"
+    volumes:
+      - nominatim-data:/nominatim/data
+    environment:
+      # Set only for first-time import, then comment out:
+      # PBF_PATH: /nominatim/data/nepal-latest.osm.pbf
+      REPLICATION_URL: https://download.geofabrik.de/asia/nepal-updates/
+    restart: unless-stopped
+
+  # ─── OSRM (routing) ────────────────────────────────────────────────────────
+  # First-time import (takes 10-30 minutes):
+  #   mkdir -p osrm-data
+  #   wget -O osrm-data/nepal-latest.osm.pbf \
+  #     https://download.geofabrik.de/asia/nepal-latest.osm.pbf
+  #   docker compose run --rm osrm sh -c "\
+  #     osrm-extract -p /opt/car.lua /data/nepal-latest.osm.pbf && \
+  #     osrm-contract /data/nepal-latest.osrm"
+  # Then start the server:
+  #   docker compose up -d osrm
+  osrm:
+    image: osrm/osrm-backend:latest
+    container_name: yatra-osrm
+    ports:
+      - "5000:5000"
+    volumes:
+      - osrm-data:/data
+    # On container start, if the .osrm file is missing we run extract+contract,
+    # then launch `osrm-routed` on port 5000.
+    command: sh -c "if [ ! -f /data/nepal-latest.osrm ]; then osrm-extract -p /opt/car.lua /data/nepal-latest.osm.pbf && osrm-contract /data/nepal-latest.osrm; fi && osrm-routed --algorithm ch -p 5000 /data/nepal-latest.osrm"
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  nominatim-data:
+  osrm-data:

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/rate-limit";
+import { getDestinationPhotos } from "@/lib/media/photo-cache";
 
 type InsightSource = { name: string; url: string; snippet: string };
 type InsightPhoto = { url: string; thumbUrl?: string; title?: string; sourceUrl: string };
@@ -32,10 +33,18 @@ async function getInsightsHandler(
 ) {
   const { id } = await params;
 
-  const location = await prisma.location.findUnique({
+  // Try UUID lookup first, fall back to name lookup for slugs like "Barju_Taal"
+  let location = await prisma.location.findUnique({
     where: { id },
     include: { district: { include: { province: true } } },
   });
+
+  if (!location) {
+    location = await prisma.location.findFirst({
+      where: { name: { equals: id, mode: "insensitive" } },
+      include: { district: { include: { province: true } } },
+    });
+  }
 
   if (!location) {
     return NextResponse.json({ message: "Destination not found." }, { status: 404 });
@@ -74,24 +83,16 @@ async function getInsightsHandler(
   const wikidataDescription =
     (wikidata && wikidata[Object.keys(wikidata)[0]]?.entities?.[wikidataId ?? ""]?.descriptions?.en?.value) || null;
 
+  const nominatimBase = process.env.NOMINATIM_URL || process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
   const osmReverse = await fetchJson<{
     display_name?: string;
     type?: string;
     category?: string;
-  }>(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=jsonv2`, {
+  }>(`${nominatimBase}/reverse?lat=${location.latitude}&lon=${location.longitude}&format=jsonv2`, {
     headers: { "User-Agent": "YatraAI/1.0 (destination insights)" },
   });
 
-  const commons = await fetchJson<{
-    query?: {
-      pages?: Record<string, { title?: string; imageinfo?: Array<{ url?: string; thumburl?: string; descriptionurl?: string }> }>;
-    };
-  }>(
-    `https://commons.wikimedia.org/w/api.php?action=query&generator=geosearch&ggscoord=${location.latitude}|${location.longitude}&ggsradius=10000&ggslimit=6&prop=imageinfo&iiprop=url&iiurlwidth=1200&format=json`
-  );
-
   const sources: InsightSource[] = [];
-  const photos: InsightPhoto[] = [];
 
   if (wikiSummary?.extract) {
     sources.push({
@@ -115,28 +116,30 @@ async function getInsightsHandler(
     });
   }
 
-  if (wikiSummary?.originalimage?.source || wikiSummary?.thumbnail?.source) {
-    photos.push({
-      url: wikiSummary.originalimage?.source || wikiSummary.thumbnail?.source || "",
-      thumbUrl: wikiSummary.thumbnail?.source,
-      title: wikiSummary.title || pageTitle,
-      sourceUrl: wikiSummary.content_urls?.desktop?.page || `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle)}`,
-    });
-  }
+  // Look up destination to check for cached photos
+  const destination = await prisma.destination.findFirst({
+    where: {
+      name: location.name,
+      district: location.district.name,
+      province: location.district.province.name,
+    },
+  });
 
-  const commonsPages = commons?.query?.pages ? Object.values(commons.query.pages) : [];
-  for (const p of commonsPages) {
-    const img = p.imageinfo?.[0];
-    if (!img?.url) continue;
-    photos.push({
-      url: img.url,
-      thumbUrl: img.thumburl,
-      title: p.title,
-      sourceUrl: img.descriptionurl || "https://commons.wikimedia.org",
-    });
+  let photos: InsightPhoto[] = [];
+  if (destination) {
+    const cached = await getDestinationPhotos(
+      destination.id,
+      destination.name,
+      destination.latitude,
+      destination.longitude,
+    );
+    photos = cached.map((p) => ({
+      url: p.url,
+      thumbUrl: p.thumbUrl ?? undefined,
+      title: p.title ?? undefined,
+      sourceUrl: p.sourceUrl,
+    }));
   }
-
-  const uniquePhotos = Array.from(new Map(photos.map((p) => [p.url, p])).values()).slice(0, 8);
   const overview =
     sources.map((s) => s.snippet).find(Boolean) ||
     `${location.name} is in ${location.district.name}, ${location.district.province.name}.`;
@@ -152,7 +155,7 @@ async function getInsightsHandler(
     },
     overview,
     sources,
-    photos: uniquePhotos,
+    photos,
     fetchedAt: new Date().toISOString(),
   });
 }

@@ -1,163 +1,99 @@
-/**
- * FILE: route-intelligence.ts
- * LOCATION: /app/api/route-intelligence/route.ts
- * PURPOSE: Smart route generation with disaster + weather awareness
- * 
- * POST /api/route-intelligence
- * Body: { origin: { lat, lon, name? }, destination: { lat, lon, name? }, departureDate }
- */
-
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { generateRouteIntelligence, formatRouteIntelligenceResponse } from "@/lib/route-intelligence";
-import { prisma } from "@/lib/prisma";
-import { withRateLimit } from "@/lib/rate-limit";
+
+import { auth } from "@/lib/auth";
+import { buildRouteUltraFast } from "@/lib/route-intelligence";
+import type { Route } from "@/lib/route-intelligence";
+import type { VehicleProfile } from "@/lib/routing/types";
 import { routeIntelligenceRequestSchema, validateBody } from "@/lib/validation";
+import { withRateLimit } from "@/lib/rate-limit";
+import { findNearestRouteNode } from "@/lib/routing/node-graph";
+import { routeIntelligenceKey } from "@/lib/routing/route-key";
+import { intelligenceCache } from "@/lib/cache/route-intelligence-cache";
+import { enqueueRouteIntelligence } from "@/lib/queue/route-intelligence-job";
+import { prisma } from "@/lib/prisma";
 
-type PlacePoint = { name: string; lat: number; lon: number };
-
-let placeCache: { expiresAt: number; places: PlacePoint[] } | null = null;
-
-function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-async function loadPlaces(): Promise<PlacePoint[]> {
-  if (placeCache && placeCache.expiresAt > Date.now()) return placeCache.places;
-  const rows = await prisma.location.findMany({
-    select: { name: true, latitude: true, longitude: true },
-  });
-  const places = rows
-    .filter((r) => Number.isFinite(r.latitude) && Number.isFinite(r.longitude))
-    .map((r) => ({ name: r.name, lat: r.latitude, lon: r.longitude }));
-  placeCache = { places, expiresAt: Date.now() + 10 * 60 * 1000 };
-  return places;
-}
-
-function nearestPlaceName(lat: number, lon: number, places: PlacePoint[]): string | null {
-  if (!places.length) return null;
-  let best: PlacePoint | null = null;
-  let minDist = Infinity;
-  for (const p of places) {
-    const d = haversineKm(lat, lon, p.lat, p.lon);
-    if (d < minDist) {
-      minDist = d;
-      best = p;
-    }
+/**
+ * Compute a stable, node-based route intelligence key.
+ * Falls back to a coordinate-based key when graph node resolution fails.
+ *
+ * Node resolution is performed at the handler layer so the key is available
+ * before any heavy computation begins.  Downstream graph operations will
+ * re-resolve the same nodes (memoized by buildAdjacency).
+ *
+ * WARNING (Phase 0 invariant):
+ *   Node resolution here is for identity construction ONLY.
+ *   Do NOT pass resolved nodes into downstream functions — the graph layer
+ *   handles its own resolution.
+ */
+async function makeIntelligenceKey(
+  origin: { lat: number; lon: number },
+  dest: { lat: number; lon: number },
+  departureDate: string,
+  vehicle?: string,
+): Promise<string> {
+  const [originNode, destNode] = await Promise.all([
+    findNearestRouteNode(origin.lat, origin.lon),
+    findNearestRouteNode(dest.lat, dest.lon),
+  ]);
+  if (originNode && destNode) {
+    return routeIntelligenceKey({
+      originNodeId: originNode.id,
+      destNodeId: destNode.id,
+      departureDate,
+      vehicle,
+    });
   }
-  if (!best) return null;
-  // Keep matching strict so we do not incorrectly snap to far urban hubs.
-  if (minDist > 4) return null;
-
-  // Avoid noisy generic hub labels unless extremely close.
-  const lower = best.name.toLowerCase();
-  const genericHub =
-    lower.includes("market") ||
-    lower.includes("bazaar") ||
-    lower.includes("junction") ||
-    lower.includes("border");
-  if (genericHub && minDist > 1.5) return null;
-
-  return best.name;
+  // Fallback: coordinate-based key (no graph node available)
+  return `v0|${origin.lat.toFixed(4)},${origin.lon.toFixed(4)}→${dest.lat.toFixed(4)},${dest.lon.toFixed(4)}|${vehicle ?? "car"}|${departureDate}`;
 }
 
-function simplifyBreakpointNames(names: string[], max = 8): string[] {
-  const clean = names.filter(Boolean);
-  const dedupConsecutive: string[] = [];
-  for (const n of clean) {
-    if (dedupConsecutive[dedupConsecutive.length - 1] !== n) dedupConsecutive.push(n);
-  }
-  const uniqueOrdered: string[] = [];
-  for (const n of dedupConsecutive) {
-    if (!uniqueOrdered.includes(n)) uniqueOrdered.push(n);
-  }
-  if (uniqueOrdered.length <= max) return uniqueOrdered;
-  const keepHead = Math.max(2, Math.floor((max - 1) / 2));
-  const keepTail = Math.max(2, max - keepHead - 1);
-  return [...uniqueOrdered.slice(0, keepHead), "...", ...uniqueOrdered.slice(-keepTail)];
+// ── Ultra-fast response formatting ──────────────────────────────────────────────
+
+function formatUltraFastRoutes(routes: Route[]): object[] {
+  return routes.map((r) => ({
+    id: r.id,
+    name: r.name,
+    description: r.description,
+    distance: r.distance,
+    duration: r.duration,
+    breakpoints: (r.waypoints ?? []).slice(0, 12).map((p) => ({ lat: p.lat, lon: p.lon, name: p.name })),
+    breakpointNames: (r as any).breakpointNames ?? [],
+    encodedPolyline: r.encodedPolyline,
+    turnByTurn: r.turnByTurn,
+    placesAlongRoute: r.placesAlongRoute?.slice(0, 10).map((p) => ({
+      name: p.placeName,
+      category: p.category,
+      detourMinutes: p.detourMinutes,
+      distanceFromRouteKm: p.distanceFromRouteKm,
+      score: p.score,
+      lat: p.lat,
+      lon: p.lon,
+    })),
+    rankedStops: r.rankedStops?.slice(0, 5).map((s) => ({
+      name: s.name,
+      score: s.score,
+      detourTime: s.detourTime,
+      category: s.category,
+    })),
+    segments: (r.segments ?? []).map((s) => ({
+      from: s.startPoint,
+      to: s.endPoint,
+      riskLevel: s.riskLevel,
+      riskScore: s.riskScore,
+      hazards: s.hazards ?? [],
+      roadCode: s.roadCode,
+      roadName: s.roadName,
+    })),
+  }));
 }
 
-async function enrichRoutesWithDynamicPlaceNames(formatted: any): Promise<any> {
-  if (!formatted?.routes || !Array.isArray(formatted.routes)) return formatted;
-  const places = (await loadPlaces()).filter((p) => {
-    const lower = p.name.toLowerCase();
-    return !(
-      lower.includes("market") ||
-      lower.includes("bazaar") ||
-      lower.includes("junction") ||
-      lower.includes("border")
-    );
-  });
+// ── Handler ───────────────────────────────────────────────────────────────────
 
-  const routes = formatted.routes.map((route: any) => {
-    const breakpointNamesRaw: string[] = [];
-    if (Array.isArray(route.breakpoints)) {
-      for (const bp of route.breakpoints) {
-        if (!bp || typeof bp.lat !== "number" || typeof bp.lon !== "number") continue;
-        const name = nearestPlaceName(bp.lat, bp.lon, places);
-        if (name && breakpointNamesRaw[breakpointNamesRaw.length - 1] !== name) {
-          breakpointNamesRaw.push(name);
-        }
-      }
-    }
-    const dynamicNames = simplifyBreakpointNames(breakpointNamesRaw, 8);
-    const existingNames = Array.isArray(route.breakpointNames)
-      ? route.breakpointNames.filter((n: unknown) => typeof n === "string" && n.trim().length > 0)
-      : [];
-
-    // Keep explicit origin/destination labels produced upstream (e.g., "Your location"),
-    // and only enrich middle breakpoints dynamically.
-    let breakpointNames = dynamicNames;
-    if (existingNames.length >= 2) {
-      const startName = String(existingNames[0]);
-      const endName = String(existingNames[existingNames.length - 1]);
-      const middle = dynamicNames.filter((n) => n !== startName && n !== endName);
-      breakpointNames = simplifyBreakpointNames([startName, ...middle, endName], 8);
-    }
-
-    const segments = Array.isArray(route.segments)
-      ? route.segments.map((seg: any, i: number) => {
-          const fromName = seg?.from?.name || (seg?.from ? nearestPlaceName(seg.from.lat, seg.from.lon, places) : null);
-          const toName = seg?.to?.name || (seg?.to ? nearestPlaceName(seg.to.lat, seg.to.lon, places) : null);
-          return {
-            ...seg,
-            from: { ...(seg.from || {}), name: fromName || null },
-            to: { ...(seg.to || {}), name: toName || null },
-          };
-        })
-      : route.segments;
-
-    return {
-      ...route,
-      breakpointNames: breakpointNames.length ? breakpointNames : route.breakpointNames,
-      segments,
-    };
-  });
-
-  return { ...formatted, routes };
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error("timeout")), timeoutMs);
-  });
-  try {
-    return await Promise.race([promise, timeoutPromise]);
-  } finally {
-    if (timeoutId) clearTimeout(timeoutId);
-  }
-}
-
-async function routeIntelligenceHandler(req: NextRequest) {
+async function routeIntelligenceHandler(req: NextRequest): Promise<NextResponse> {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -171,66 +107,79 @@ async function routeIntelligenceHandler(req: NextRequest) {
     }
 
     const { origin, destination, departureDate, destinationId, vehicle } = parsed.data;
+    const opts = { destinationId, vehicle: vehicle as VehicleProfile | undefined };
+    const key = await makeIntelligenceKey(origin, destination, departureDate, vehicle);
 
-    const result = await withTimeout(generateRouteIntelligence(
-      { lat: origin.lat, lon: origin.lon, name: origin.name },
-      { lat: destination.lat, lon: destination.lon, name: destination.name },
+    // ── L1: In-memory cache (performance hint only — never authoritative) ────
+    const cached = intelligenceCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) {
+      return NextResponse.json({ ...cached.result, status: "complete" });
+    }
+
+    // ── L2: DB is the source of truth for "complete" ──────────────────────────
+    let job: { status: string; result: unknown; expiresAt: Date | null } | null = null;
+    try {
+      job = await prisma.routeIntelligenceJob.findUnique({
+        where: { key },
+        select: { status: true, result: true, expiresAt: true },
+      });
+    } catch (dbErr: unknown) {
+      const err = dbErr as { code?: string; message?: string };
+      if (err.code === "P2021") {
+        console.warn("[route-intelligence][L2] DB table missing (P2021, dev only)");
+      } else {
+        throw dbErr;
+      }
+    }
+    if (job?.status === "done" && job.result) {
+      // Hydrate cache from DB truth
+      intelligenceCache.set(key, {
+        result: job.result as object,
+        expiresAt: job.expiresAt ? job.expiresAt.getTime() : Date.now() + 30 * 60_000,
+      });
+      return NextResponse.json({ ...job.result as object, status: "complete" });
+    }
+
+    // ── L3: Ultra-fast compute + enqueue background enrichment ────────────────
+    const controller = new AbortController();
+    const slaTimer = setTimeout(() => controller.abort(), 15_000);
+    let fast: Awaited<ReturnType<typeof buildRouteUltraFast>>;
+    try {
+      fast = await buildRouteUltraFast(
+        { lat: origin.lat, lon: origin.lon, name: origin.name },
+        { lat: destination.lat, lon: destination.lon, name: destination.name },
+        departureDate,
+        opts,
+        controller.signal,
+      );
+    } finally {
+      clearTimeout(slaTimer);
+    }
+
+    enqueueRouteIntelligence(key, {
+      origin: { lat: origin.lat, lon: origin.lon, name: origin.name },
+      destination: { lat: destination.lat, lon: destination.lon, name: destination.name },
       departureDate,
-      { destinationId, vehicle }
-    ), 25000);
+      opts,
+    }).catch((enqErr: unknown) => {
+      const e = enqErr as { code?: string; message?: string };
+      if (e.code !== "P2021") {
+        console.warn("[route-intelligence][enqueue] non-critical failure", e.message ?? e);
+      }
+    });
 
-    const formatted = formatRouteIntelligenceResponse(result);
-    const enriched = await enrichRoutesWithDynamicPlaceNames(formatted);
-
-    return NextResponse.json(enriched);
+    return NextResponse.json({
+      routes: formatUltraFastRoutes(fast.routes),
+      intelligence: null,
+      status: "degraded",
+    });
   } catch (err) {
     console.error("[route-intelligence] Error:", err);
-    const message = String(err).includes("timeout")
-      ? "Route analysis timed out. Please try again."
-      : "Failed to generate route intelligence";
-    return NextResponse.json({ message, error: String(err) }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to compute route. Please try again.", error: String(err) },
+      { status: 500 },
+    );
   }
 }
 
 export const POST = withRateLimit(routeIntelligenceHandler, { max: 15, windowSeconds: 60 });
-
-/**
- * GET /api/route-intelligence
- * Query params: originLat, originLon, destLat, destLon, date
- */
-export async function GET(req: NextRequest) {
-  const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  try {
-    const { searchParams } = new URL(req.url);
-    const originLat = parseFloat(searchParams.get("originLat") || "");
-    const originLon = parseFloat(searchParams.get("originLon") || "");
-    const destLat = parseFloat(searchParams.get("destLat") || "");
-    const destLon = parseFloat(searchParams.get("destLon") || "");
-    const date = searchParams.get("date") || "";
-
-    if (!originLat || !originLon || !destLat || !destLon) {
-      return NextResponse.json({ message: "Missing coordinates" }, { status: 400 });
-    }
-
-    const result = await generateRouteIntelligence(
-      { lat: originLat, lon: originLon },
-      { lat: destLat, lon: destLon },
-      date || new Date().toISOString().split("T")[0]
-    );
-
-    const formatted = formatRouteIntelligenceResponse(result);
-    const enriched = await enrichRoutesWithDynamicPlaceNames(formatted);
-
-    return NextResponse.json(enriched);
-  } catch (err) {
-    console.error("[route-intelligence] Error:", err);
-    return NextResponse.json(
-      { message: "Failed to generate route intelligence", error: String(err) },
-      { status: 500 }
-    );
-  }
-}

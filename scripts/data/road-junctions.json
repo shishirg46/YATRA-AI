@@ -1,0 +1,384 @@
+[
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "FR07",
+      "NH05",
+      "NH07"
+    ],
+    "type": "JUNCTION",
+    "latitude": 28.964,
+    "longitude": 80.186
+  },
+  {
+    "name": "Mahakali Highway",
+    "roadCodes": [
+      "FR07",
+      "NH07"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 29.85,
+    "longitude": 80.533
+  },
+  {
+    "name": "Mahakali Highway",
+    "roadCodes": [
+      "FR06",
+      "NH07"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 29.3,
+    "longitude": 80.583
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "FR06",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 28.683,
+    "longitude": 80.617
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "FR05",
+      "FR08",
+      "NH01",
+      "NH05"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 28.05,
+    "longitude": 81.6169
+  },
+  {
+    "name": "Rapti Highway",
+    "roadCodes": [
+      "FR01",
+      "NH06"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 28.633,
+    "longitude": 81.617
+  },
+  {
+    "name": "Rapti Highway",
+    "roadCodes": [
+      "FR01",
+      "FR08",
+      "NH01",
+      "NH06"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 28.6,
+    "longitude": 81.6331
+  },
+  {
+    "name": "Karnali Highway",
+    "roadCodes": [
+      "NH04",
+      "NH06"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 29.2792,
+    "longitude": 82.1832
+  },
+  {
+    "name": "East-West Highway",
+    "roadCodes": [
+      "NH01",
+      "NH10"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.5,
+    "longitude": 83.3833
+  },
+  {
+    "name": "East-West Highway",
+    "roadCodes": [
+      "NH01",
+      "NH10"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.5167,
+    "longitude": 83.4333
+  },
+  {
+    "name": "Butwal",
+    "roadCodes": [
+      "FR01",
+      "FR10",
+      "NH01",
+      "NH05",
+      "NH10"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 27.7,
+    "longitude": 83.45
+  },
+  {
+    "name": "Mid-Hill Highway",
+    "roadCodes": [
+      "NH04",
+      "NH11"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 28.35,
+    "longitude": 83.5667
+  },
+  {
+    "name": "Mid-Hill Highway",
+    "roadCodes": [
+      "FR04",
+      "NH04"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 28.2669,
+    "longitude": 83.6
+  },
+  {
+    "name": "Mid-Hill Highway",
+    "roadCodes": [
+      "NH04",
+      "NH10"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.9833,
+    "longitude": 83.7667
+  },
+  {
+    "name": "Besisahar Road",
+    "roadCodes": [
+      "FR04",
+      "FR09",
+      "NH04",
+      "NH10",
+      "NH11",
+      "NH17"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 28.2097,
+    "longitude": 83.9857
+  },
+  {
+    "name": "Besisahar Road",
+    "roadCodes": [
+      "FR09",
+      "NH04"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 28.2332,
+    "longitude": 84.3832
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "NH01",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.6832,
+    "longitude": 84.4332
+  },
+  {
+    "name": "Narayanghat",
+    "roadCodes": [
+      "NH01",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.7,
+    "longitude": 84.4332
+  },
+  {
+    "name": "Mugling",
+    "roadCodes": [
+      "NH01",
+      "NH15",
+      "NH17"
+    ],
+    "type": "JUNCTION",
+    "latitude": 27.817,
+    "longitude": 84.77
+  },
+  {
+    "name": "East-West Highway",
+    "roadCodes": [
+      "NH01",
+      "NH02"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27,
+    "longitude": 84.8669
+  },
+  {
+    "name": "Hetauda",
+    "roadCodes": [
+      "NH01",
+      "NH02",
+      "NH14"
+    ],
+    "type": "JUNCTION",
+    "latitude": 27.428,
+    "longitude": 85.0321
+  },
+  {
+    "name": "Naubise",
+    "roadCodes": [
+      "NH02",
+      "NH04",
+      "NH17"
+    ],
+    "type": "JUNCTION",
+    "latitude": 27.6167,
+    "longitude": 85.1333
+  },
+  {
+    "name": "Thankot-Kalanki",
+    "roadCodes": [
+      "NH02",
+      "NH14",
+      "NH17"
+    ],
+    "type": "JUNCTION",
+    "latitude": 27.7,
+    "longitude": 85.3
+  },
+  {
+    "name": "Arniko Highway",
+    "roadCodes": [
+      "NH02",
+      "NH12",
+      "NH13",
+      "NH17"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 27.717,
+    "longitude": 85.324
+  },
+  {
+    "name": "BP Highway",
+    "roadCodes": [
+      "NH03",
+      "NH04"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 27.6333,
+    "longitude": 85.55
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "NH01",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.8669,
+    "longitude": 85.5668
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "NH01",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.6485,
+    "longitude": 85.799
+  },
+  {
+    "name": "BP Highway",
+    "roadCodes": [
+      "NH01",
+      "NH03"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.9333,
+    "longitude": 85.85
+  },
+  {
+    "name": "BP Highway",
+    "roadCodes": [
+      "FR03",
+      "NH03",
+      "NH05"
+    ],
+    "type": "JUNCTION",
+    "latitude": 26.7304,
+    "longitude": 85.9222
+  },
+  {
+    "name": "Koshi Highway",
+    "roadCodes": [
+      "NH01",
+      "NH09"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.665,
+    "longitude": 87.276
+  },
+  {
+    "name": "Dharan",
+    "roadCodes": [
+      "FR02",
+      "NH09"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.814,
+    "longitude": 87.279
+  },
+  {
+    "name": "Koshi Highway",
+    "roadCodes": [
+      "FR02",
+      "NH01",
+      "NH05",
+      "NH09"
+    ],
+    "type": "INTERCHANGE",
+    "latitude": 26.4543,
+    "longitude": 87.28
+  },
+  {
+    "name": "Koshi Highway",
+    "roadCodes": [
+      "FR02",
+      "NH04",
+      "NH09"
+    ],
+    "type": "JUNCTION",
+    "latitude": 26.9831,
+    "longitude": 87.3331
+  },
+  {
+    "name": "Mid-Hill Highway",
+    "roadCodes": [
+      "NH01",
+      "NH04"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.6333,
+    "longitude": 87.9833
+  },
+  {
+    "name": "Hulaki Highway",
+    "roadCodes": [
+      "NH01",
+      "NH05"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.6475,
+    "longitude": 87.986
+  },
+  {
+    "name": "Mechi Highway",
+    "roadCodes": [
+      "NH05",
+      "NH08"
+    ],
+    "type": "HIGHWAY_SPLIT",
+    "latitude": 26.65,
+    "longitude": 88.15
+  }
+]

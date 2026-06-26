@@ -5,6 +5,10 @@
   "highway": "prithvi",
   "vehicleAccess": ["car", "motorcycle", "jeep"],
   "nodes": [
+    { "name": "Kathmandu (Central)", "lat": 27.717, "lon": 85.324, "type": "CITY", "strategicImportance": "REGIONAL_HUB", "isHub": true, "elevationM": 1350 },
+    { "name": "Kathmandu (Kalanki)", "lat": 27.700, "lon": 85.300, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": true, "elevationM": 1330 },
+    { "name": "Thankot", "lat": 27.683, "lon": 85.283, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 1320 },
+    { "name": "Sisneri", "lat": 27.617, "lon": 85.183, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 1200 },
     { "name": "Naubise", "lat": 27.6167, "lon": 85.1333, "type": "JUNCTION", "strategicImportance": "MAJOR_HIGHWAY", "isHub": true, "elevationM": 1100 },
     { "name": "Katunje", "lat": 27.6333, "lon": 85.0833, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 1050 },
     { "name": "Galchhi", "lat": 27.6500, "lon": 85.0000, "type": "TOWN", "strategicImportance": "MAJOR_HIGHWAY", "isHub": false, "elevationM": 900 },

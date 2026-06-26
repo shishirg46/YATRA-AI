@@ -549,7 +549,7 @@ function generateSeedSQL(nodes: RouteNode[], edges: RouteEdge[]): string {
   lines.push("BEGIN;");
   lines.push("");
   lines.push("-- Clear existing data");
-  lines.push("DELETE FROM route_edge;");
+  lines.push("DELETE FROM route_edge_legacy;");
   lines.push("DELETE FROM route_node;");
   lines.push("");
 
@@ -588,7 +588,7 @@ function generateSeedSQL(nodes: RouteNode[], edges: RouteEdge[]): string {
     const toId = `node-${e.to}`;
     const roadName = e.roadtype === "highway" ? "'Highway'" : e.roadtype === "feederroad" ? "'Feeder Road'" : e.roadtype === "mountainroad" ? "'Mountain Road'" : "'Valley Road'";
     lines.push(
-      `INSERT INTO route_edge (id, "fromNodeId", "toNodeId", "distanceKm", "roadName", "isBidirectional")`
+      `INSERT INTO route_edge_legacy (id, "fromNodeId", "toNodeId", "distanceKm", "roadName", "isBidirectional")`
     );
     lines.push(
       `VALUES (gen_random_uuid()::text, '${fromId}', '${toId}', ${e.distancekm}, ${roadName}, true)`

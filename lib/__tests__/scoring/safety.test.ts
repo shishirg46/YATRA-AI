@@ -18,39 +18,39 @@ describe("computeSafetyScore", () => {
     expect(result.safetyScore).toBeGreaterThanOrEqual(80);
   });
 
-  it("penalizes extreme altitude", () => {
+  it("penalizes extreme altitude (halved from original)", () => {
     const result = computeSafetyScore(baseWeather, baseHazard, ["TOURISM"], "live", "live", {
       altitude: 5500, districtName: "solukhumbu", locationName: "Everest Base Camp",
     });
-    expect(result.decisionTrace.penalties.altitude).toBe(25);
+    expect(result.decisionTrace.penalties.altitude).toBe(12);
   });
 
-  it("penalizes high altitude (4500m)", () => {
+  it("penalizes high altitude (4500m, halved)", () => {
     const result = computeSafetyScore(baseWeather, baseHazard, ["TOURISM"], "live", "live", {
       altitude: 4500, districtName: "solukhumbu", locationName: "EBC",
     });
-    expect(result.decisionTrace.penalties.altitude).toBe(20);
+    expect(result.decisionTrace.penalties.altitude).toBe(8);
   });
 
-  it("penalizes moderate altitude (3500m)", () => {
+  it("penalizes moderate altitude (3500m, halved)", () => {
     const result = computeSafetyScore(baseWeather, baseHazard, ["TOURISM"], "live", "live", {
       altitude: 3500, districtName: "kaski", locationName: "Annapurna Base Camp",
     });
-    expect(result.decisionTrace.penalties.altitude).toBe(14);
+    expect(result.decisionTrace.penalties.altitude).toBe(5);
   });
 
-  it("penalizes 2500m altitude", () => {
+  it("penalizes 2500m altitude (halved)", () => {
     const result = computeSafetyScore(baseWeather, baseHazard, ["TOURISM"], "live", "live", {
       altitude: 2500, districtName: "kaski", locationName: "Pokhara",
     });
-    expect(result.decisionTrace.penalties.altitude).toBe(7);
+    expect(result.decisionTrace.penalties.altitude).toBe(2);
   });
 
-  it("applies minimal altitude penalty at 1500m", () => {
+  it("applies minimal altitude penalty at 1500m (halved)", () => {
     const result = computeSafetyScore(baseWeather, baseHazard, ["TOURISM"], "live", "live", {
       altitude: 1500, districtName: "kaski", locationName: "Pokhara",
     });
-    expect(result.decisionTrace.penalties.altitude).toBe(2);
+    expect(result.decisionTrace.penalties.altitude).toBe(1);
   });
 
   it("zero altitude penalty at sea level", () => {

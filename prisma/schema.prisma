@@ -181,6 +181,7 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
   scope                 String?
+  grantedScopes         String[]
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
@@ -233,6 +234,7 @@ model Destination {
   updatedAt          DateTime            @updatedAt
   sourceLastFetch    DateTime?
   savedByUsers       SavedDestination[]
+  photos             DestinationPhoto[]
 
   @@unique([name, district, province])
   @@index([normalizedName])
@@ -245,6 +247,23 @@ model Destination {
   @@index([destinationTier])
   @@index([confidenceScore])
   @@map("destination")
+}
+
+model DestinationPhoto {
+  id             String      @id @default(uuid())
+  destinationId  String
+  cloudinaryUrl  String
+  sourceUrl      String
+  thumbUrl       String?
+  title          String?
+  index          Int         @default(0)
+  source         String      @default("commons")
+  createdAt      DateTime    @default(now())
+  destination    Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([destinationId, index])
+  @@index([destinationId])
+  @@map("destination_photo")
 }
 
 model Province {
@@ -292,9 +311,14 @@ model Location {
 model Place {
   id         String      @id @default(uuid())
   name       String
+  nameEn     String?
+  nameNe     String?
   type       PlaceType
   latitude   Float
   longitude  Float
+  adminLevel Int?
+  osmId      BigInt?
+  osmType    String?
   parentId   String?
   districtId String?
   locationId String?     @unique
@@ -304,8 +328,13 @@ model Place {
   location   Location?   @relation(fields: [locationId], references: [id])
   parent     Place?      @relation("PlaceHierarchy", fields: [parentId], references: [id])
   children   Place[]     @relation("PlaceHierarchy")
-  routeNodes RouteNode[]
+  routeNodes    RouteNode[]
+  roadsFrom     RoadSegment[] @relation("RoadFromPlace")
+  roadsTo       RoadSegment[] @relation("RoadToPlace")
 
+  @@index([name])
+  @@index([adminLevel])
+  @@index([osmId])
   @@index([type])
   @@index([latitude, longitude])
   @@index([districtId])
@@ -325,6 +354,10 @@ model RouteNode {
   hazardExposureIndex  Float?
   connectivityRank     Int?
   monsoonVulnerability Float?
+  osmWayId             String?
+  sequenceIndex        Int?
+  roadClass            String?
+  isJunctionNode       Boolean             @default(false)
   placeId              String?
   isHub                Boolean             @default(false)
   isActive             Boolean             @default(true)
@@ -332,15 +365,21 @@ model RouteNode {
   updatedAt            DateTime            @updatedAt
   edgesFrom            RouteEdge[]         @relation("EdgeFrom")
   edgesTo              RouteEdge[]         @relation("EdgeTo")
+  edgeCacheFrom        EdgeCache[]         @relation("EdgeCacheFrom")
+  edgeCacheTo          EdgeCache[]         @relation("EdgeCacheTo")
+  osmWay               OsmWay?             @relation(fields: [osmWayId], references: [id])
   place                Place?              @relation(fields: [placeId], references: [id])
   savedLocations       UserSavedLocation[]
 
   @@index([latitude, longitude])
   @@index([isHub, isActive])
   @@index([strategicImportance])
+  @@index([osmWayId, sequenceIndex])
   @@map("route_node")
 }
 
+// LEGACY — not used in production routing. Kept for rollback/testing/shadow comparison.
+// Replaced by OsmWay-based adjacency + dynamic edge scoring.
 model RouteEdge {
   id                 String         @id @default(uuid())
   fromNodeId         String
@@ -366,7 +405,7 @@ model RouteEdge {
   @@index([toNodeId])
   @@index([roadCondition])
   @@index([travelReliability])
-  @@map("route_edge")
+  @@map("route_edge_legacy")
 }
 
 model UserSavedLocation {
@@ -435,6 +474,144 @@ model RouteTemplatePoint {
   @@unique([routeTemplateId, seq])
   @@index([routeTemplateId, seq])
   @@index([lat, lon])
+}
+
+model OsmWay {
+  id              String      @id
+  name            String?
+  roadClass       String
+  oneWay          Boolean     @default(false)
+  graphVersion    String      // bumped on OSM reimport
+  importBatchId   String?     // UUID of the import run
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  nodes           RouteNode[]
+
+  @@map("osm_way")
+}
+
+model RoadSegment {
+  id               String     @id @default(uuid())
+  roadCode         String?    @unique
+  roadNumber       String?
+  name             String
+  roadType         RoadType
+  province         String?
+  fromPlaceId      String?
+  toPlaceId        String?
+  lengthKm         Float?
+  isActive         Boolean    @default(true)
+  sourceConfidence Json?
+  metadata         Json?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  fromPlace        Place?     @relation("RoadFromPlace", fields: [fromPlaceId], references: [id])
+  toPlace          Place?     @relation("RoadToPlace", fields: [toPlaceId], references: [id])
+
+  @@index([roadCode])
+  @@index([roadType])
+  @@index([name])
+  @@map("road_segment")
+}
+
+model RoadJunction {
+  id        String       @id @default(uuid())
+  name      String
+  roadCodes String[]
+  type      JunctionType
+  latitude  Float
+  longitude Float
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([latitude, longitude])
+  @@map("road_junction")
+}
+
+model AdminRegion {
+  id        String   @id @default(uuid())
+  name      String
+  type      String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@map("admin_region")
+}
+
+model HazardHex {
+  h3Index             String      @id
+  centroidLat         Float
+  centroidLon         Float
+  landslideRisk       Float?
+  floodRisk           Float?
+  monsoonVulnerability Float?
+  weatherSensitivity  Float?
+  dataDate            DateTime    @default(now())
+  modelVersion        String
+
+  @@index([h3Index])
+  @@map("hazard_hex")
+}
+
+model EdgeCache {
+  id              String      @id @default(uuid())
+  fromNodeId      String
+  toNodeId        String
+  distanceKm      Float
+  gradientPct     Float?
+  surfaceType     RoadSurface?
+  compositeCost   Float
+  riskSnapshotId  String?
+  graphVersion    String
+  season          String      // "monsoon" | "dry"
+  ttl             DateTime
+  computedAt      DateTime    @default(now())
+  fromNode        RouteNode   @relation("EdgeCacheFrom", fields: [fromNodeId], references: [id])
+  toNode          RouteNode   @relation("EdgeCacheTo", fields: [toNodeId], references: [id])
+
+  @@unique([fromNodeId, toNodeId, graphVersion, season])
+  @@index([ttl])
+  @@map("edge_cache")
+}
+
+model RouteUsageLog {
+  id              String      @id @default(uuid())
+  userId          String?
+  tripId          String?
+  fallbackLevel   Int?        // 0=normal, 1=reduced-hazard, 2=distance-only
+  segments        Json
+  totalDistance   Float
+  avgSafetyScore  Float?
+  vehicleProfile  String?
+  source          String?     // "dynamic-v1"
+  createdAt       DateTime    @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("route_usage_log")
+}
+
+model RouteIntelligenceJob {
+  id        String   @id @default(cuid())
+  key       String                        // routeIntelligenceKey — single-flight dedup
+  status    String   @default("pending")  // pending | processing | done | failed
+  attempts  Int      @default(0)
+  payload   Json
+  result    Json?
+  error     String?
+  runAfter  DateTime @default(now())      // delayed start (backoff)
+  lockUntil DateTime?                     // SKIP LOCKED guard
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key])
+  @@index([status, runAfter])
+  @@map("route_intelligence_job")
 }
 
 model WeatherData {
@@ -721,6 +898,19 @@ enum RoadSurface {
   UNKNOWN
 }
 
+enum RoadType {
+  NATIONAL_HIGHWAY
+  FEEDER
+  MID_HILL
+  OTHER
+}
+
+enum JunctionType {
+  JUNCTION
+  INTERCHANGE
+  HIGHWAY_SPLIT
+}
+
 enum PlaceType {
   PROVINCE
   DISTRICT
@@ -733,6 +923,8 @@ enum PlaceType {
   BUS_PARK
   JUNCTION
   TOWN
+  CITY
+  VILLAGE
 }
 
 enum DestinationCategory {

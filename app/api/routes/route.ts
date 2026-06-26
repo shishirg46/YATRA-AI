@@ -1,11 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { resolveTravelOrigin } from "@/lib/routing/origin-resolver";
-import { buildSegmentedRoute } from "@/lib/routing/route-service";
-import { sampleRoutePoints } from "@/lib/dynamic-route";
+import { prisma } from "@/lib/prisma";
+import { generateEnhancedRoadsBetween } from "@/lib/routing/route-generation";
 import { withRateLimit } from "@/lib/rate-limit";
 
 function isFiniteNumber(value: unknown): value is number {
@@ -16,10 +13,6 @@ function isValidLatLon(lat: number, lon: number): boolean {
   return lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
 }
 
-/**
- * POST /api/routes
- * Builds a segmented route through known corridor places (not direct A→B).
- */
 async function getRoutesHandler(req: NextRequest) {
   try {
     const body = await req.json();
@@ -31,72 +24,83 @@ async function getRoutesHandler(req: NextRequest) {
       destinationId,
       destinationName,
       originName,
-      vehicle = "car",
     } = body ?? {};
+
+    let resolvedEndLat = endLat;
+    let resolvedEndLon = endLon;
+    let resolvedDestinationName = destinationName;
+
+    if (destinationId) {
+      const destination = await prisma.destination.findUnique({
+        where: { id: destinationId },
+        select: { name: true, latitude: true, longitude: true },
+      });
+      if (destination) {
+        resolvedEndLat = destination.latitude;
+        resolvedEndLon = destination.longitude;
+        resolvedDestinationName = destination.name;
+      }
+    }
 
     if (
       !isFiniteNumber(startLat) ||
       !isFiniteNumber(startLon) ||
-      !isFiniteNumber(endLat) ||
-      !isFiniteNumber(endLon)
+      !isFiniteNumber(resolvedEndLat) ||
+      !isFiniteNumber(resolvedEndLon)
     ) {
       return NextResponse.json(
         {
           message:
-            "Missing or invalid coordinates. Required: startLat, startLon, endLat, endLon",
+            "Missing or invalid coordinates. Required: startLat, startLon, endLat, endLon (or destinationId)",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    if (!isValidLatLon(startLat, startLon) || !isValidLatLon(endLat, endLon)) {
+    if (!isValidLatLon(startLat, startLon) || !isValidLatLon(resolvedEndLat, resolvedEndLon)) {
       return NextResponse.json(
         { message: "Coordinates out of valid range" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const session = await auth.api.getSession({ headers: await headers() });
-    const resolved = await resolveTravelOrigin({
-      lat: startLat,
-      lon: startLon,
-      name: typeof originName === "string" ? originName : undefined,
-      userId: session?.user?.id,
+    const generated = await generateEnhancedRoadsBetween({
+      start: {
+        lat: startLat,
+        lon: startLon,
+        name: typeof originName === "string" ? originName : "User Location",
+      },
+      destination: {
+        lat: resolvedEndLat,
+        lon: resolvedEndLon,
+        name: resolvedDestinationName || "Destination",
+      },
     });
 
-    const built = await buildSegmentedRoute({
-      originLat: resolved.place.lat,
-      originLon: resolved.place.lon,
-      originName: resolved.place.name,
-      originRouteNodeId: resolved.routeNodeId,
-      destinationLat: endLat,
-      destinationLon: endLon,
-      destinationId: typeof destinationId === "string" ? destinationId : undefined,
-      destinationName: typeof destinationName === "string" ? destinationName : undefined,
-      vehicle: vehicle as any,
-    });
-
-    const points = built.polyline.map((p) => ({ lat: p.lat, lon: p.lon }));
-    const corridorName = built.nodes.map((n) => n.name).join(" → ");
-
-    const route = {
-      id: "segmented-primary",
-      name: corridorName,
-      distance: built.distance,
-      duration: built.duration,
-      points,
-      sampledPoints: sampleRoutePoints(points, 8),
-      nodes: built.nodes,
-      segments: built.segments,
-      source: built.source,
-      resolutionNote: [resolved.note, built.resolutionNote].filter(Boolean).join("; "),
-    };
+    if (generated.roads.length === 0) {
+      return NextResponse.json(
+        { message: "Local OSRM returned no road route", roads: [] },
+        { status: 502 },
+      );
+    }
 
     return NextResponse.json({
-      routes: [route],
-      origin: built.origin,
-      destination: built.destination,
-      resolutionNote: [resolved.note, built.resolutionNote].filter(Boolean).join("; "),
+      roads: generated.roads,
+      origin: {
+        id: null,
+        name: typeof originName === "string" ? originName : "User Location",
+        lat: startLat,
+        lon: startLon,
+        match: "coordinates",
+      },
+      destination: {
+        id: destinationId || null,
+        name: resolvedDestinationName || "Destination",
+        lat: resolvedEndLat,
+        lon: resolvedEndLon,
+        match: destinationId ? "id" : "coordinates",
+      },
+      source: "local-osrm+nominatim",
     });
   } catch (error) {
     console.error("[api/routes] failed to generate routes:", error);

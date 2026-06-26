@@ -48,6 +48,8 @@ async function openRouteServiceFallback(
     instructions,
     segmentRoutes: [],
     encodedPolyline: route.encodedPolyline,
+    provenance: { engine: "osrm", validationStatus: "passed", isTraceValid: false, isMetricComplete: false },
+    abstraction: null,
   };
 }
 
@@ -130,6 +132,7 @@ async function getRouteGeometryHandler(req: NextRequest) {
         waypoints: Array.isArray(waypoints) ? waypoints : undefined,
         perSegmentRouting: perSegmentRouting === true,
         dynamicOsmRouting: dynamicOsmRouting === true,
+        includeNamedPlaces: true,
         vehicle: vehicle as VehicleProfile,
       });
       payload = toMapPayload(built);

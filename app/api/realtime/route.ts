@@ -98,11 +98,13 @@ async function realtimeHandler(req: NextRequest) {
     ...locations.filter((l) => l.district.province.name !== homeProvince),
   ];
 
-  let lastWeatherCycle = 0;
-  let lastHazardCycle  = 0;
-  let cycleIndex       = 0;
+      let lastWeatherCycle = 0;
+      let lastHazardCycle  = 0;
+      let cycleIndex       = 0;
+      let tickRunning      = false;
+      let tickTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const encoder = new TextEncoder();
+      const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -113,6 +115,10 @@ async function realtimeHandler(req: NextRequest) {
         } catch { /* client disconnected */ }
       }
 
+      function assertAlive() {
+        if (req.signal.aborted) throw new Error("CLIENT_DISCONNECTED");
+      }
+
       // Send initial heartbeat immediately
       send("heartbeat", { time: new Date().toISOString(), message: "Connected to YatraAI real-time feed" });
 
@@ -121,38 +127,59 @@ async function realtimeHandler(req: NextRequest) {
         send("heartbeat", { time: new Date().toISOString() });
       }, HEARTBEAT_MS);
 
-      // ── Main data loop ───────────────────────────────────────────────────────
-      const dataTimer = setInterval(async () => {
-        const now = Date.now();
+      // ── Main data loop (recursive setTimeout + tickRunning guard) ──────────
+      async function scheduleTick() {
+        if (req.signal.aborted) { cleanup(); return; }
+        tickTimer = setTimeout(runTick, 60_000);
+      }
 
-        // Pick the batch of locations for this cycle
-        const start = (cycleIndex * LOCATIONS_PER_CYCLE) % Math.max(sorted.length, 1);
-        const batch = sorted.slice(start, start + LOCATIONS_PER_CYCLE);
-        cycleIndex++;
+      async function runTick() {
+        if (tickRunning) {
+          console.warn("[realtime] TICK_SKIP — previous tick still running");
+          scheduleTick();
+          return;
+        }
 
-        // ── Weather updates (every 10 min) ─────────────────────────────────────
-        if (now - lastWeatherCycle >= WEATHER_INTERVAL_MS) {
-          lastWeatherCycle = now;
+        tickRunning = true;
+        const tickAbort = new AbortController();
+        const tickTimeout = setTimeout(() => {
+          tickAbort.abort(new Error("TICK_TIMEOUT"));
+        }, 45_000);
 
-          const weatherUpdates = await Promise.all(
-            batch.map(async (loc) => {
-              try {
+        try {
+          assertAlive();
+          const now = Date.now();
+          const start = (cycleIndex * LOCATIONS_PER_CYCLE) % Math.max(sorted.length, 1);
+          const batch = sorted.slice(start, start + LOCATIONS_PER_CYCLE);
+          cycleIndex++;
+
+          // ── Weather updates (every 10 min) ─────────────────────────────────
+          if (now - lastWeatherCycle >= WEATHER_INTERVAL_MS) {
+            lastWeatherCycle = now;
+            assertAlive();
+
+            const weatherResults = await Promise.allSettled(
+              batch.map(async (loc) => {
                 const w = await fetchWeather(loc.latitude, loc.longitude);
                 if (!w) return null;
 
-                // Save to DB
-                await prisma.weatherData.create({
-                  data: {
-                    locationId:  loc.id,
-                    temperature: w.temperature,
-                    humidity:    w.humidity,
-                    rainfall:    w.rainfall,
-                    windSpeed:   w.windSpeed,
-                    pressure:    w.pressure,
-                    source:      w.source,
-                    recordedAt:  new Date(),
-                  },
-                }).catch(() => {}); // ignore duplicate errors
+                await withTimeout(
+                  prisma.weatherData.create({
+                    data: {
+                      locationId:  loc.id,
+                      temperature: w.temperature,
+                      humidity:    w.humidity,
+                      rainfall:    w.rainfall,
+                      windSpeed:   w.windSpeed,
+                      pressure:    w.pressure,
+                      source:      w.source,
+                      recordedAt:  new Date(),
+                    },
+                  }),
+                  5_000,
+                ).catch((e) => {
+                  console.warn("[realtime] DB_WRITE_SKIP weather", { locationId: loc.id, reason: e?.message ?? e });
+                });
 
                 return {
                   locationId:  loc.id,
@@ -168,58 +195,64 @@ async function realtimeHandler(req: NextRequest) {
                   stationName: w.stationName,
                   stationDistanceKm: w.stationDistanceKm,
                 };
-              } catch { return null; }
-            })
-          );
+              })
+            );
 
-          const valid = weatherUpdates.filter(Boolean);
-          if (valid.length > 0) send("weather", valid);
-        }
+            const valid = weatherResults
+              .filter((r) => r.status === "fulfilled" && r.value != null)
+              .map((r) => (r as PromiseFulfilledResult<object>).value);
+            if (valid.length > 0) send("weather", valid);
+          }
 
-        // ── Hazard updates (every 5 min) ───────────────────────────────────────
-        if (now - lastHazardCycle >= HAZARD_INTERVAL_MS) {
-          lastHazardCycle = now;
+          // ── Hazard updates (every 5 min) ───────────────────────────────────
+          if (now - lastHazardCycle >= HAZARD_INTERVAL_MS) {
+            lastHazardCycle = now;
+            assertAlive();
 
-          const scoreUpdates: unknown[] = [];
-          const alerts: unknown[]       = [];
+            const scoreUpdates: unknown[] = [];
+            const alerts: unknown[]       = [];
 
-          await Promise.all(
-            batch.map(async (loc) => {
-              try {
-                const [weather, hazardRaw] = await Promise.all([
-                  fetchWeather(loc.latitude, loc.longitude),
-                  fetchHazard(loc.district.name, loc.latitude, loc.longitude),
-                ]);
+            const hazardResults = await Promise.allSettled(
+              batch.map(async (loc) => {
+                assertAlive();
+                const weatherP  = fetchWeather(loc.latitude, loc.longitude);
+                const hazardP   = fetchHazard(loc.district.name, loc.latitude, loc.longitude, tickAbort.signal);
+                const [weather, hazardRaw] = await Promise.allSettled([weatherP, hazardP]);
 
-                if (!weather) return;
+                const weatherVal = weather.status === "fulfilled" ? weather.value : null;
+                const hazardVal  = hazardRaw.status === "fulfilled" ? hazardRaw.value : null;
+                if (!weatherVal || !hazardVal) return null;
 
-                const heatIndex = Math.max(0, Math.min((weather.temperature - 25) / 20, 1.0));
-                const hazard    = { ...hazardRaw, heatIndex };
+                const heatIndex = Math.max(0, Math.min((weatherVal.temperature - 25) / 20, 1.0));
+                const hazard    = { ...hazardVal, heatIndex };
 
-                // Recompute score with user's health flags
                 const score = computeSafetyScore(
-                  { temperature: weather.temperature, humidity: weather.humidity, rainfall: weather.rainfall, windSpeed: weather.windSpeed, pressure: weather.pressure ?? 1013 },
+                  { temperature: weatherVal.temperature, humidity: weatherVal.humidity, rainfall: weatherVal.rainfall, windSpeed: weatherVal.windSpeed, pressure: weatherVal.pressure ?? 1013 },
                   { floodIndex: hazard.floodIndex, landslideIndex: hazard.landslideIndex, earthquakeIndex: hazard.earthquakeIndex ?? 0, heatIndex, airQuality: hazard.airQuality },
                   healthFlags,
                   "SOLO",
-                  weather.source,
+                  weatherVal.source,
                   { altitude: loc.altitude, districtName: loc.district.name, locationName: loc.name }
                 );
 
-                // Save new assessment
-                await prisma.riskAssessment.create({
-                  data: {
-                    locationId:      loc.id,
-                    type:            "SOLO",
-                    safetyScore:     score.safetyScore,
-                    safetyLevel:     score.safetyLevel,
-                    confidence:      score.confidence,
-                    decisionTrace:   score.decisionTrace as never,
-                    weatherSnapshot: score.weatherSnapshot as never,
-                    hazardSnapshot:  score.hazardSnapshot as never,
-                    modelVersion:    "realtime-v1",
-                  },
-                }).catch(() => {});
+                await withTimeout(
+                  prisma.riskAssessment.create({
+                    data: {
+                      locationId:      loc.id,
+                      type:            "SOLO",
+                      safetyScore:     score.safetyScore,
+                      safetyLevel:     score.safetyLevel,
+                      confidence:      score.confidence,
+                      decisionTrace:   score.decisionTrace as never,
+                      weatherSnapshot: score.weatherSnapshot as never,
+                      hazardSnapshot:  score.hazardSnapshot as never,
+                      modelVersion:    "realtime-v1",
+                    },
+                  }),
+                  5_000,
+                ).catch((e) => {
+                  console.warn("[realtime] DB_WRITE_SKIP riskAssessment", { locationId: loc.id, reason: e?.message ?? e });
+                });
 
                 scoreUpdates.push({
                   locationId:  loc.id,
@@ -232,9 +265,9 @@ async function realtimeHandler(req: NextRequest) {
                   confidence:  score.confidence,
                   reasoning:   score.decisionTrace.reasoning.slice(0, 2),
                   weather: {
-                    temperature: weather.temperature,
-                    rainfall:    weather.rainfall,
-                    windSpeed:   weather.windSpeed,
+                    temperature: weatherVal.temperature,
+                    rainfall:    weatherVal.rainfall,
+                    windSpeed:   weatherVal.windSpeed,
                   },
                   hazard: {
                     floodIndex:     hazard.floodIndex,
@@ -244,7 +277,6 @@ async function realtimeHandler(req: NextRequest) {
                   },
                 });
 
-                // Only create notifications for real-time hazard spikes
                 if (score.safetyLevel === "EXTREME" || score.safetyLevel === "HIGH_RISK") {
                   alerts.push({
                     locationId:  loc.id,
@@ -254,26 +286,40 @@ async function realtimeHandler(req: NextRequest) {
                     reason:      score.decisionTrace.reasoning[0],
                   });
                 }
-              } catch { /* skip this location */ }
-            })
-          );
 
-          if (scoreUpdates.length > 0) send("scores",  scoreUpdates);
-          if (alerts.length > 0)       send("alert",   alerts);
+                return null;
+              })
+            );
+
+            if (scoreUpdates.length > 0) send("scores",  scoreUpdates);
+            if (alerts.length > 0)       send("alert",   alerts);
+          }
+
+          // Drain microtasks before scheduling next tick
+          await new Promise<void>((resolve) => setImmediate(resolve));
+        } catch (e) {
+          if ((e as Error)?.message === "CLIENT_DISCONNECTED") {
+            cleanup();
+            return;
+          }
+          console.warn("[realtime] TICK_ERROR", e);
+        } finally {
+          clearTimeout(tickTimeout);
+          tickRunning = false;
+          if (!req.signal.aborted) scheduleTick();
         }
-      }, 60_000); // tick every 60s, but only runs heavy work on schedule
+      }
 
-      // Run first hazard cycle immediately after 5s
-      setTimeout(async () => {
-        lastHazardCycle = Date.now() - HAZARD_INTERVAL_MS + 5000; // trigger on next tick
-      }, 5000);
+      // Start first tick after 5s
+      tickTimer = setTimeout(runTick, 5_000);
 
-      // Cleanup when client disconnects
-      req.signal.addEventListener("abort", () => {
+      function cleanup() {
         clearInterval(heartbeatTimer);
-        clearInterval(dataTimer);
+        if (tickTimer) clearTimeout(tickTimer);
         try { controller.close(); } catch { /* already closed */ }
-      });
+      }
+
+      req.signal.addEventListener("abort", cleanup);
     },
   });
 
@@ -285,6 +331,18 @@ async function realtimeHandler(req: NextRequest) {
       "X-Accel-Buffering": "no", // disable nginx buffering
     },
   });
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const raced = await Promise.race([
+    promise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error("DB_TIMEOUT")), ms);
+    }),
+  ]);
+  clearTimeout(timer!);
+  return raced;
 }
 
 export const GET = withRateLimit(realtimeHandler, { max: 10, windowSeconds: 60 });

@@ -58,7 +58,8 @@ async function reverseGeocode(lat: number, lon: number): Promise<{ district: str
     format: "jsonv2", zoom: "10", addressdetails: "1",
   });
   try {
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`, {
+    const baseUrl = process.env.NOMINATIM_URL || process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
+    const res = await fetch(`${baseUrl}/reverse?${params}`, {
       headers: { "User-Agent": "YatraAI/1.0 (district-enrichment)", "Accept-Language": "en" },
     });
     if (!res.ok) return null;

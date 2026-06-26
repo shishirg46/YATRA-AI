@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/rate-limit";
-import { dispatchSosNotifications } from "@/lib/notifications/dispatch";
+import { dispatchSosNotifications, dispatchSosSms } from "@/lib/notifications/dispatch";
 
 async function sosHandler(req: NextRequest) {
   try {
@@ -129,7 +129,27 @@ async function sosHandler(req: NextRequest) {
       console.error("[sos] Dispatch error:", dispatchErr);
     }
 
-    return NextResponse.json({ alertId: alert.id, status: "ACTIVE", emailed, contactsWithEmail: contacts.filter((c) => c.email).length }, { status: 201 });
+    // Dispatch SMS to contacts who have a phone number
+    let smsSent = 0;
+    for (const contact of contacts) {
+      if (contact.relation === "self") continue;
+      if (!contact.phone) continue;
+      try {
+        const ok = await dispatchSosSms(contact.name, contact.phone, userName, body.message || "SOS! I need help.", locationStr);
+        if (ok) smsSent++;
+      } catch {
+        // best-effort
+      }
+    }
+
+    return NextResponse.json({
+      alertId: alert.id,
+      status: "ACTIVE",
+      emailed,
+      smsSent,
+      contactsWithEmail: contacts.filter((c) => c.email).length,
+      contactsWithPhone: contacts.filter((c) => c.phone).length,
+    }, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
     console.error("[sos] Route error:", message);

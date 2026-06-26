@@ -33,6 +33,7 @@ export type RouteNodeAvgAggregateOutputType = {
   hazardExposureIndex: number | null
   connectivityRank: number | null
   monsoonVulnerability: number | null
+  sequenceIndex: number | null
 }
 
 export type RouteNodeSumAggregateOutputType = {
@@ -42,6 +43,7 @@ export type RouteNodeSumAggregateOutputType = {
   hazardExposureIndex: number | null
   connectivityRank: number | null
   monsoonVulnerability: number | null
+  sequenceIndex: number | null
 }
 
 export type RouteNodeMinAggregateOutputType = {
@@ -56,6 +58,10 @@ export type RouteNodeMinAggregateOutputType = {
   hazardExposureIndex: number | null
   connectivityRank: number | null
   monsoonVulnerability: number | null
+  osmWayId: string | null
+  sequenceIndex: number | null
+  roadClass: string | null
+  isJunctionNode: boolean | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
@@ -75,6 +81,10 @@ export type RouteNodeMaxAggregateOutputType = {
   hazardExposureIndex: number | null
   connectivityRank: number | null
   monsoonVulnerability: number | null
+  osmWayId: string | null
+  sequenceIndex: number | null
+  roadClass: string | null
+  isJunctionNode: boolean | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
@@ -94,6 +104,10 @@ export type RouteNodeCountAggregateOutputType = {
   hazardExposureIndex: number
   connectivityRank: number
   monsoonVulnerability: number
+  osmWayId: number
+  sequenceIndex: number
+  roadClass: number
+  isJunctionNode: number
   placeId: number
   isHub: number
   isActive: number
@@ -110,6 +124,7 @@ export type RouteNodeAvgAggregateInputType = {
   hazardExposureIndex?: true
   connectivityRank?: true
   monsoonVulnerability?: true
+  sequenceIndex?: true
 }
 
 export type RouteNodeSumAggregateInputType = {
@@ -119,6 +134,7 @@ export type RouteNodeSumAggregateInputType = {
   hazardExposureIndex?: true
   connectivityRank?: true
   monsoonVulnerability?: true
+  sequenceIndex?: true
 }
 
 export type RouteNodeMinAggregateInputType = {
@@ -133,6 +149,10 @@ export type RouteNodeMinAggregateInputType = {
   hazardExposureIndex?: true
   connectivityRank?: true
   monsoonVulnerability?: true
+  osmWayId?: true
+  sequenceIndex?: true
+  roadClass?: true
+  isJunctionNode?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -152,6 +172,10 @@ export type RouteNodeMaxAggregateInputType = {
   hazardExposureIndex?: true
   connectivityRank?: true
   monsoonVulnerability?: true
+  osmWayId?: true
+  sequenceIndex?: true
+  roadClass?: true
+  isJunctionNode?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -171,6 +195,10 @@ export type RouteNodeCountAggregateInputType = {
   hazardExposureIndex?: true
   connectivityRank?: true
   monsoonVulnerability?: true
+  osmWayId?: true
+  sequenceIndex?: true
+  roadClass?: true
+  isJunctionNode?: true
   placeId?: true
   isHub?: true
   isActive?: true
@@ -277,6 +305,10 @@ export type RouteNodeGroupByOutputType = {
   hazardExposureIndex: number | null
   connectivityRank: number | null
   monsoonVulnerability: number | null
+  osmWayId: string | null
+  sequenceIndex: number | null
+  roadClass: string | null
+  isJunctionNode: boolean
   placeId: string | null
   isHub: boolean
   isActive: boolean
@@ -319,6 +351,10 @@ export type RouteNodeWhereInput = {
   hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  osmWayId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -326,6 +362,9 @@ export type RouteNodeWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
   edgesTo?: Prisma.RouteEdgeListRelationFilter
+  edgeCacheFrom?: Prisma.EdgeCacheListRelationFilter
+  edgeCacheTo?: Prisma.EdgeCacheListRelationFilter
+  osmWay?: Prisma.XOR<Prisma.OsmWayNullableScalarRelationFilter, Prisma.OsmWayWhereInput> | null
   place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   savedLocations?: Prisma.UserSavedLocationListRelationFilter
 }
@@ -342,6 +381,10 @@ export type RouteNodeOrderByWithRelationInput = {
   hazardExposureIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   connectivityRank?: Prisma.SortOrderInput | Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
+  osmWayId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrderInput | Prisma.SortOrder
+  roadClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  isJunctionNode?: Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -349,6 +392,9 @@ export type RouteNodeOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   edgesFrom?: Prisma.RouteEdgeOrderByRelationAggregateInput
   edgesTo?: Prisma.RouteEdgeOrderByRelationAggregateInput
+  edgeCacheFrom?: Prisma.EdgeCacheOrderByRelationAggregateInput
+  edgeCacheTo?: Prisma.EdgeCacheOrderByRelationAggregateInput
+  osmWay?: Prisma.OsmWayOrderByWithRelationInput
   place?: Prisma.PlaceOrderByWithRelationInput
   savedLocations?: Prisma.UserSavedLocationOrderByRelationAggregateInput
 }
@@ -368,6 +414,10 @@ export type RouteNodeWhereUniqueInput = Prisma.AtLeast<{
   hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  osmWayId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -375,6 +425,9 @@ export type RouteNodeWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
   edgesTo?: Prisma.RouteEdgeListRelationFilter
+  edgeCacheFrom?: Prisma.EdgeCacheListRelationFilter
+  edgeCacheTo?: Prisma.EdgeCacheListRelationFilter
+  osmWay?: Prisma.XOR<Prisma.OsmWayNullableScalarRelationFilter, Prisma.OsmWayWhereInput> | null
   place?: Prisma.XOR<Prisma.PlaceNullableScalarRelationFilter, Prisma.PlaceWhereInput> | null
   savedLocations?: Prisma.UserSavedLocationListRelationFilter
 }, "id">
@@ -391,6 +444,10 @@ export type RouteNodeOrderByWithAggregationInput = {
   hazardExposureIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   connectivityRank?: Prisma.SortOrderInput | Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrderInput | Prisma.SortOrder
+  osmWayId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrderInput | Prisma.SortOrder
+  roadClass?: Prisma.SortOrderInput | Prisma.SortOrder
+  isJunctionNode?: Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -418,6 +475,10 @@ export type RouteNodeScalarWhereWithAggregatesInput = {
   hazardExposureIndex?: Prisma.FloatNullableWithAggregatesFilter<"RouteNode"> | number | null
   connectivityRank?: Prisma.IntNullableWithAggregatesFilter<"RouteNode"> | number | null
   monsoonVulnerability?: Prisma.FloatNullableWithAggregatesFilter<"RouteNode"> | number | null
+  osmWayId?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
+  sequenceIndex?: Prisma.IntNullableWithAggregatesFilter<"RouteNode"> | number | null
+  roadClass?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
+  isJunctionNode?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
   placeId?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
@@ -437,12 +498,18 @@ export type RouteNodeCreateInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
   place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
@@ -459,6 +526,10 @@ export type RouteNodeUncheckedCreateInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -466,6 +537,8 @@ export type RouteNodeUncheckedCreateInput = {
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
   savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -481,12 +554,18 @@ export type RouteNodeUpdateInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
   place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
@@ -503,6 +582,10 @@ export type RouteNodeUncheckedUpdateInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -510,6 +593,8 @@ export type RouteNodeUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
   savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -525,6 +610,10 @@ export type RouteNodeCreateManyInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -544,6 +633,9 @@ export type RouteNodeUpdateManyMutationInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -562,6 +654,10 @@ export type RouteNodeUncheckedUpdateManyInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -591,6 +687,10 @@ export type RouteNodeCountOrderByAggregateInput = {
   hazardExposureIndex?: Prisma.SortOrder
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
+  osmWayId?: Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrder
+  roadClass?: Prisma.SortOrder
+  isJunctionNode?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -605,6 +705,7 @@ export type RouteNodeAvgOrderByAggregateInput = {
   hazardExposureIndex?: Prisma.SortOrder
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrder
 }
 
 export type RouteNodeMaxOrderByAggregateInput = {
@@ -619,6 +720,10 @@ export type RouteNodeMaxOrderByAggregateInput = {
   hazardExposureIndex?: Prisma.SortOrder
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
+  osmWayId?: Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrder
+  roadClass?: Prisma.SortOrder
+  isJunctionNode?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -638,6 +743,10 @@ export type RouteNodeMinOrderByAggregateInput = {
   hazardExposureIndex?: Prisma.SortOrder
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
+  osmWayId?: Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrder
+  roadClass?: Prisma.SortOrder
+  isJunctionNode?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
@@ -652,6 +761,7 @@ export type RouteNodeSumOrderByAggregateInput = {
   hazardExposureIndex?: Prisma.SortOrder
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
+  sequenceIndex?: Prisma.SortOrder
 }
 
 export type RouteNodeScalarRelationFilter = {
@@ -758,6 +868,76 @@ export type RouteNodeUpdateOneWithoutSavedLocationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RouteNodeUpdateToOneWithWhereWithoutSavedLocationsInput, Prisma.RouteNodeUpdateWithoutSavedLocationsInput>, Prisma.RouteNodeUncheckedUpdateWithoutSavedLocationsInput>
 }
 
+export type RouteNodeCreateNestedManyWithoutOsmWayInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput> | Prisma.RouteNodeCreateWithoutOsmWayInput[] | Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput[]
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput | Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput[]
+  createMany?: Prisma.RouteNodeCreateManyOsmWayInputEnvelope
+  connect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+}
+
+export type RouteNodeUncheckedCreateNestedManyWithoutOsmWayInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput> | Prisma.RouteNodeCreateWithoutOsmWayInput[] | Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput[]
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput | Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput[]
+  createMany?: Prisma.RouteNodeCreateManyOsmWayInputEnvelope
+  connect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+}
+
+export type RouteNodeUpdateManyWithoutOsmWayNestedInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput> | Prisma.RouteNodeCreateWithoutOsmWayInput[] | Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput[]
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput | Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput[]
+  upsert?: Prisma.RouteNodeUpsertWithWhereUniqueWithoutOsmWayInput | Prisma.RouteNodeUpsertWithWhereUniqueWithoutOsmWayInput[]
+  createMany?: Prisma.RouteNodeCreateManyOsmWayInputEnvelope
+  set?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  disconnect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  delete?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  connect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  update?: Prisma.RouteNodeUpdateWithWhereUniqueWithoutOsmWayInput | Prisma.RouteNodeUpdateWithWhereUniqueWithoutOsmWayInput[]
+  updateMany?: Prisma.RouteNodeUpdateManyWithWhereWithoutOsmWayInput | Prisma.RouteNodeUpdateManyWithWhereWithoutOsmWayInput[]
+  deleteMany?: Prisma.RouteNodeScalarWhereInput | Prisma.RouteNodeScalarWhereInput[]
+}
+
+export type RouteNodeUncheckedUpdateManyWithoutOsmWayNestedInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput> | Prisma.RouteNodeCreateWithoutOsmWayInput[] | Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput[]
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput | Prisma.RouteNodeCreateOrConnectWithoutOsmWayInput[]
+  upsert?: Prisma.RouteNodeUpsertWithWhereUniqueWithoutOsmWayInput | Prisma.RouteNodeUpsertWithWhereUniqueWithoutOsmWayInput[]
+  createMany?: Prisma.RouteNodeCreateManyOsmWayInputEnvelope
+  set?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  disconnect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  delete?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  connect?: Prisma.RouteNodeWhereUniqueInput | Prisma.RouteNodeWhereUniqueInput[]
+  update?: Prisma.RouteNodeUpdateWithWhereUniqueWithoutOsmWayInput | Prisma.RouteNodeUpdateWithWhereUniqueWithoutOsmWayInput[]
+  updateMany?: Prisma.RouteNodeUpdateManyWithWhereWithoutOsmWayInput | Prisma.RouteNodeUpdateManyWithWhereWithoutOsmWayInput[]
+  deleteMany?: Prisma.RouteNodeScalarWhereInput | Prisma.RouteNodeScalarWhereInput[]
+}
+
+export type RouteNodeCreateNestedOneWithoutEdgeCacheFromInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheFromInput>
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutEdgeCacheFromInput
+  connect?: Prisma.RouteNodeWhereUniqueInput
+}
+
+export type RouteNodeCreateNestedOneWithoutEdgeCacheToInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheToInput>
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutEdgeCacheToInput
+  connect?: Prisma.RouteNodeWhereUniqueInput
+}
+
+export type RouteNodeUpdateOneRequiredWithoutEdgeCacheFromNestedInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheFromInput>
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutEdgeCacheFromInput
+  upsert?: Prisma.RouteNodeUpsertWithoutEdgeCacheFromInput
+  connect?: Prisma.RouteNodeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RouteNodeUpdateToOneWithWhereWithoutEdgeCacheFromInput, Prisma.RouteNodeUpdateWithoutEdgeCacheFromInput>, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheFromInput>
+}
+
+export type RouteNodeUpdateOneRequiredWithoutEdgeCacheToNestedInput = {
+  create?: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheToInput>
+  connectOrCreate?: Prisma.RouteNodeCreateOrConnectWithoutEdgeCacheToInput
+  upsert?: Prisma.RouteNodeUpsertWithoutEdgeCacheToInput
+  connect?: Prisma.RouteNodeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RouteNodeUpdateToOneWithWhereWithoutEdgeCacheToInput, Prisma.RouteNodeUpdateWithoutEdgeCacheToInput>, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheToInput>
+}
+
 export type RouteNodeCreateWithoutPlaceInput = {
   id?: string
   name: string
@@ -770,12 +950,18 @@ export type RouteNodeCreateWithoutPlaceInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -791,12 +977,18 @@ export type RouteNodeUncheckedCreateWithoutPlaceInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
   savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -841,6 +1033,10 @@ export type RouteNodeScalarWhereInput = {
   hazardExposureIndex?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
   connectivityRank?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   monsoonVulnerability?: Prisma.FloatNullableFilter<"RouteNode"> | number | null
+  osmWayId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
+  roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
+  isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
@@ -860,11 +1056,17 @@ export type RouteNodeCreateWithoutEdgesFromInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
   place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
@@ -881,12 +1083,18 @@ export type RouteNodeUncheckedCreateWithoutEdgesFromInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
   savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -907,11 +1115,17 @@ export type RouteNodeCreateWithoutEdgesToInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
   place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
   savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
 }
@@ -928,12 +1142,18 @@ export type RouteNodeUncheckedCreateWithoutEdgesToInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
   savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
 }
 
@@ -965,11 +1185,17 @@ export type RouteNodeUpdateWithoutEdgesFromInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
   place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
@@ -986,12 +1212,18 @@ export type RouteNodeUncheckedUpdateWithoutEdgesFromInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
   savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -1018,11 +1250,17 @@ export type RouteNodeUpdateWithoutEdgesToInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
   place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
@@ -1039,12 +1277,18 @@ export type RouteNodeUncheckedUpdateWithoutEdgesToInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
   savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -1060,12 +1304,18 @@ export type RouteNodeCreateWithoutSavedLocationsInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
   place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
 }
 
@@ -1081,6 +1331,10 @@ export type RouteNodeUncheckedCreateWithoutSavedLocationsInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
@@ -1088,6 +1342,8 @@ export type RouteNodeUncheckedCreateWithoutSavedLocationsInput = {
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
   edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
 }
 
 export type RouteNodeCreateOrConnectWithoutSavedLocationsInput = {
@@ -1118,12 +1374,18 @@ export type RouteNodeUpdateWithoutSavedLocationsInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
   place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
 }
 
@@ -1139,6 +1401,10 @@ export type RouteNodeUncheckedUpdateWithoutSavedLocationsInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1146,6 +1412,336 @@ export type RouteNodeUncheckedUpdateWithoutSavedLocationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
+}
+
+export type RouteNodeCreateWithoutOsmWayInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
+  savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeUncheckedCreateWithoutOsmWayInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  placeId?: string | null
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeCreateOrConnectWithoutOsmWayInput = {
+  where: Prisma.RouteNodeWhereUniqueInput
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput>
+}
+
+export type RouteNodeCreateManyOsmWayInputEnvelope = {
+  data: Prisma.RouteNodeCreateManyOsmWayInput | Prisma.RouteNodeCreateManyOsmWayInput[]
+  skipDuplicates?: boolean
+}
+
+export type RouteNodeUpsertWithWhereUniqueWithoutOsmWayInput = {
+  where: Prisma.RouteNodeWhereUniqueInput
+  update: Prisma.XOR<Prisma.RouteNodeUpdateWithoutOsmWayInput, Prisma.RouteNodeUncheckedUpdateWithoutOsmWayInput>
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutOsmWayInput, Prisma.RouteNodeUncheckedCreateWithoutOsmWayInput>
+}
+
+export type RouteNodeUpdateWithWhereUniqueWithoutOsmWayInput = {
+  where: Prisma.RouteNodeWhereUniqueInput
+  data: Prisma.XOR<Prisma.RouteNodeUpdateWithoutOsmWayInput, Prisma.RouteNodeUncheckedUpdateWithoutOsmWayInput>
+}
+
+export type RouteNodeUpdateManyWithWhereWithoutOsmWayInput = {
+  where: Prisma.RouteNodeScalarWhereInput
+  data: Prisma.XOR<Prisma.RouteNodeUpdateManyMutationInput, Prisma.RouteNodeUncheckedUpdateManyWithoutOsmWayInput>
+}
+
+export type RouteNodeCreateWithoutEdgeCacheFromInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheCreateNestedManyWithoutToNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
+  savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeUncheckedCreateWithoutEdgeCacheFromInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  placeId?: string | null
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutToNodeInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeCreateOrConnectWithoutEdgeCacheFromInput = {
+  where: Prisma.RouteNodeWhereUniqueInput
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheFromInput>
+}
+
+export type RouteNodeCreateWithoutEdgeCacheToInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheCreateNestedManyWithoutFromNodeInput
+  osmWay?: Prisma.OsmWayCreateNestedOneWithoutNodesInput
+  place?: Prisma.PlaceCreateNestedOneWithoutRouteNodesInput
+  savedLocations?: Prisma.UserSavedLocationCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeUncheckedCreateWithoutEdgeCacheToInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  placeId?: string | null
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
+  edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedCreateNestedManyWithoutFromNodeInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedCreateNestedManyWithoutNearestRouteNodeInput
+}
+
+export type RouteNodeCreateOrConnectWithoutEdgeCacheToInput = {
+  where: Prisma.RouteNodeWhereUniqueInput
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheToInput>
+}
+
+export type RouteNodeUpsertWithoutEdgeCacheFromInput = {
+  update: Prisma.XOR<Prisma.RouteNodeUpdateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheFromInput>
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheFromInput>
+  where?: Prisma.RouteNodeWhereInput
+}
+
+export type RouteNodeUpdateToOneWithWhereWithoutEdgeCacheFromInput = {
+  where?: Prisma.RouteNodeWhereInput
+  data: Prisma.XOR<Prisma.RouteNodeUpdateWithoutEdgeCacheFromInput, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheFromInput>
+}
+
+export type RouteNodeUpdateWithoutEdgeCacheFromInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
+  savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
+}
+
+export type RouteNodeUncheckedUpdateWithoutEdgeCacheFromInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
+}
+
+export type RouteNodeUpsertWithoutEdgeCacheToInput = {
+  update: Prisma.XOR<Prisma.RouteNodeUpdateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheToInput>
+  create: Prisma.XOR<Prisma.RouteNodeCreateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedCreateWithoutEdgeCacheToInput>
+  where?: Prisma.RouteNodeWhereInput
+}
+
+export type RouteNodeUpdateToOneWithWhereWithoutEdgeCacheToInput = {
+  where?: Prisma.RouteNodeWhereInput
+  data: Prisma.XOR<Prisma.RouteNodeUpdateWithoutEdgeCacheToInput, Prisma.RouteNodeUncheckedUpdateWithoutEdgeCacheToInput>
+}
+
+export type RouteNodeUpdateWithoutEdgeCacheToInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
+  savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
+}
+
+export type RouteNodeUncheckedUpdateWithoutEdgeCacheToInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
 export type RouteNodeCreateManyPlaceInput = {
@@ -1160,6 +1756,10 @@ export type RouteNodeCreateManyPlaceInput = {
   hazardExposureIndex?: number | null
   connectivityRank?: number | null
   monsoonVulnerability?: number | null
+  osmWayId?: string | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: Date | string
@@ -1178,12 +1778,18 @@ export type RouteNodeUpdateWithoutPlaceInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  osmWay?: Prisma.OsmWayUpdateOneWithoutNodesNestedInput
   savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -1199,12 +1805,18 @@ export type RouteNodeUncheckedUpdateWithoutPlaceInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
   edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
   savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
 }
 
@@ -1220,6 +1832,108 @@ export type RouteNodeUncheckedUpdateManyWithoutPlaceInput = {
   hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  osmWayId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RouteNodeCreateManyOsmWayInput = {
+  id?: string
+  name: string
+  type?: $Enums.PlaceType
+  latitude: number
+  longitude: number
+  elevationM?: number | null
+  accessibilityLevel?: $Enums.NodeAccessibility | null
+  strategicImportance?: $Enums.StrategicImportance | null
+  hazardExposureIndex?: number | null
+  connectivityRank?: number | null
+  monsoonVulnerability?: number | null
+  sequenceIndex?: number | null
+  roadClass?: string | null
+  isJunctionNode?: boolean
+  placeId?: string | null
+  isHub?: boolean
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RouteNodeUpdateWithoutOsmWayInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUpdateManyWithoutToNodeNestedInput
+  place?: Prisma.PlaceUpdateOneWithoutRouteNodesNestedInput
+  savedLocations?: Prisma.UserSavedLocationUpdateManyWithoutNearestRouteNodeNestedInput
+}
+
+export type RouteNodeUncheckedUpdateWithoutOsmWayInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
+  edgeCacheFrom?: Prisma.EdgeCacheUncheckedUpdateManyWithoutFromNodeNestedInput
+  edgeCacheTo?: Prisma.EdgeCacheUncheckedUpdateManyWithoutToNodeNestedInput
+  savedLocations?: Prisma.UserSavedLocationUncheckedUpdateManyWithoutNearestRouteNodeNestedInput
+}
+
+export type RouteNodeUncheckedUpdateManyWithoutOsmWayInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumPlaceTypeFieldUpdateOperationsInput | $Enums.PlaceType
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  elevationM?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityLevel?: Prisma.NullableEnumNodeAccessibilityFieldUpdateOperationsInput | $Enums.NodeAccessibility | null
+  strategicImportance?: Prisma.NullableEnumStrategicImportanceFieldUpdateOperationsInput | $Enums.StrategicImportance | null
+  hazardExposureIndex?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  connectivityRank?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  monsoonVulnerability?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1234,12 +1948,16 @@ export type RouteNodeUncheckedUpdateManyWithoutPlaceInput = {
 export type RouteNodeCountOutputType = {
   edgesFrom: number
   edgesTo: number
+  edgeCacheFrom: number
+  edgeCacheTo: number
   savedLocations: number
 }
 
 export type RouteNodeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   edgesFrom?: boolean | RouteNodeCountOutputTypeCountEdgesFromArgs
   edgesTo?: boolean | RouteNodeCountOutputTypeCountEdgesToArgs
+  edgeCacheFrom?: boolean | RouteNodeCountOutputTypeCountEdgeCacheFromArgs
+  edgeCacheTo?: boolean | RouteNodeCountOutputTypeCountEdgeCacheToArgs
   savedLocations?: boolean | RouteNodeCountOutputTypeCountSavedLocationsArgs
 }
 
@@ -1270,6 +1988,20 @@ export type RouteNodeCountOutputTypeCountEdgesToArgs<ExtArgs extends runtime.Typ
 /**
  * RouteNodeCountOutputType without action
  */
+export type RouteNodeCountOutputTypeCountEdgeCacheFromArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EdgeCacheWhereInput
+}
+
+/**
+ * RouteNodeCountOutputType without action
+ */
+export type RouteNodeCountOutputTypeCountEdgeCacheToArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EdgeCacheWhereInput
+}
+
+/**
+ * RouteNodeCountOutputType without action
+ */
 export type RouteNodeCountOutputTypeCountSavedLocationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.UserSavedLocationWhereInput
 }
@@ -1287,6 +2019,10 @@ export type RouteNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   hazardExposureIndex?: boolean
   connectivityRank?: boolean
   monsoonVulnerability?: boolean
+  osmWayId?: boolean
+  sequenceIndex?: boolean
+  roadClass?: boolean
+  isJunctionNode?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1294,6 +2030,9 @@ export type RouteNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   updatedAt?: boolean
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
+  edgeCacheFrom?: boolean | Prisma.RouteNode$edgeCacheFromArgs<ExtArgs>
+  edgeCacheTo?: boolean | Prisma.RouteNode$edgeCacheToArgs<ExtArgs>
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   savedLocations?: boolean | Prisma.RouteNode$savedLocationsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteNodeCountOutputTypeDefaultArgs<ExtArgs>
@@ -1311,11 +2050,16 @@ export type RouteNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   hazardExposureIndex?: boolean
   connectivityRank?: boolean
   monsoonVulnerability?: boolean
+  osmWayId?: boolean
+  sequenceIndex?: boolean
+  roadClass?: boolean
+  isJunctionNode?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
 }, ExtArgs["result"]["routeNode"]>
 
@@ -1331,11 +2075,16 @@ export type RouteNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   hazardExposureIndex?: boolean
   connectivityRank?: boolean
   monsoonVulnerability?: boolean
+  osmWayId?: boolean
+  sequenceIndex?: boolean
+  roadClass?: boolean
+  isJunctionNode?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
 }, ExtArgs["result"]["routeNode"]>
 
@@ -1351,6 +2100,10 @@ export type RouteNodeSelectScalar = {
   hazardExposureIndex?: boolean
   connectivityRank?: boolean
   monsoonVulnerability?: boolean
+  osmWayId?: boolean
+  sequenceIndex?: boolean
+  roadClass?: boolean
+  isJunctionNode?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
@@ -1358,18 +2111,23 @@ export type RouteNodeSelectScalar = {
   updatedAt?: boolean
 }
 
-export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "elevationM" | "accessibilityLevel" | "strategicImportance" | "hazardExposureIndex" | "connectivityRank" | "monsoonVulnerability" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
+export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "elevationM" | "accessibilityLevel" | "strategicImportance" | "hazardExposureIndex" | "connectivityRank" | "monsoonVulnerability" | "osmWayId" | "sequenceIndex" | "roadClass" | "isJunctionNode" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
 export type RouteNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
+  edgeCacheFrom?: boolean | Prisma.RouteNode$edgeCacheFromArgs<ExtArgs>
+  edgeCacheTo?: boolean | Prisma.RouteNode$edgeCacheToArgs<ExtArgs>
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
   savedLocations?: boolean | Prisma.RouteNode$savedLocationsArgs<ExtArgs>
   _count?: boolean | Prisma.RouteNodeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RouteNodeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
 }
 export type RouteNodeIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
   place?: boolean | Prisma.RouteNode$placeArgs<ExtArgs>
 }
 
@@ -1378,6 +2136,9 @@ export type $RouteNodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     edgesFrom: Prisma.$RouteEdgePayload<ExtArgs>[]
     edgesTo: Prisma.$RouteEdgePayload<ExtArgs>[]
+    edgeCacheFrom: Prisma.$EdgeCachePayload<ExtArgs>[]
+    edgeCacheTo: Prisma.$EdgeCachePayload<ExtArgs>[]
+    osmWay: Prisma.$OsmWayPayload<ExtArgs> | null
     place: Prisma.$PlacePayload<ExtArgs> | null
     savedLocations: Prisma.$UserSavedLocationPayload<ExtArgs>[]
   }
@@ -1393,6 +2154,10 @@ export type $RouteNodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     hazardExposureIndex: number | null
     connectivityRank: number | null
     monsoonVulnerability: number | null
+    osmWayId: string | null
+    sequenceIndex: number | null
+    roadClass: string | null
+    isJunctionNode: boolean
     placeId: string | null
     isHub: boolean
     isActive: boolean
@@ -1794,6 +2559,9 @@ export interface Prisma__RouteNodeClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   edgesFrom<T extends Prisma.RouteNode$edgesFromArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgesFromArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   edgesTo<T extends Prisma.RouteNode$edgesToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgesToArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RouteEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  edgeCacheFrom<T extends Prisma.RouteNode$edgeCacheFromArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgeCacheFromArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EdgeCachePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  edgeCacheTo<T extends Prisma.RouteNode$edgeCacheToArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$edgeCacheToArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EdgeCachePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  osmWay<T extends Prisma.RouteNode$osmWayArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$osmWayArgs<ExtArgs>>): Prisma.Prisma__OsmWayClient<runtime.Types.Result.GetResult<Prisma.$OsmWayPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   place<T extends Prisma.RouteNode$placeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$placeArgs<ExtArgs>>): Prisma.Prisma__PlaceClient<runtime.Types.Result.GetResult<Prisma.$PlacePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   savedLocations<T extends Prisma.RouteNode$savedLocationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RouteNode$savedLocationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserSavedLocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
@@ -1836,6 +2604,10 @@ export interface RouteNodeFieldRefs {
   readonly hazardExposureIndex: Prisma.FieldRef<"RouteNode", 'Float'>
   readonly connectivityRank: Prisma.FieldRef<"RouteNode", 'Int'>
   readonly monsoonVulnerability: Prisma.FieldRef<"RouteNode", 'Float'>
+  readonly osmWayId: Prisma.FieldRef<"RouteNode", 'String'>
+  readonly sequenceIndex: Prisma.FieldRef<"RouteNode", 'Int'>
+  readonly roadClass: Prisma.FieldRef<"RouteNode", 'String'>
+  readonly isJunctionNode: Prisma.FieldRef<"RouteNode", 'Boolean'>
   readonly placeId: Prisma.FieldRef<"RouteNode", 'String'>
   readonly isHub: Prisma.FieldRef<"RouteNode", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"RouteNode", 'Boolean'>
@@ -2287,6 +3059,73 @@ export type RouteNode$edgesToArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.RouteEdgeScalarFieldEnum | Prisma.RouteEdgeScalarFieldEnum[]
+}
+
+/**
+ * RouteNode.edgeCacheFrom
+ */
+export type RouteNode$edgeCacheFromArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EdgeCache
+   */
+  select?: Prisma.EdgeCacheSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EdgeCache
+   */
+  omit?: Prisma.EdgeCacheOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EdgeCacheInclude<ExtArgs> | null
+  where?: Prisma.EdgeCacheWhereInput
+  orderBy?: Prisma.EdgeCacheOrderByWithRelationInput | Prisma.EdgeCacheOrderByWithRelationInput[]
+  cursor?: Prisma.EdgeCacheWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EdgeCacheScalarFieldEnum | Prisma.EdgeCacheScalarFieldEnum[]
+}
+
+/**
+ * RouteNode.edgeCacheTo
+ */
+export type RouteNode$edgeCacheToArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EdgeCache
+   */
+  select?: Prisma.EdgeCacheSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EdgeCache
+   */
+  omit?: Prisma.EdgeCacheOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EdgeCacheInclude<ExtArgs> | null
+  where?: Prisma.EdgeCacheWhereInput
+  orderBy?: Prisma.EdgeCacheOrderByWithRelationInput | Prisma.EdgeCacheOrderByWithRelationInput[]
+  cursor?: Prisma.EdgeCacheWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EdgeCacheScalarFieldEnum | Prisma.EdgeCacheScalarFieldEnum[]
+}
+
+/**
+ * RouteNode.osmWay
+ */
+export type RouteNode$osmWayArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OsmWay
+   */
+  select?: Prisma.OsmWaySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OsmWay
+   */
+  omit?: Prisma.OsmWayOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OsmWayInclude<ExtArgs> | null
+  where?: Prisma.OsmWayWhereInput
 }
 
 /**

@@ -16,7 +16,7 @@ import { Sparkline, BarChart, HazardBars, PenaltyBreakdown } from "./_components
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface DestData {
-  location: { id: string; name: string; district: string; province: string; altitude: number | null; latitude: number; longitude: number };
+  location: { id: string; name: string; district: string; province: string; altitude: number | null; latitude: number; longitude: number; image: string | null };
   safety: { score: number; level: string; confidence: number; penalties: Record<string, number>; reasoning: string[] };
   liveWeather: { temperature: number; humidity: number; rainfall: number; windSpeed: number; pressure: number; description?: string; source?: string; sourceLabel?: string; officialSource?: boolean };
   liveHazard: { floodIndex: number; landslideIndex: number; earthquakeIndex: number; airQuality: number };
@@ -257,30 +257,71 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
       <div className="pt-20 max-w-4xl mx-auto px-4 md:px-8 pb-16 relative z-10 space-y-5">
 
         {/* ── Hero ──────────────────────────────────────────────────────── */}
-        <div className="detail-card rounded-2xl p-6 md:p-8 anim">
-          <div className="flex flex-col md:flex-row gap-6 items-start">
-            <ScoreRing score={safety.score} size={110} />
-            <div className="flex-1 min-w-0">
-              <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
-                <span className="shimmer-text">{loc.name}</span>
-              </h1>
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-body text-sm font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
-                  <LevelIcon size={13} />{cfg.label}
-                </span>
-                <span className="font-body text-xs text-slate-500">{Math.round(safety.confidence * 100)}% confidence</span>
+        <div className="detail-card rounded-2xl overflow-hidden anim">
+          {loc.image && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={loc.image} alt={loc.name} className="w-full h-56 md:h-72 object-cover border-b border-slate-700/40" loading="lazy" />
+          )}
+          <div className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row gap-6 items-start">
+              <ScoreRing score={safety.score} size={110} />
+              <div className="flex-1 min-w-0">
+                <h1 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
+                  <span className="shimmer-text">{loc.name}</span>
+                </h1>
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border font-body text-sm font-semibold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
+                    <LevelIcon size={13} />{cfg.label}
+                  </span>
+                  <span className="font-body text-xs text-slate-500">{Math.round(safety.confidence * 100)}% confidence</span>
+                </div>
+                <div className="flex items-center gap-4 flex-wrap text-slate-400 font-body text-sm">
+                  <span className="flex items-center gap-1"><MapPin size={13} className="text-amber-400" />{loc.district}, {loc.province}</span>
+                  {loc.altitude && <span className="flex items-center gap-1"><Mountain size={13} className="text-slate-500" />{loc.altitude.toLocaleString()}m</span>}
+                  <span className="flex items-center gap-1"><Calendar size={13} className="text-slate-500" />{seasonalGuide.current}</span>
+                </div>
+                <p className="font-body text-xs text-slate-600 mt-2">
+                  Assessed {new Date(data.assessedAt).toLocaleString()}
+                </p>
               </div>
-              <div className="flex items-center gap-4 flex-wrap text-slate-400 font-body text-sm">
-                <span className="flex items-center gap-1"><MapPin size={13} className="text-amber-400" />{loc.district}, {loc.province}</span>
-                {loc.altitude && <span className="flex items-center gap-1"><Mountain size={13} className="text-slate-500" />{loc.altitude.toLocaleString()}m</span>}
-                <span className="flex items-center gap-1"><Calendar size={13} className="text-slate-500" />{seasonalGuide.current}</span>
-              </div>
-              <p className="font-body text-xs text-slate-600 mt-2">
-                Assessed {new Date(data.assessedAt).toLocaleString()}
-              </p>
             </div>
           </div>
         </div>
+
+        {/* ── Photo Gallery ────────────────────────────────────────────── */}
+        {insights?.photos && insights.photos.length > 0 && (
+          <div className="detail-card rounded-2xl p-5 anim" style={{ animationDelay: ".05s" }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Camera size={15} className="text-amber-400" />
+              <span className="font-display font-bold text-white text-sm">Photos</span>
+              <span className="font-body text-[10px] text-slate-500 ml-auto">{insights.photos.length} images</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {insights.photos.map((p, idx) => (
+                <a
+                  key={`${p.url}-${idx}`}
+                  href={p.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group relative rounded-xl overflow-hidden border border-slate-700/40 bg-slate-900/50 aspect-[4/3]"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={p.thumbUrl || p.url}
+                    alt={p.title || loc.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading={idx < 3 ? "eager" : "lazy"}
+                  />
+                  {p.title && (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 to-transparent p-2">
+                      <p className="font-body text-[10px] text-slate-200 truncate">{p.title}</p>
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Live Conditions ──────────────────────────────────────────── */}
         <div className="grid md:grid-cols-2 gap-4 anim" style={{ animationDelay: ".1s" }}>
@@ -447,7 +488,7 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
           </Section>
         )}
 
-        <Section title="Place Details & Photos" icon={Camera} defaultOpen={false}>
+        <Section title="Place Details" icon={Camera} defaultOpen={false}>
           <div className="pt-4 space-y-4">
             {loadingInsights && <p className="font-body text-sm text-slate-400">Loading details from multiple sources…</p>}
             {!loadingInsights && insights?.overview && (
@@ -468,30 +509,6 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
                       <ExternalLink size={12} className="text-slate-500" />
                     </div>
                     <p className="font-body text-xs text-slate-300 leading-relaxed">{s.snippet}</p>
-                  </a>
-                ))}
-              </div>
-            ) : null}
-            {!loadingInsights && insights?.photos?.length ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {insights.photos.map((p, idx) => (
-                  <a
-                    key={`${p.url}-${idx}`}
-                    href={p.sourceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group relative rounded-xl overflow-hidden border border-slate-700/40 bg-slate-900/50"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.thumbUrl || p.url}
-                      alt={p.title || loc.name}
-                      className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/85 to-transparent p-2">
-                      <p className="font-body text-[10px] text-slate-200 truncate">{p.title || loc.name}</p>
-                    </div>
                   </a>
                 ))}
               </div>

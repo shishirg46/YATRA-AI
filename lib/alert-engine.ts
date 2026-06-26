@@ -71,8 +71,9 @@ async function resolveLocationName(lat: number, lon: number): Promise<string | n
   if (cached && cached.expiresAt > Date.now()) return cached.value;
 
   try {
+    const baseUrl = process.env.NOMINATIM_URL || process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2&addressdetails=1`,
+      `${baseUrl}/reverse?lat=${lat}&lon=${lon}&format=jsonv2&addressdetails=1`,
       {
         headers: {
           Accept: "application/json",

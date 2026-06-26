@@ -1,0 +1,1450 @@
+[
+  {
+    "roadCode": "FR01",
+    "name": "Rapti Highway",
+    "roadType": "FEEDER",
+    "fromPlace": "Butwal",
+    "toPlace": "Surkhet",
+    "waypoints": [
+      {
+        "lat": 27.7,
+        "lon": 83.45
+      },
+      {
+        "lat": 28.05,
+        "lon": 82.3
+      },
+      {
+        "lat": 28.383,
+        "lon": 82.167
+      },
+      {
+        "lat": 28.633,
+        "lon": 81.617
+      },
+      {
+        "lat": 28.6,
+        "lon": 81.633
+      }
+    ],
+    "corridorSources": [
+      "Rapti Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 223.3
+  },
+  {
+    "roadCode": "FR02",
+    "name": "Biratnagar-Dhankuta Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Biratnagar",
+    "toPlace": "Chainpur",
+    "waypoints": [
+      {
+        "lat": 26.454,
+        "lon": 87.28
+      },
+      {
+        "lat": 26.814,
+        "lon": 87.279
+      },
+      {
+        "lat": 26.983,
+        "lon": 87.333
+      },
+      {
+        "lat": 27.167,
+        "lon": 87.067
+      },
+      {
+        "lat": 27.417,
+        "lon": 87.55
+      }
+    ],
+    "corridorSources": [
+      "Biratnagar-Dhankuta Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 148.2
+  },
+  {
+    "roadCode": "FR03",
+    "name": "Janakpur-Dhanusa Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Janakpur",
+    "toPlace": "Siraha",
+    "waypoints": [
+      {
+        "lat": 26.729,
+        "lon": 85.925
+      },
+      {
+        "lat": 26.817,
+        "lon": 86.033
+      },
+      {
+        "lat": 26.75,
+        "lon": 86.217
+      }
+    ],
+    "corridorSources": [
+      "Janakpur-Dhanusa Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 34.2
+  },
+  {
+    "roadCode": "FR04",
+    "name": "Pokhara-Baglung Highway",
+    "roadType": "FEEDER",
+    "fromPlace": "Pokhara",
+    "toPlace": "Kusma",
+    "waypoints": [
+      {
+        "lat": 28.21,
+        "lon": 83.986
+      },
+      {
+        "lat": 28.267,
+        "lon": 83.6
+      },
+      {
+        "lat": 28.233,
+        "lon": 83.717
+      }
+    ],
+    "corridorSources": [
+      "Pokhara-Baglung Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 50.4
+  },
+  {
+    "roadCode": "FR05",
+    "name": "Nepalgunj-Dailekh Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Nepalgunj",
+    "toPlace": "Dailekh",
+    "waypoints": [
+      {
+        "lat": 28.05,
+        "lon": 81.617
+      },
+      {
+        "lat": 28.233,
+        "lon": 81.333
+      },
+      {
+        "lat": 28.833,
+        "lon": 81.717
+      }
+    ],
+    "corridorSources": [
+      "Nepalgunj-Dailekh Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 111
+  },
+  {
+    "roadCode": "FR06",
+    "name": "Dhangadhi-Dadeldhura Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Dhangadhi",
+    "toPlace": "Dadeldhura",
+    "waypoints": [
+      {
+        "lat": 28.683,
+        "lon": 80.617
+      },
+      {
+        "lat": 29.083,
+        "lon": 80.533
+      },
+      {
+        "lat": 29.3,
+        "lon": 80.583
+      }
+    ],
+    "corridorSources": [
+      "Dhangadhi-Dadeldhura Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 69.8
+  },
+  {
+    "roadCode": "FR07",
+    "name": "Mahendranagar-Darchula Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Mahendranagar",
+    "toPlace": "Darchula",
+    "waypoints": [
+      {
+        "lat": 28.964,
+        "lon": 80.186
+      },
+      {
+        "lat": 28.9,
+        "lon": 80.1
+      },
+      {
+        "lat": 29.85,
+        "lon": 80.533
+      }
+    ],
+    "corridorSources": [
+      "Mahendranagar-Darchula Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 124.6
+  },
+  {
+    "roadCode": "FR08",
+    "name": "Nepalgunj-Surkhet Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Nepalgunj",
+    "toPlace": "Surkhet",
+    "waypoints": [
+      {
+        "lat": 28.05,
+        "lon": 81.617
+      },
+      {
+        "lat": 28.2,
+        "lon": 81.7
+      },
+      {
+        "lat": 28.6,
+        "lon": 81.633
+      }
+    ],
+    "corridorSources": [
+      "Nepalgunj-Surkhet Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 63.5
+  },
+  {
+    "roadCode": "FR09",
+    "name": "Besisahar Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Pokhara",
+    "toPlace": "Besisahar",
+    "waypoints": [
+      {
+        "lat": 28.21,
+        "lon": 83.986
+      },
+      {
+        "lat": 28.233,
+        "lon": 84.383
+      }
+    ],
+    "corridorSources": [
+      "Besisahar Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 39
+  },
+  {
+    "roadCode": "FR10",
+    "name": "Lumbini Road",
+    "roadType": "FEEDER",
+    "fromPlace": "Butwal",
+    "toPlace": "Lumbini",
+    "waypoints": [
+      {
+        "lat": 27.7,
+        "lon": 83.45
+      },
+      {
+        "lat": 27.469,
+        "lon": 83.276
+      }
+    ],
+    "corridorSources": [
+      "Lumbini Road"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 30.9
+  },
+  {
+    "roadCode": "NH01",
+    "name": "East-West Highway (Mahendra Highway)",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Mechinagar",
+    "toPlace": "Bhimdatta",
+    "waypoints": [
+      {
+        "lat": 26.645,
+        "lon": 87.989
+      },
+      {
+        "lat": 26.6641,
+        "lon": 87.8884
+      },
+      {
+        "lat": 26.6333,
+        "lon": 87.9833
+      },
+      {
+        "lat": 26.6667,
+        "lon": 87.7
+      },
+      {
+        "lat": 26.667,
+        "lon": 87.278
+      },
+      {
+        "lat": 26.6596,
+        "lon": 87.1532
+      },
+      {
+        "lat": 26.455,
+        "lon": 87.28
+      },
+      {
+        "lat": 26.6333,
+        "lon": 87.0333
+      },
+      {
+        "lat": 26.6,
+        "lon": 87.15
+      },
+      {
+        "lat": 26.5667,
+        "lon": 87.1
+      },
+      {
+        "lat": 26.7833,
+        "lon": 87.1667
+      },
+      {
+        "lat": 26.5167,
+        "lon": 86.75
+      },
+      {
+        "lat": 26.4833,
+        "lon": 86.7833
+      },
+      {
+        "lat": 26.7167,
+        "lon": 86.4833
+      },
+      {
+        "lat": 26.65,
+        "lon": 86.2
+      },
+      {
+        "lat": 26.65,
+        "lon": 86.0833
+      },
+      {
+        "lat": 26.9333,
+        "lon": 85.85
+      },
+      {
+        "lat": 26.65,
+        "lon": 85.8
+      },
+      {
+        "lat": 26.8667,
+        "lon": 85.5667
+      },
+      {
+        "lat": 26.95,
+        "lon": 85.3333
+      },
+      {
+        "lat": 26.7667,
+        "lon": 85.2667
+      },
+      {
+        "lat": 27.05,
+        "lon": 85.1333
+      },
+      {
+        "lat": 27,
+        "lon": 84.8667
+      },
+      {
+        "lat": 27.428,
+        "lon": 85.0322
+      },
+      {
+        "lat": 27.6833,
+        "lon": 84.4333
+      },
+      {
+        "lat": 27.817,
+        "lon": 84.77
+      },
+      {
+        "lat": 27.7,
+        "lon": 84.4333
+      },
+      {
+        "lat": 27.8,
+        "lon": 84.3
+      },
+      {
+        "lat": 27.65,
+        "lon": 84.2
+      },
+      {
+        "lat": 27.6833,
+        "lon": 84.0833
+      },
+      {
+        "lat": 27.7167,
+        "lon": 83.9833
+      },
+      {
+        "lat": 27.7,
+        "lon": 83.45
+      },
+      {
+        "lat": 27.5,
+        "lon": 83.3833
+      },
+      {
+        "lat": 27.6,
+        "lon": 83.35
+      },
+      {
+        "lat": 27.5167,
+        "lon": 83.4333
+      },
+      {
+        "lat": 27.5333,
+        "lon": 83.6
+      },
+      {
+        "lat": 27.55,
+        "lon": 83.7833
+      },
+      {
+        "lat": 27.5833,
+        "lon": 83.9
+      },
+      {
+        "lat": 27.5333,
+        "lon": 83.6667
+      },
+      {
+        "lat": 27.75,
+        "lon": 83.3
+      },
+      {
+        "lat": 28.05,
+        "lon": 81.6167
+      },
+      {
+        "lat": 28.1,
+        "lon": 81.7
+      },
+      {
+        "lat": 28.6,
+        "lon": 81.6333
+      },
+      {
+        "lat": 28.1333,
+        "lon": 82.25
+      },
+      {
+        "lat": 28.05,
+        "lon": 82.4833
+      },
+      {
+        "lat": 28.1333,
+        "lon": 82.3
+      },
+      {
+        "lat": 28.3667,
+        "lon": 82.1667
+      },
+      {
+        "lat": 28.4333,
+        "lon": 82.35
+      },
+      {
+        "lat": 28.8333,
+        "lon": 81.7
+      },
+      {
+        "lat": 28.65,
+        "lon": 80.6167
+      },
+      {
+        "lat": 28.6958,
+        "lon": 80.585
+      },
+      {
+        "lat": 28.55,
+        "lon": 80.55
+      },
+      {
+        "lat": 28.95,
+        "lon": 80.1833
+      },
+      {
+        "lat": 28.9,
+        "lon": 80.15
+      },
+      {
+        "lat": 28.95,
+        "lon": 80.1167
+      }
+    ],
+    "corridorSources": [
+      "east-west-highway"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 1697.5
+  },
+  {
+    "roadCode": "NH02",
+    "name": "Tribhuvan Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kathmandu",
+    "toPlace": "Birgunj",
+    "waypoints": [
+      {
+        "lat": 27.717,
+        "lon": 85.324
+      },
+      {
+        "lat": 27.7,
+        "lon": 85.3
+      },
+      {
+        "lat": 27.6,
+        "lon": 85.18
+      },
+      {
+        "lat": 27.733,
+        "lon": 84.85
+      },
+      {
+        "lat": 27.467,
+        "lon": 85.133
+      },
+      {
+        "lat": 27.428,
+        "lon": 85.032
+      },
+      {
+        "lat": 27,
+        "lon": 84.867
+      }
+    ],
+    "corridorSources": [
+      "Tribhuvan Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 156.8
+  },
+  {
+    "roadCode": "NH03",
+    "name": "BP Highway (B. P. Koirala Highway)",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kathmandu",
+    "toPlace": "Bardibas",
+    "waypoints": [
+      {
+        "lat": 27.6667,
+        "lon": 85.35
+      },
+      {
+        "lat": 27.6333,
+        "lon": 85.55
+      },
+      {
+        "lat": 27.6333,
+        "lon": 85.5333
+      },
+      {
+        "lat": 27.6167,
+        "lon": 85.6167
+      },
+      {
+        "lat": 27.2167,
+        "lon": 85.7
+      },
+      {
+        "lat": 27.25,
+        "lon": 85.9
+      },
+      {
+        "lat": 27.1167,
+        "lon": 85.9333
+      },
+      {
+        "lat": 27,
+        "lon": 85.9
+      },
+      {
+        "lat": 26.9333,
+        "lon": 85.85
+      },
+      {
+        "lat": 26.7333,
+        "lon": 85.9167
+      }
+    ],
+    "corridorSources": [
+      "bp-highway"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 156.2
+  },
+  {
+    "roadCode": "NH04",
+    "name": "Mid-Hill Highway (Puspalal Highway)",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Bhadrapur",
+    "toPlace": "Darchula",
+    "waypoints": [
+      {
+        "lat": 26.6333,
+        "lon": 87.9833
+      },
+      {
+        "lat": 26.9,
+        "lon": 87.9333
+      },
+      {
+        "lat": 27.2167,
+        "lon": 87.7333
+      },
+      {
+        "lat": 27.1,
+        "lon": 87.3833
+      },
+      {
+        "lat": 26.9833,
+        "lon": 87.3333
+      },
+      {
+        "lat": 27.05,
+        "lon": 87.3333
+      },
+      {
+        "lat": 27.3,
+        "lon": 87.5333
+      },
+      {
+        "lat": 27.4667,
+        "lon": 87.3
+      },
+      {
+        "lat": 27.4,
+        "lon": 87.2167
+      },
+      {
+        "lat": 27.2,
+        "lon": 86.7833
+      },
+      {
+        "lat": 27.1667,
+        "lon": 87.05
+      },
+      {
+        "lat": 27.4,
+        "lon": 86.85
+      },
+      {
+        "lat": 27.35,
+        "lon": 86.5833
+      },
+      {
+        "lat": 27.3167,
+        "lon": 86.5
+      },
+      {
+        "lat": 27.15,
+        "lon": 86.6
+      },
+      {
+        "lat": 27.3333,
+        "lon": 86.0833
+      },
+      {
+        "lat": 27.25,
+        "lon": 86.1833
+      },
+      {
+        "lat": 27.6833,
+        "lon": 86.0667
+      },
+      {
+        "lat": 27.8833,
+        "lon": 86.2167
+      },
+      {
+        "lat": 27.75,
+        "lon": 85.85
+      },
+      {
+        "lat": 27.7833,
+        "lon": 85.8833
+      },
+      {
+        "lat": 27.9667,
+        "lon": 85.9167
+      },
+      {
+        "lat": 27.6333,
+        "lon": 85.7167
+      },
+      {
+        "lat": 27.6333,
+        "lon": 85.55
+      },
+      {
+        "lat": 27.6833,
+        "lon": 85.2333
+      },
+      {
+        "lat": 27.6167,
+        "lon": 85.1333
+      },
+      {
+        "lat": 27.85,
+        "lon": 84.95
+      },
+      {
+        "lat": 27.8833,
+        "lon": 84.9
+      },
+      {
+        "lat": 28.0333,
+        "lon": 84.7667
+      },
+      {
+        "lat": 28,
+        "lon": 84.6333
+      },
+      {
+        "lat": 28.2333,
+        "lon": 84.3833
+      },
+      {
+        "lat": 28.55,
+        "lon": 84.25
+      },
+      {
+        "lat": 28.6667,
+        "lon": 84.0167
+      },
+      {
+        "lat": 28.2096,
+        "lon": 83.9856
+      },
+      {
+        "lat": 27.9833,
+        "lon": 83.7667
+      },
+      {
+        "lat": 28,
+        "lon": 84.6167
+      },
+      {
+        "lat": 28.0667,
+        "lon": 83.2667
+      },
+      {
+        "lat": 28.2667,
+        "lon": 83.6
+      },
+      {
+        "lat": 28.35,
+        "lon": 83.5667
+      },
+      {
+        "lat": 28.0833,
+        "lon": 82.8833
+      },
+      {
+        "lat": 28.6333,
+        "lon": 82.4833
+      },
+      {
+        "lat": 28.7333,
+        "lon": 82.2167
+      },
+      {
+        "lat": 29.15,
+        "lon": 81.6333
+      },
+      {
+        "lat": 29.2833,
+        "lon": 82.1833
+      },
+      {
+        "lat": 29.9667,
+        "lon": 81.8167
+      },
+      {
+        "lat": 29.45,
+        "lon": 81.5
+      },
+      {
+        "lat": 29.55,
+        "lon": 81.2
+      },
+      {
+        "lat": 29.85,
+        "lon": 80.55
+      },
+      {
+        "lat": 29.5333,
+        "lon": 80.4333
+      }
+    ],
+    "corridorSources": [
+      "mid-hill-highway"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 1792.2
+  },
+  {
+    "roadCode": "NH05",
+    "name": "Hulaki Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kakarbhitta",
+    "toPlace": "Mahendranagar",
+    "waypoints": [
+      {
+        "lat": 26.65,
+        "lon": 88.15
+      },
+      {
+        "lat": 26.65,
+        "lon": 87.983
+      },
+      {
+        "lat": 26.454,
+        "lon": 87.28
+      },
+      {
+        "lat": 26.541,
+        "lon": 86.749
+      },
+      {
+        "lat": 26.729,
+        "lon": 85.925
+      },
+      {
+        "lat": 26.647,
+        "lon": 85.798
+      },
+      {
+        "lat": 26.867,
+        "lon": 85.567
+      },
+      {
+        "lat": 27.7,
+        "lon": 84.433
+      },
+      {
+        "lat": 27.683,
+        "lon": 84.433
+      },
+      {
+        "lat": 27.7,
+        "lon": 83.45
+      },
+      {
+        "lat": 28.05,
+        "lon": 81.617
+      },
+      {
+        "lat": 28.5,
+        "lon": 81.133
+      },
+      {
+        "lat": 28.683,
+        "lon": 80.617
+      },
+      {
+        "lat": 28.964,
+        "lon": 80.186
+      }
+    ],
+    "corridorSources": [
+      "Hulaki Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 881.2
+  },
+  {
+    "roadCode": "NH06",
+    "name": "Karnali Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Surkhet",
+    "toPlace": "Hilsa",
+    "waypoints": [
+      {
+        "lat": 28.6,
+        "lon": 81.633
+      },
+      {
+        "lat": 28.633,
+        "lon": 81.617
+      },
+      {
+        "lat": 28.733,
+        "lon": 81.717
+      },
+      {
+        "lat": 29.275,
+        "lon": 82.183
+      },
+      {
+        "lat": 29.517,
+        "lon": 81.933
+      }
+    ],
+    "corridorSources": [
+      "Karnali Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 130.4
+  },
+  {
+    "roadCode": "NH07",
+    "name": "Mahakali Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Mahendranagar",
+    "toPlace": "Jhulaghat",
+    "waypoints": [
+      {
+        "lat": 28.964,
+        "lon": 80.186
+      },
+      {
+        "lat": 29.3,
+        "lon": 80.583
+      },
+      {
+        "lat": 29.517,
+        "lon": 80.333
+      },
+      {
+        "lat": 29.85,
+        "lon": 80.533
+      },
+      {
+        "lat": 29.933,
+        "lon": 80.367
+      }
+    ],
+    "corridorSources": [
+      "Mahakali Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 148.1
+  },
+  {
+    "roadCode": "NH08",
+    "name": "Mechi Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kakarbhitta",
+    "toPlace": "Taplejung",
+    "waypoints": [
+      {
+        "lat": 26.65,
+        "lon": 88.15
+      },
+      {
+        "lat": 26.533,
+        "lon": 88.083
+      },
+      {
+        "lat": 26.9,
+        "lon": 87.9
+      },
+      {
+        "lat": 26.95,
+        "lon": 87.85
+      },
+      {
+        "lat": 27.15,
+        "lon": 87.75
+      },
+      {
+        "lat": 27.35,
+        "lon": 87.667
+      }
+    ],
+    "corridorSources": [
+      "Mechi Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 114.8
+  },
+  {
+    "roadCode": "NH09",
+    "name": "Koshi Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Biratnagar",
+    "toPlace": "Kimathanka",
+    "waypoints": [
+      {
+        "lat": 26.454,
+        "lon": 87.28
+      },
+      {
+        "lat": 26.663,
+        "lon": 87.274
+      },
+      {
+        "lat": 26.814,
+        "lon": 87.279
+      },
+      {
+        "lat": 26.983,
+        "lon": 87.333
+      },
+      {
+        "lat": 27.042,
+        "lon": 87.35
+      },
+      {
+        "lat": 27.367,
+        "lon": 87.217
+      },
+      {
+        "lat": 27.817,
+        "lon": 87.383
+      }
+    ],
+    "corridorSources": [
+      "Koshi Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 157.5
+  },
+  {
+    "roadCode": "NH10",
+    "name": "Siddhartha Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Pokhara",
+    "toPlace": "Butwal",
+    "waypoints": [
+      {
+        "lat": 27.5,
+        "lon": 83.3833
+      },
+      {
+        "lat": 27.5167,
+        "lon": 83.4333
+      },
+      {
+        "lat": 27.5,
+        "lon": 83.4167
+      },
+      {
+        "lat": 27.7,
+        "lon": 83.45
+      },
+      {
+        "lat": 27.7167,
+        "lon": 83.4667
+      },
+      {
+        "lat": 27.7667,
+        "lon": 83.5167
+      },
+      {
+        "lat": 27.8667,
+        "lon": 83.55
+      },
+      {
+        "lat": 27.9167,
+        "lon": 83.5167
+      },
+      {
+        "lat": 27.85,
+        "lon": 83.5833
+      },
+      {
+        "lat": 27.9833,
+        "lon": 83.7667
+      },
+      {
+        "lat": 28.0833,
+        "lon": 83.8667
+      },
+      {
+        "lat": 28.1,
+        "lon": 83.8833
+      },
+      {
+        "lat": 28.2096,
+        "lon": 83.9856
+      }
+    ],
+    "corridorSources": [
+      "siddhartha-highway"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 124.5
+  },
+  {
+    "roadCode": "NH11",
+    "name": "Kaligandaki Corridor (Pokhara–Mustang)",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Pokhara",
+    "toPlace": "Lo Manthang",
+    "waypoints": [
+      {
+        "lat": 28.2096,
+        "lon": 83.9856
+      },
+      {
+        "lat": 28.2333,
+        "lon": 83.95
+      },
+      {
+        "lat": 28.2167,
+        "lon": 83.7333
+      },
+      {
+        "lat": 28.2333,
+        "lon": 83.6833
+      },
+      {
+        "lat": 28.35,
+        "lon": 83.5667
+      },
+      {
+        "lat": 28.4667,
+        "lon": 83.65
+      },
+      {
+        "lat": 28.5833,
+        "lon": 83.65
+      },
+      {
+        "lat": 28.6167,
+        "lon": 83.65
+      },
+      {
+        "lat": 28.6333,
+        "lon": 83.65
+      },
+      {
+        "lat": 28.6833,
+        "lon": 83.6333
+      },
+      {
+        "lat": 28.75,
+        "lon": 83.6667
+      },
+      {
+        "lat": 28.7833,
+        "lon": 83.7333
+      },
+      {
+        "lat": 28.8333,
+        "lon": 83.7833
+      },
+      {
+        "lat": 28.8167,
+        "lon": 83.8667
+      },
+      {
+        "lat": 29.1833,
+        "lon": 83.95
+      }
+    ],
+    "corridorSources": [
+      "kaligandaki-corridor"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 160.7
+  },
+  {
+    "roadCode": "NH12",
+    "name": "Arniko Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kathmandu",
+    "toPlace": "Kodari",
+    "waypoints": [
+      {
+        "lat": 27.717,
+        "lon": 85.324
+      },
+      {
+        "lat": 27.671,
+        "lon": 85.426
+      },
+      {
+        "lat": 27.63,
+        "lon": 85.52
+      },
+      {
+        "lat": 27.619,
+        "lon": 85.552
+      },
+      {
+        "lat": 27.585,
+        "lon": 85.516
+      },
+      {
+        "lat": 27.65,
+        "lon": 85.75
+      },
+      {
+        "lat": 27.788,
+        "lon": 85.9
+      },
+      {
+        "lat": 27.967,
+        "lon": 85.967
+      }
+    ],
+    "corridorSources": [
+      "Arniko Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 96.6
+  },
+  {
+    "roadCode": "NH13",
+    "name": "Pasang Lhamu Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kathmandu",
+    "toPlace": "Rasuwagadhi",
+    "waypoints": [
+      {
+        "lat": 27.717,
+        "lon": 85.324
+      },
+      {
+        "lat": 27.74,
+        "lon": 85.31
+      },
+      {
+        "lat": 27.917,
+        "lon": 85.15
+      },
+      {
+        "lat": 28.167,
+        "lon": 85.333
+      },
+      {
+        "lat": 28.3,
+        "lon": 85.383
+      }
+    ],
+    "corridorSources": [
+      "Pasang Lhamu Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 76.8
+  },
+  {
+    "roadCode": "NH14",
+    "name": "Kanti Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Thankot",
+    "toPlace": "Hetauda",
+    "waypoints": [
+      {
+        "lat": 27.7,
+        "lon": 85.3
+      },
+      {
+        "lat": 27.611,
+        "lon": 85.264
+      },
+      {
+        "lat": 27.567,
+        "lon": 85.25
+      },
+      {
+        "lat": 27.428,
+        "lon": 85.032
+      }
+    ],
+    "corridorSources": [
+      "Kanti Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 42.1
+  },
+  {
+    "roadCode": "NH15",
+    "name": "Madan Bhandari Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Sindhuli",
+    "toPlace": "Mugling",
+    "waypoints": [
+      {
+        "lat": 27.2,
+        "lon": 85.95
+      },
+      {
+        "lat": 27.7,
+        "lon": 86
+      },
+      {
+        "lat": 27.67,
+        "lon": 86.05
+      },
+      {
+        "lat": 27.583,
+        "lon": 84.833
+      }
+    ],
+    "corridorSources": [
+      "Madan Bhandari Highway"
+    ],
+    "sourceConfidence": {
+      "osm": 0.6
+    },
+    "lengthKm": 182
+  },
+  {
+    "roadCode": "NH17",
+    "name": "Prithvi Highway",
+    "roadType": "NATIONAL_HIGHWAY",
+    "fromPlace": "Kathmandu",
+    "toPlace": "Pokhara",
+    "waypoints": [
+      {
+        "lat": 27.717,
+        "lon": 85.324
+      },
+      {
+        "lat": 27.7,
+        "lon": 85.3
+      },
+      {
+        "lat": 27.683,
+        "lon": 85.283
+      },
+      {
+        "lat": 27.617,
+        "lon": 85.183
+      },
+      {
+        "lat": 27.6167,
+        "lon": 85.1333
+      },
+      {
+        "lat": 27.6333,
+        "lon": 85.0833
+      },
+      {
+        "lat": 27.65,
+        "lon": 85
+      },
+      {
+        "lat": 27.7,
+        "lon": 84.9167
+      },
+      {
+        "lat": 27.75,
+        "lon": 84.85
+      },
+      {
+        "lat": 27.817,
+        "lon": 84.77
+      },
+      {
+        "lat": 27.85,
+        "lon": 84.6833
+      },
+      {
+        "lat": 27.8833,
+        "lon": 84.5833
+      },
+      {
+        "lat": 27.9667,
+        "lon": 84.5333
+      },
+      {
+        "lat": 27.95,
+        "lon": 84.5333
+      },
+      {
+        "lat": 27.9667,
+        "lon": 84.4333
+      },
+      {
+        "lat": 27.9833,
+        "lon": 84.35
+      },
+      {
+        "lat": 28,
+        "lon": 84.4
+      },
+      {
+        "lat": 28.0833,
+        "lon": 84.25
+      },
+      {
+        "lat": 28.2096,
+        "lon": 83.9856
+      }
+    ],
+    "corridorSources": [
+      "prithvi-highway"
+    ],
+    "sourceConfidence": {
+      "corridor": 0.8
+    },
+    "lengthKm": 168.4
+  }
+]

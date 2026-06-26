@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import SegmentDetails from "@/components/segment-details";
 import RouteDirections from "@/components/route-directions";
 import { isInNepalBounds, NEPAL_CENTER, type RouteSegmentInfo } from "@/lib/map-utils";
-import type { RouteInstruction, PerSegmentRoute } from "@/lib/routing/types";
+import type { NamedRoute, RouteInstruction, PerSegmentRoute, HighwaySegment, RouteProvenance } from "@/lib/routing/types";
 
 const RouteMap = dynamic(() => import("@/components/route-map"), {
   ssr: false,
@@ -76,6 +76,9 @@ export default function RouteMapLoader({
   const [instructions, setInstructions] = useState<RouteInstruction[]>([]);
   const [userMarker, setUserMarker] = useState<{ lat: number; lon: number } | null>(null);
   const [segmentRoutes, setSegmentRoutes] = useState<PerSegmentRoute[]>([]);
+  const [highwaySegments, setHighwaySegments] = useState<HighwaySegment[]>([]);
+  const [provenance, setProvenance] = useState<RouteProvenance | null>(null);
+  const [namedRoute, setNamedRoute] = useState<NamedRoute | null>(null);
 
   useEffect(() => {
     const fetchRoute = async () => {
@@ -100,6 +103,7 @@ export default function RouteMapLoader({
             displayStartLon,
             perSegmentRouting,
             dynamicOsmRouting,
+            includeNamedPlaces: true,
           }),
         });
 
@@ -141,10 +145,13 @@ export default function RouteMapLoader({
         setWaypoints(nodeWaypoints);
         setPolyline(safePolyline.length >= 2 ? safePolyline : nodeWaypoints);
         setSegments(data.segments || []);
+        setHighwaySegments(data.abstraction?.highwaySegments ?? []);
+        setProvenance(data.provenance ?? null);
         setDistance(data.distance);
         setDuration(data.duration);
         setInstructions(data.instructions || []);
         setSegmentRoutes(data.segmentRoutes || []);
+        setNamedRoute(data.namedRoute ?? null);
         setResolutionNote(data.resolutionNote ?? data.originNote ?? null);
         setError(null);
 
@@ -216,11 +223,33 @@ export default function RouteMapLoader({
           {resolutionNote}
         </div>
       )}
+      {provenance && (
+        <div className="mb-3 p-2 rounded-lg bg-slate-700/40 border border-slate-600/30 text-slate-300 text-[10px] font-mono">
+          engine: {provenance.engine} · validation: {provenance.validationStatus}
+          {provenance.engine === "dor" ? " · trace valid" : ""}
+        </div>
+      )}
       {error && (
         <div className="mb-3 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-body">
           {error}
         </div>
       )}
+
+      {namedRoute?.namedPlaces?.length ? (
+        <div className="mb-4 rounded-2xl border border-slate-700 bg-slate-800/70 p-4 text-slate-200">
+          <div className="text-[11px] uppercase tracking-[0.2em] text-slate-400 font-semibold mb-2">Route places</div>
+          <div className="flex flex-wrap gap-2">
+            {namedRoute.namedPlaces.map((place, idx) => (
+              <span
+                key={`${place}-${idx}`}
+                className="inline-flex items-center rounded-full bg-slate-900/80 px-3 py-1 text-[11px] text-slate-300"
+              >
+                {place}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <RouteMap
         waypoints={waypoints}
@@ -235,6 +264,8 @@ export default function RouteMapLoader({
         userLocation={userMarker}
         segmentRoutes={segmentRoutes}
         onSegmentClick={(segment) => setSelectedSegment(segment)}
+        highwaySegments={highwaySegments}
+        provenance={provenance}
         alternatives={alternatives}
         selectedRouteIndex={selectedRouteIndex}
         onRouteSelect={onRouteSelect}

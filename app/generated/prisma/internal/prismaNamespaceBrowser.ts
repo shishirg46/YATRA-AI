@@ -63,6 +63,7 @@ export const ModelName = {
   Account: 'Account',
   Verification: 'Verification',
   Destination: 'Destination',
+  DestinationPhoto: 'DestinationPhoto',
   Province: 'Province',
   District: 'District',
   Location: 'Location',
@@ -73,6 +74,14 @@ export const ModelName = {
   SavedDestination: 'SavedDestination',
   RouteTemplate: 'RouteTemplate',
   RouteTemplatePoint: 'RouteTemplatePoint',
+  OsmWay: 'OsmWay',
+  RoadSegment: 'RoadSegment',
+  RoadJunction: 'RoadJunction',
+  AdminRegion: 'AdminRegion',
+  HazardHex: 'HazardHex',
+  EdgeCache: 'EdgeCache',
+  RouteUsageLog: 'RouteUsageLog',
+  RouteIntelligenceJob: 'RouteIntelligenceJob',
   WeatherData: 'WeatherData',
   HazardData: 'HazardData',
   CommunityHazardReport: 'CommunityHazardReport',
@@ -250,6 +259,7 @@ export const AccountScalarFieldEnum = {
   accessTokenExpiresAt: 'accessTokenExpiresAt',
   refreshTokenExpiresAt: 'refreshTokenExpiresAt',
   scope: 'scope',
+  grantedScopes: 'grantedScopes',
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -307,6 +317,21 @@ export const DestinationScalarFieldEnum = {
 export type DestinationScalarFieldEnum = (typeof DestinationScalarFieldEnum)[keyof typeof DestinationScalarFieldEnum]
 
 
+export const DestinationPhotoScalarFieldEnum = {
+  id: 'id',
+  destinationId: 'destinationId',
+  cloudinaryUrl: 'cloudinaryUrl',
+  sourceUrl: 'sourceUrl',
+  thumbUrl: 'thumbUrl',
+  title: 'title',
+  index: 'index',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type DestinationPhotoScalarFieldEnum = (typeof DestinationPhotoScalarFieldEnum)[keyof typeof DestinationPhotoScalarFieldEnum]
+
+
 export const ProvinceScalarFieldEnum = {
   id: 'id',
   name: 'name'
@@ -340,9 +365,14 @@ export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typ
 export const PlaceScalarFieldEnum = {
   id: 'id',
   name: 'name',
+  nameEn: 'nameEn',
+  nameNe: 'nameNe',
   type: 'type',
   latitude: 'latitude',
   longitude: 'longitude',
+  adminLevel: 'adminLevel',
+  osmId: 'osmId',
+  osmType: 'osmType',
   parentId: 'parentId',
   districtId: 'districtId',
   locationId: 'locationId',
@@ -365,6 +395,10 @@ export const RouteNodeScalarFieldEnum = {
   hazardExposureIndex: 'hazardExposureIndex',
   connectivityRank: 'connectivityRank',
   monsoonVulnerability: 'monsoonVulnerability',
+  osmWayId: 'osmWayId',
+  sequenceIndex: 'sequenceIndex',
+  roadClass: 'roadClass',
+  isJunctionNode: 'isJunctionNode',
   placeId: 'placeId',
   isHub: 'isHub',
   isActive: 'isActive',
@@ -453,6 +487,135 @@ export const RouteTemplatePointScalarFieldEnum = {
 } as const
 
 export type RouteTemplatePointScalarFieldEnum = (typeof RouteTemplatePointScalarFieldEnum)[keyof typeof RouteTemplatePointScalarFieldEnum]
+
+
+export const OsmWayScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  roadClass: 'roadClass',
+  oneWay: 'oneWay',
+  graphVersion: 'graphVersion',
+  importBatchId: 'importBatchId',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OsmWayScalarFieldEnum = (typeof OsmWayScalarFieldEnum)[keyof typeof OsmWayScalarFieldEnum]
+
+
+export const RoadSegmentScalarFieldEnum = {
+  id: 'id',
+  roadCode: 'roadCode',
+  roadNumber: 'roadNumber',
+  name: 'name',
+  roadType: 'roadType',
+  province: 'province',
+  fromPlaceId: 'fromPlaceId',
+  toPlaceId: 'toPlaceId',
+  lengthKm: 'lengthKm',
+  isActive: 'isActive',
+  sourceConfidence: 'sourceConfidence',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoadSegmentScalarFieldEnum = (typeof RoadSegmentScalarFieldEnum)[keyof typeof RoadSegmentScalarFieldEnum]
+
+
+export const RoadJunctionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  roadCodes: 'roadCodes',
+  type: 'type',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoadJunctionScalarFieldEnum = (typeof RoadJunctionScalarFieldEnum)[keyof typeof RoadJunctionScalarFieldEnum]
+
+
+export const AdminRegionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  type: 'type',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdminRegionScalarFieldEnum = (typeof AdminRegionScalarFieldEnum)[keyof typeof AdminRegionScalarFieldEnum]
+
+
+export const HazardHexScalarFieldEnum = {
+  h3Index: 'h3Index',
+  centroidLat: 'centroidLat',
+  centroidLon: 'centroidLon',
+  landslideRisk: 'landslideRisk',
+  floodRisk: 'floodRisk',
+  monsoonVulnerability: 'monsoonVulnerability',
+  weatherSensitivity: 'weatherSensitivity',
+  dataDate: 'dataDate',
+  modelVersion: 'modelVersion'
+} as const
+
+export type HazardHexScalarFieldEnum = (typeof HazardHexScalarFieldEnum)[keyof typeof HazardHexScalarFieldEnum]
+
+
+export const EdgeCacheScalarFieldEnum = {
+  id: 'id',
+  fromNodeId: 'fromNodeId',
+  toNodeId: 'toNodeId',
+  distanceKm: 'distanceKm',
+  gradientPct: 'gradientPct',
+  surfaceType: 'surfaceType',
+  compositeCost: 'compositeCost',
+  riskSnapshotId: 'riskSnapshotId',
+  graphVersion: 'graphVersion',
+  season: 'season',
+  ttl: 'ttl',
+  computedAt: 'computedAt'
+} as const
+
+export type EdgeCacheScalarFieldEnum = (typeof EdgeCacheScalarFieldEnum)[keyof typeof EdgeCacheScalarFieldEnum]
+
+
+export const RouteUsageLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tripId: 'tripId',
+  fallbackLevel: 'fallbackLevel',
+  segments: 'segments',
+  totalDistance: 'totalDistance',
+  avgSafetyScore: 'avgSafetyScore',
+  vehicleProfile: 'vehicleProfile',
+  source: 'source',
+  createdAt: 'createdAt'
+} as const
+
+export type RouteUsageLogScalarFieldEnum = (typeof RouteUsageLogScalarFieldEnum)[keyof typeof RouteUsageLogScalarFieldEnum]
+
+
+export const RouteIntelligenceJobScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  status: 'status',
+  attempts: 'attempts',
+  payload: 'payload',
+  result: 'result',
+  error: 'error',
+  runAfter: 'runAfter',
+  lockUntil: 'lockUntil',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RouteIntelligenceJobScalarFieldEnum = (typeof RouteIntelligenceJobScalarFieldEnum)[keyof typeof RouteIntelligenceJobScalarFieldEnum]
 
 
 export const WeatherDataScalarFieldEnum = {

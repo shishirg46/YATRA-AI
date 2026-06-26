@@ -8,6 +8,8 @@ export interface OsrmRouteResult {
   instructions?: RouteInstruction[];
 }
 
+export const LOCAL_OSRM_URL = process.env.OSRM_URL ?? "http://localhost:5000";
+
 export async function fetchOsrmRouteThroughNodes(
   nodes: RouteNode[],
   alternatives: boolean = false
@@ -15,7 +17,7 @@ export async function fetchOsrmRouteThroughNodes(
   if (nodes.length < 2) return null;
 
   const coordStr = nodes.map((n) => `${n.lon},${n.lat}`).join(";");
-  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=simplified&geometries=geojson&steps=true&alternatives=${alternatives}`;
+  const url = `${LOCAL_OSRM_URL}/route/v1/driving/${coordStr}?overview=full&geometries=geojson&steps=true&alternatives=${alternatives}`;
 
   try {
     const res = await fetch(url, {

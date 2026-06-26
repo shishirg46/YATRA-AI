@@ -1,0 +1,3439 @@
+{
+  "version": 4,
+  "generatedAt": "2026-06-13T02:05:26.521Z",
+  "source": "build-junction-graph.ts",
+  "junctions": [
+    {
+      "id": "J_27.71727_85.32473_NH02_NH12_NH13_NH17",
+      "lat": 27.717269,
+      "lon": 85.324732,
+      "roads": [
+        "NH02",
+        "NH12",
+        "NH13",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH12_chain_0",
+        "NH13_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "lat": 27.724422,
+      "lon": 85.318964,
+      "roads": [
+        "NH02",
+        "NH13",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH13_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.72973_85.92931_FR03_NH05",
+      "lat": 26.729734,
+      "lon": 85.929306,
+      "roads": [
+        "FR03",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "FR03_chain_0",
+        "NH05_chain_13"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.66945_87.27372_NH01_NH09",
+      "lat": 26.669449,
+      "lon": 87.273723,
+      "roads": [
+        "NH01",
+        "NH09"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_5",
+        "NH09_chain_5",
+        "NH09_chain_6"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.66341_87.27305_NH01_NH09",
+      "lat": 26.663412,
+      "lon": 87.273051,
+      "roads": [
+        "NH01",
+        "NH09"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_5",
+        "NH09_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.45630_87.27848_NH01_NH05",
+      "lat": 26.456301,
+      "lon": 87.278481,
+      "roads": [
+        "NH01",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_6",
+        "NH05_chain_6"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.55191_86.69543_NH01_NH05",
+      "lat": 26.551906,
+      "lon": 86.695429,
+      "roads": [
+        "NH01",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_14",
+        "NH05_chain_9"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.56156_86.68584_NH01_NH05",
+      "lat": 26.561557,
+      "lon": 86.685841,
+      "roads": [
+        "NH01",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_14",
+        "NH05_chain_9"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.64995_85.79892_NH01_NH05",
+      "lat": 26.64995,
+      "lon": 85.798918,
+      "roads": [
+        "NH01",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_21",
+        "NH05_chain_15"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.02181_84.87831_NH01_NH02",
+      "lat": 27.021814,
+      "lon": 84.878307,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.01505_84.87661_NH01_NH02",
+      "lat": 27.015049,
+      "lon": 84.876609,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.00603_84.87315_NH01_NH02",
+      "lat": 27.006033,
+      "lon": 84.873154,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.01049_84.87135_NH01_NH02",
+      "lat": 27.01049,
+      "lon": 84.871351,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.01211_84.87122_NH01_NH02",
+      "lat": 27.01211,
+      "lon": 84.871224,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.00820_84.87060_NH01_NH02",
+      "lat": 27.008202,
+      "lon": 84.870605,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.00204_84.86950_NH01_NH02",
+      "lat": 27.002042,
+      "lon": 84.869503,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.00572_84.86521_NH01_NH02",
+      "lat": 27.005721,
+      "lon": 84.865211,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_31",
+        "NH02_chain_7"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42433_85.03388_NH01_NH02",
+      "lat": 27.424329,
+      "lon": 85.033881,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42117_85.03192_NH01_NH02",
+      "lat": 27.421174,
+      "lon": 85.031916,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.41527_85.03147_NH01_NH02",
+      "lat": 27.415266,
+      "lon": 85.031466,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.41913_85.02967_NH01_NH02",
+      "lat": 27.419133,
+      "lon": 85.029669,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.43012_85.02887_NH01_NH02",
+      "lat": 27.430115,
+      "lon": 85.028875,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42785_85.02746_NH01_NH02",
+      "lat": 27.427854,
+      "lon": 85.027461,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.41278_85.02664_NH01_NH02",
+      "lat": 27.412777,
+      "lon": 85.026642,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.40177_85.02659_NH01_NH02",
+      "lat": 27.40177,
+      "lon": 85.02659,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_32",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42854_85.02622_NH01_NH02",
+      "lat": 27.428539,
+      "lon": 85.026224,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_33",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.40431_85.02391_NH01_NH02",
+      "lat": 27.404314,
+      "lon": 85.023909,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_34",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.40016_85.02350_NH01_NH02",
+      "lat": 27.400162,
+      "lon": 85.023497,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_34",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.43208_85.02307_NH01_NH02_NH14",
+      "lat": 27.432078,
+      "lon": 85.02307,
+      "roads": [
+        "NH01",
+        "NH02",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_35",
+        "NH02_chain_5",
+        "NH14_chain_4"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.40776_85.02264_NH01_NH02",
+      "lat": 27.407757,
+      "lon": 85.022639,
+      "roads": [
+        "NH01",
+        "NH02"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_36",
+        "NH02_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.13078_82.25778_FR01_NH01",
+      "lat": 28.130785,
+      "lon": 82.257777,
+      "roads": [
+        "FR01",
+        "NH01"
+      ],
+      "connectedNodeIds": [
+        "FR01_chain_2",
+        "NH01_chain_67"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.92231_82.33013_NH01_NH05",
+      "lat": 27.922311,
+      "lon": 82.330129,
+      "roads": [
+        "NH01",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "NH01_chain_72",
+        "NH05_chain_26"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.36827_82.17853_FR01_NH01",
+      "lat": 28.368265,
+      "lon": 82.178528,
+      "roads": [
+        "FR01",
+        "NH01"
+      ],
+      "connectedNodeIds": [
+        "FR01_chain_4",
+        "NH01_chain_77"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.64746_88.15218_NH05_NH08",
+      "lat": 26.64746,
+      "lon": 88.152181,
+      "roads": [
+        "NH05",
+        "NH08"
+      ],
+      "connectedNodeIds": [
+        "NH05_chain_0",
+        "NH08_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.64831_88.14728_NH05_NH08",
+      "lat": 26.648314,
+      "lon": 88.14728,
+      "roads": [
+        "NH05",
+        "NH08"
+      ],
+      "connectedNodeIds": [
+        "NH05_chain_0",
+        "NH08_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.46017_87.29286_NH05_NH09",
+      "lat": 26.460169,
+      "lon": 87.292861,
+      "roads": [
+        "NH05",
+        "NH09"
+      ],
+      "connectedNodeIds": [
+        "NH05_chain_6",
+        "NH09_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.45340_87.27583_FR02_NH05",
+      "lat": 26.453404,
+      "lon": 87.275831,
+      "roads": [
+        "FR02",
+        "NH05"
+      ],
+      "connectedNodeIds": [
+        "FR02_chain_0",
+        "NH05_chain_6"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.66061_85.37012_NH03_NH04",
+      "lat": 27.660606,
+      "lon": 85.370118,
+      "roads": [
+        "NH03",
+        "NH04"
+      ],
+      "connectedNodeIds": [
+        "NH03_chain_1",
+        "NH04_chain_15"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.66736_85.36057_NH03_NH04",
+      "lat": 27.667364,
+      "lon": 85.360574,
+      "roads": [
+        "NH03",
+        "NH04"
+      ],
+      "connectedNodeIds": [
+        "NH03_chain_1",
+        "NH04_chain_15"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.64252_85.47691_NH03_NH04",
+      "lat": 27.642521,
+      "lon": 85.47691,
+      "roads": [
+        "NH03",
+        "NH04"
+      ],
+      "connectedNodeIds": [
+        "NH03_chain_2",
+        "NH04_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.63610_85.66975_NH04_NH15",
+      "lat": 27.636096,
+      "lon": 85.66975,
+      "roads": [
+        "NH04",
+        "NH15"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_8",
+        "NH15_chain_3"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.63363_85.64216_NH04_NH15",
+      "lat": 27.633632,
+      "lon": 85.642163,
+      "roads": [
+        "NH04",
+        "NH15"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_9",
+        "NH15_chain_4"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.63523_85.51712_NH04_NH12",
+      "lat": 27.63523,
+      "lon": 85.517125,
+      "roads": [
+        "NH04",
+        "NH12"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_11",
+        "NH12_chain_3"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67057_85.29023_NH04_NH14",
+      "lat": 27.670575,
+      "lon": 85.290233,
+      "roads": [
+        "NH04",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_16",
+        "NH14_chain_1"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67361_85.29018_NH04_NH14",
+      "lat": 27.67361,
+      "lon": 85.290182,
+      "roads": [
+        "NH04",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_16",
+        "NH14_chain_1"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67254_85.28355_NH04_NH14",
+      "lat": 27.672537,
+      "lon": 85.283548,
+      "roads": [
+        "NH04",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_16",
+        "NH14_chain_1"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67712_85.28088_NH04_NH17",
+      "lat": 27.677118,
+      "lon": 85.280879,
+      "roads": [
+        "NH04",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_16",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67665_85.27762_NH04_NH17",
+      "lat": 27.676648,
+      "lon": 85.27762,
+      "roads": [
+        "NH04",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_16",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67749_85.27639_NH02_NH04_NH17",
+      "lat": 27.677487,
+      "lon": 85.276386,
+      "roads": [
+        "NH02",
+        "NH04",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH04_chain_16",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "lat": 27.677195,
+      "lon": 85.266432,
+      "roads": [
+        "NH02",
+        "NH04",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH04_chain_16",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.62398_85.14809_NH04_NH17",
+      "lat": 27.62398,
+      "lon": 85.148087,
+      "roads": [
+        "NH04",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_17",
+        "NH17_chain_2"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20614_83.98278_NH04_NH10",
+      "lat": 28.206137,
+      "lon": 83.982778,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_33",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20112_83.97705_NH04_NH10",
+      "lat": 28.201121,
+      "lon": 83.977049,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_33",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.19558_83.97653_NH04_NH10",
+      "lat": 28.195575,
+      "lon": 83.97653,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_33",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.19133_83.97216_NH04_NH10",
+      "lat": 28.191326,
+      "lon": 83.972157,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_33",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.19132_83.97040_NH04_NH10",
+      "lat": 28.191317,
+      "lon": 83.970405,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_33",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.17451_83.95220_NH04_NH10",
+      "lat": 28.17451,
+      "lon": 83.952196,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_34",
+        "NH10_chain_13"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.00175_83.78213_NH04_NH10",
+      "lat": 28.001746,
+      "lon": 83.782127,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_36",
+        "NH10_chain_9"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.99462_83.78038_NH04_NH10",
+      "lat": 27.994616,
+      "lon": 83.780385,
+      "roads": [
+        "NH04",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_36",
+        "NH10_chain_9"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.26656_83.59999_FR04_NH04",
+      "lat": 28.266564,
+      "lon": 83.599988,
+      "roads": [
+        "FR04",
+        "NH04"
+      ],
+      "connectedNodeIds": [
+        "FR04_chain_1",
+        "NH04_chain_39"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.34120_83.56999_NH04_NH11",
+      "lat": 28.341201,
+      "lon": 83.56999,
+      "roads": [
+        "NH04",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "NH04_chain_41",
+        "NH11_chain_2"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20736_83.98787_FR09_NH10",
+      "lat": 28.207356,
+      "lon": 83.987871,
+      "roads": [
+        "FR09",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21280_83.98618_FR09_NH10_NH11",
+      "lat": 28.212797,
+      "lon": 83.986177,
+      "roads": [
+        "FR09",
+        "NH10",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH10_chain_12",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20827_83.98303_FR09_NH10_NH11",
+      "lat": 28.208273,
+      "lon": 83.983032,
+      "roads": [
+        "FR09",
+        "NH10",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH10_chain_12",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20005_83.97732_FR09_NH10",
+      "lat": 28.200049,
+      "lon": 83.977323,
+      "roads": [
+        "FR09",
+        "NH10"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH10_chain_12"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "lat": 28.204257,
+      "lon": 83.976169,
+      "roads": [
+        "FR09",
+        "NH10",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH10_chain_12",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21307_83.98523_FR09_NH11",
+      "lat": 28.213068,
+      "lon": 83.985228,
+      "roads": [
+        "FR09",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20994_83.98316_FR09_NH11",
+      "lat": 28.209938,
+      "lon": 83.983159,
+      "roads": [
+        "FR09",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21239_83.98297_FR09_NH11",
+      "lat": 28.212386,
+      "lon": 83.982974,
+      "roads": [
+        "FR09",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21418_83.97546_FR04_NH11",
+      "lat": 28.214183,
+      "lon": 83.97546,
+      "roads": [
+        "FR04",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR04_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21483_83.97458_FR04_NH11",
+      "lat": 28.214826,
+      "lon": 83.974575,
+      "roads": [
+        "FR04",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR04_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.21795_83.97590_FR04_NH11",
+      "lat": 28.217946,
+      "lon": 83.975905,
+      "roads": [
+        "FR04",
+        "NH11"
+      ],
+      "connectedNodeIds": [
+        "FR04_chain_0",
+        "NH11_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71373_85.32501_NH12_NH17",
+      "lat": 27.713727,
+      "lon": 85.325014,
+      "roads": [
+        "NH12",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH12_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71351_85.32198_NH02_NH12_NH17",
+      "lat": 27.713513,
+      "lon": 85.32198,
+      "roads": [
+        "NH02",
+        "NH12",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH12_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71050_85.32181_NH02_NH17",
+      "lat": 27.710496,
+      "lon": 85.321814,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71802_85.32173_NH02_NH17",
+      "lat": 27.718016,
+      "lon": 85.321727,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71439_85.31747_NH02_NH17",
+      "lat": 27.71439,
+      "lon": 85.317469,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71378_85.31538_NH02_NH17",
+      "lat": 27.713779,
+      "lon": 85.315376,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70802_85.31436_NH02_NH17",
+      "lat": 27.708022,
+      "lon": 85.314356,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71179_85.31390_NH02_NH17",
+      "lat": 27.711787,
+      "lon": 85.313903,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71326_85.31292_NH02_NH17",
+      "lat": 27.713263,
+      "lon": 85.312919,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.71065_85.31096_NH02_NH17",
+      "lat": 27.710651,
+      "lon": 85.310961,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70590_85.31378_NH02_NH17",
+      "lat": 27.7059,
+      "lon": 85.313779,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70630_85.31290_NH02_NH17",
+      "lat": 27.706299,
+      "lon": 85.312899,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70467_85.31247_NH02_NH17",
+      "lat": 27.70467,
+      "lon": 85.312468,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70361_85.31030_NH02_NH17",
+      "lat": 27.703612,
+      "lon": 85.310298,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70187_85.30960_NH02_NH17",
+      "lat": 27.701872,
+      "lon": 85.309602,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70510_85.30937_NH02_NH17",
+      "lat": 27.705096,
+      "lon": 85.30937,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70877_85.30778_NH02_NH17",
+      "lat": 27.708766,
+      "lon": 85.307775,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70352_85.30752_NH02_NH17",
+      "lat": 27.703519,
+      "lon": 85.307522,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70781_85.30735_NH02_NH17",
+      "lat": 27.707811,
+      "lon": 85.30735,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70677_85.30696_NH02_NH17",
+      "lat": 27.706772,
+      "lon": 85.306964,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70196_85.30561_NH02_NH17",
+      "lat": 27.701955,
+      "lon": 85.30561,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70141_85.30522_NH02_NH17",
+      "lat": 27.701413,
+      "lon": 85.305218,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70026_85.30464_NH02_NH17",
+      "lat": 27.700263,
+      "lon": 85.304645,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70550_85.30422_NH02_NH17",
+      "lat": 27.705501,
+      "lon": 85.304222,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70121_85.30360_NH02_NH17",
+      "lat": 27.701209,
+      "lon": 85.303602,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70519_85.30350_NH02_NH17",
+      "lat": 27.705185,
+      "lon": 85.303504,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70302_85.30305_NH02_NH17",
+      "lat": 27.703015,
+      "lon": 85.30305,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69967_85.29832_NH02_NH14_NH17",
+      "lat": 27.699666,
+      "lon": 85.298315,
+      "roads": [
+        "NH02",
+        "NH14",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH14_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69900_85.29775_NH02_NH17",
+      "lat": 27.698999,
+      "lon": 85.297748,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.70096_85.29657_NH02_NH17",
+      "lat": 27.700955,
+      "lon": 85.296573,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69232_85.29654_NH14_NH17",
+      "lat": 27.692324,
+      "lon": 85.296543,
+      "roads": [
+        "NH14",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH14_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69546_85.29620_NH02_NH17",
+      "lat": 27.695463,
+      "lon": 85.296201,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69197_85.29606_NH14_NH17",
+      "lat": 27.691968,
+      "lon": 85.29606,
+      "roads": [
+        "NH14",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH14_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69951_85.29599_NH02_NH17",
+      "lat": 27.699508,
+      "lon": 85.29599,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69859_85.29576_NH02_NH17",
+      "lat": 27.698592,
+      "lon": 85.295764,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69317_85.29401_NH02_NH14_NH17",
+      "lat": 27.693167,
+      "lon": 85.294006,
+      "roads": [
+        "NH02",
+        "NH14",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH14_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69676_85.29358_NH02_NH17",
+      "lat": 27.696762,
+      "lon": 85.293584,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69168_85.29228_NH02_NH14_NH17",
+      "lat": 27.691678,
+      "lon": 85.292283,
+      "roads": [
+        "NH02",
+        "NH14",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH14_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69481_85.28960_NH02_NH17",
+      "lat": 27.69481,
+      "lon": 85.289605,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.68841_85.28689_NH02_NH17",
+      "lat": 27.688408,
+      "lon": 85.286886,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.68640_85.28201_NH02_NH17",
+      "lat": 27.686402,
+      "lon": 85.282012,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67830_85.27938_NH02_NH17",
+      "lat": 27.678301,
+      "lon": 85.279383,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67974_85.27804_NH02_NH17",
+      "lat": 27.679739,
+      "lon": 85.278042,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.67750_85.27740_NH02_NH17",
+      "lat": 27.677502,
+      "lon": 85.277398,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH17_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.63339_85.09160_NH02_NH17",
+      "lat": 27.633386,
+      "lon": 85.091596,
+      "roads": [
+        "NH02",
+        "NH17"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_3",
+        "NH17_chain_3"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.61990_81.62272_FR01_NH06",
+      "lat": 28.619904,
+      "lon": 81.62272,
+      "roads": [
+        "FR01",
+        "NH06"
+      ],
+      "connectedNodeIds": [
+        "FR01_chain_7",
+        "NH06_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.69759_85.29628_NH02_NH14",
+      "lat": 27.697594,
+      "lon": 85.296283,
+      "roads": [
+        "NH02",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_0",
+        "NH14_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42578_85.03253_NH02_NH14",
+      "lat": 27.425781,
+      "lon": 85.032532,
+      "roads": [
+        "NH02",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_5",
+        "NH14_chain_4"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.42225_85.02894_NH02_NH14",
+      "lat": 27.422247,
+      "lon": 85.02894,
+      "roads": [
+        "NH02",
+        "NH14"
+      ],
+      "connectedNodeIds": [
+        "NH02_chain_5",
+        "NH14_chain_4"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.04629_81.61571_FR05_FR08",
+      "lat": 28.046286,
+      "lon": 81.615707,
+      "roads": [
+        "FR05",
+        "FR08"
+      ],
+      "connectedNodeIds": [
+        "FR05_chain_0",
+        "FR08_chain_0"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.55212_87.27823_FR02_NH09",
+      "lat": 26.552115,
+      "lon": 87.278229,
+      "roads": [
+        "FR02",
+        "NH09"
+      ],
+      "connectedNodeIds": [
+        "FR02_chain_2",
+        "NH09_chain_2"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_26.58554_87.27897_FR02_NH09",
+      "lat": 26.585543,
+      "lon": 87.278968,
+      "roads": [
+        "FR02",
+        "NH09"
+      ],
+      "connectedNodeIds": [
+        "FR02_chain_3",
+        "NH09_chain_3"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_27.63249_85.52050_NH12_NH15",
+      "lat": 27.632495,
+      "lon": 85.5205,
+      "roads": [
+        "NH12",
+        "NH15"
+      ],
+      "connectedNodeIds": [
+        "NH12_chain_3",
+        "NH15_chain_5"
+      ],
+      "detectionMethod": "shared-node"
+    },
+    {
+      "id": "J_28.20730_83.98369_FR09_NH04",
+      "lat": 28.2073045,
+      "lon": 83.983688,
+      "roads": [
+        "FR09",
+        "NH04"
+      ],
+      "connectedNodeIds": [
+        "FR09_chain_0",
+        "NH04_chain_33"
+      ],
+      "detectionMethod": "endpoint-proximity"
+    }
+  ],
+  "crossRoadEdges": [
+    {
+      "id": "XR_NH02_NH13_0",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH02",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH13_1",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH12",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH12_2",
+      "fromNodeId": "NH02_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH02",
+      "toRoad": "NH12",
+      "junctionId": "J_27.69759_85.29628_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH13_NH17_3",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH17",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH13_4",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH12",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH17_5",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH12",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH13_NH17_6",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH17",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH13_7",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH02",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_8",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH13_NH17_9",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH17",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH13_10",
+      "fromNodeId": "NH13_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH13",
+      "toRoad": "NH02",
+      "junctionId": "J_27.72442_85.31896_NH02_NH13_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR03_NH05_11",
+      "fromNodeId": "FR03_chain_0",
+      "toNodeId": "NH05_chain_13",
+      "fromRoad": "FR03",
+      "toRoad": "NH05",
+      "junctionId": "J_26.72973_85.92931_FR03_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH09_12",
+      "fromNodeId": "NH01_chain_5",
+      "toNodeId": "NH09_chain_6",
+      "fromRoad": "NH01",
+      "toRoad": "NH09",
+      "junctionId": "J_26.66341_87.27305_NH01_NH09",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH09_13",
+      "fromNodeId": "NH01_chain_5",
+      "toNodeId": "NH09_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH09",
+      "junctionId": "J_26.66341_87.27305_NH01_NH09",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH05_14",
+      "fromNodeId": "NH01_chain_6",
+      "toNodeId": "NH05_chain_6",
+      "fromRoad": "NH01",
+      "toRoad": "NH05",
+      "junctionId": "J_26.45630_87.27848_NH01_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH05_15",
+      "fromNodeId": "NH01_chain_14",
+      "toNodeId": "NH05_chain_9",
+      "fromRoad": "NH01",
+      "toRoad": "NH05",
+      "junctionId": "J_26.56156_86.68584_NH01_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH05_16",
+      "fromNodeId": "NH01_chain_14",
+      "toNodeId": "NH05_chain_9",
+      "fromRoad": "NH01",
+      "toRoad": "NH05",
+      "junctionId": "J_26.56156_86.68584_NH01_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH05_17",
+      "fromNodeId": "NH01_chain_21",
+      "toNodeId": "NH05_chain_15",
+      "fromRoad": "NH01",
+      "toRoad": "NH05",
+      "junctionId": "J_26.64995_85.79892_NH01_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_18",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_19",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_20",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_21",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_22",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_23",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_24",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_25",
+      "fromNodeId": "NH01_chain_31",
+      "toNodeId": "NH02_chain_7",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.00572_84.86521_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_26",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_27",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_28",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_29",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_30",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_31",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_32",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_33",
+      "fromNodeId": "NH01_chain_32",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40177_85.02659_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_34",
+      "fromNodeId": "NH01_chain_33",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.42854_85.02622_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_35",
+      "fromNodeId": "NH01_chain_34",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40016_85.02350_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_36",
+      "fromNodeId": "NH01_chain_34",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40016_85.02350_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_37",
+      "fromNodeId": "NH01_chain_35",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.43208_85.02307_NH01_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH14_38",
+      "fromNodeId": "NH01_chain_35",
+      "toNodeId": "NH14_chain_4",
+      "fromRoad": "NH01",
+      "toRoad": "NH14",
+      "junctionId": "J_27.43208_85.02307_NH01_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH02_39",
+      "fromNodeId": "NH01_chain_36",
+      "toNodeId": "NH02_chain_5",
+      "fromRoad": "NH01",
+      "toRoad": "NH02",
+      "junctionId": "J_27.40776_85.02264_NH01_NH02",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR01_NH01_40",
+      "fromNodeId": "NH01_chain_67",
+      "toNodeId": "FR01_chain_2",
+      "fromRoad": "NH01",
+      "toRoad": "FR01",
+      "junctionId": "J_28.13078_82.25778_FR01_NH01",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH01_NH05_41",
+      "fromNodeId": "NH01_chain_72",
+      "toNodeId": "NH05_chain_26",
+      "fromRoad": "NH01",
+      "toRoad": "NH05",
+      "junctionId": "J_27.92231_82.33013_NH01_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR01_NH01_42",
+      "fromNodeId": "NH01_chain_77",
+      "toNodeId": "FR01_chain_4",
+      "fromRoad": "NH01",
+      "toRoad": "FR01",
+      "junctionId": "J_28.36827_82.17853_FR01_NH01",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH05_NH08_43",
+      "fromNodeId": "NH05_chain_0",
+      "toNodeId": "NH08_chain_0",
+      "fromRoad": "NH05",
+      "toRoad": "NH08",
+      "junctionId": "J_26.64831_88.14728_NH05_NH08",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH05_NH08_44",
+      "fromNodeId": "NH05_chain_0",
+      "toNodeId": "NH08_chain_0",
+      "fromRoad": "NH05",
+      "toRoad": "NH08",
+      "junctionId": "J_26.64831_88.14728_NH05_NH08",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH05_NH09_45",
+      "fromNodeId": "NH05_chain_6",
+      "toNodeId": "NH09_chain_0",
+      "fromRoad": "NH05",
+      "toRoad": "NH09",
+      "junctionId": "J_26.45340_87.27583_FR02_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR02_NH05_46",
+      "fromNodeId": "NH05_chain_6",
+      "toNodeId": "FR02_chain_0",
+      "fromRoad": "NH05",
+      "toRoad": "FR02",
+      "junctionId": "J_26.45340_87.27583_FR02_NH05",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH03_NH04_47",
+      "fromNodeId": "NH03_chain_1",
+      "toNodeId": "NH04_chain_15",
+      "fromRoad": "NH03",
+      "toRoad": "NH04",
+      "junctionId": "J_27.66736_85.36057_NH03_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH03_NH04_48",
+      "fromNodeId": "NH03_chain_1",
+      "toNodeId": "NH04_chain_15",
+      "fromRoad": "NH03",
+      "toRoad": "NH04",
+      "junctionId": "J_27.66736_85.36057_NH03_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH03_NH04_49",
+      "fromNodeId": "NH03_chain_2",
+      "toNodeId": "NH04_chain_12",
+      "fromRoad": "NH03",
+      "toRoad": "NH04",
+      "junctionId": "J_27.64252_85.47691_NH03_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH15_50",
+      "fromNodeId": "NH04_chain_8",
+      "toNodeId": "NH15_chain_3",
+      "fromRoad": "NH04",
+      "toRoad": "NH15",
+      "junctionId": "J_27.63610_85.66975_NH04_NH15",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH15_51",
+      "fromNodeId": "NH04_chain_9",
+      "toNodeId": "NH15_chain_4",
+      "fromRoad": "NH04",
+      "toRoad": "NH15",
+      "junctionId": "J_27.63363_85.64216_NH04_NH15",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH12_52",
+      "fromNodeId": "NH04_chain_11",
+      "toNodeId": "NH12_chain_3",
+      "fromRoad": "NH04",
+      "toRoad": "NH12",
+      "junctionId": "J_27.63523_85.51712_NH04_NH12",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH14_53",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH14_chain_1",
+      "fromRoad": "NH04",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH14_54",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH14_chain_1",
+      "fromRoad": "NH04",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH14_55",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH14_chain_1",
+      "fromRoad": "NH04",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH17_56",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH17",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH17_57",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH17",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH17_58",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH17",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH04_59",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_60",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH17_61",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH17_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH17",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH04_62",
+      "fromNodeId": "NH04_chain_16",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH04",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67720_85.26643_NH02_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH17_63",
+      "fromNodeId": "NH04_chain_17",
+      "toNodeId": "NH17_chain_2",
+      "fromRoad": "NH04",
+      "toRoad": "NH17",
+      "junctionId": "J_27.62398_85.14809_NH04_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_64",
+      "fromNodeId": "NH04_chain_33",
+      "toNodeId": "NH10_chain_12",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_65",
+      "fromNodeId": "NH04_chain_33",
+      "toNodeId": "NH10_chain_12",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_66",
+      "fromNodeId": "NH04_chain_33",
+      "toNodeId": "NH10_chain_12",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_67",
+      "fromNodeId": "NH04_chain_33",
+      "toNodeId": "NH10_chain_12",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_68",
+      "fromNodeId": "NH04_chain_33",
+      "toNodeId": "NH10_chain_12",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_69",
+      "fromNodeId": "NH04_chain_34",
+      "toNodeId": "NH10_chain_13",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_28.17451_83.95220_NH04_NH10",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_70",
+      "fromNodeId": "NH04_chain_36",
+      "toNodeId": "NH10_chain_9",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_27.99462_83.78038_NH04_NH10",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH10_71",
+      "fromNodeId": "NH04_chain_36",
+      "toNodeId": "NH10_chain_9",
+      "fromRoad": "NH04",
+      "toRoad": "NH10",
+      "junctionId": "J_27.99462_83.78038_NH04_NH10",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR04_NH04_72",
+      "fromNodeId": "NH04_chain_39",
+      "toNodeId": "FR04_chain_1",
+      "fromRoad": "NH04",
+      "toRoad": "FR04",
+      "junctionId": "J_28.26656_83.59999_FR04_NH04",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH04_NH11_73",
+      "fromNodeId": "NH04_chain_41",
+      "toNodeId": "NH11_chain_2",
+      "fromRoad": "NH04",
+      "toRoad": "NH11",
+      "junctionId": "J_28.34120_83.56999_NH04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_74",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_75",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH10_NH11_76",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "NH11_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "NH11",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_77",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH11_78",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR09",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH10_NH11_79",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "NH11_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "NH11",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_80",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_81",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH10_NH11_82",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "NH11_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "NH11",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH10_83",
+      "fromNodeId": "NH10_chain_12",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH10",
+      "toRoad": "FR09",
+      "junctionId": "J_28.20426_83.97617_FR09_NH10_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH11_84",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR09",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH11_85",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR09",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH11_86",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR09",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH11_87",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR09_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR09",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR04_NH11_88",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR04_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR04",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR04_NH11_89",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR04_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR04",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR04_NH11_90",
+      "fromNodeId": "NH11_chain_0",
+      "toNodeId": "FR04_chain_0",
+      "fromRoad": "NH11",
+      "toRoad": "FR04",
+      "junctionId": "J_28.21795_83.97590_FR04_NH11",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH17_91",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH12",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_92",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH17_93",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH12_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH12",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_94",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_95",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_96",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_97",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_98",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_99",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_100",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_101",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_102",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_103",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_104",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_105",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_106",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_107",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_108",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_109",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_110",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_111",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_112",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_113",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_114",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_115",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_116",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_117",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_118",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_119",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH14_NH17_120",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_121",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_122",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH14_NH17_123",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_124",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH14_NH17_125",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_126",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_127",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_128",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH14_NH17_129",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_130",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH14_NH17_131",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH14",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_132",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_133",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_134",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_135",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_136",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_137",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_138",
+      "fromNodeId": "NH17_chain_0",
+      "toNodeId": "NH02_chain_0",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.67750_85.27740_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH17_139",
+      "fromNodeId": "NH17_chain_3",
+      "toNodeId": "NH02_chain_3",
+      "fromRoad": "NH17",
+      "toRoad": "NH02",
+      "junctionId": "J_27.63339_85.09160_NH02_NH17",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR01_NH06_140",
+      "fromNodeId": "FR01_chain_7",
+      "toNodeId": "NH06_chain_0",
+      "fromRoad": "FR01",
+      "toRoad": "NH06",
+      "junctionId": "J_28.61990_81.62272_FR01_NH06",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH14_141",
+      "fromNodeId": "NH02_chain_0",
+      "toNodeId": "NH14_chain_0",
+      "fromRoad": "NH02",
+      "toRoad": "NH14",
+      "junctionId": "J_27.69759_85.29628_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH14_142",
+      "fromNodeId": "NH02_chain_5",
+      "toNodeId": "NH14_chain_4",
+      "fromRoad": "NH02",
+      "toRoad": "NH14",
+      "junctionId": "J_27.42225_85.02894_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH02_NH14_143",
+      "fromNodeId": "NH02_chain_5",
+      "toNodeId": "NH14_chain_4",
+      "fromRoad": "NH02",
+      "toRoad": "NH14",
+      "junctionId": "J_27.42225_85.02894_NH02_NH14",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR05_FR08_144",
+      "fromNodeId": "FR05_chain_0",
+      "toNodeId": "FR08_chain_0",
+      "fromRoad": "FR05",
+      "toRoad": "FR08",
+      "junctionId": "J_28.04629_81.61571_FR05_FR08",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR02_NH09_145",
+      "fromNodeId": "FR02_chain_2",
+      "toNodeId": "NH09_chain_2",
+      "fromRoad": "FR02",
+      "toRoad": "NH09",
+      "junctionId": "J_26.55212_87.27823_FR02_NH09",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR02_NH09_146",
+      "fromNodeId": "FR02_chain_3",
+      "toNodeId": "NH09_chain_3",
+      "fromRoad": "FR02",
+      "toRoad": "NH09",
+      "junctionId": "J_26.58554_87.27897_FR02_NH09",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_NH12_NH15_147",
+      "fromNodeId": "NH15_chain_5",
+      "toNodeId": "NH12_chain_3",
+      "fromRoad": "NH15",
+      "toRoad": "NH12",
+      "junctionId": "J_27.63249_85.52050_NH12_NH15",
+      "distanceKm": 0,
+      "type": "shared-node",
+      "weight": 0.1
+    },
+    {
+      "id": "XR_FR09_NH04_148",
+      "fromNodeId": "FR09_chain_0",
+      "toNodeId": "NH04_chain_33",
+      "fromRoad": "FR09",
+      "toRoad": "NH04",
+      "junctionId": "J_28.20730_83.98369_FR09_NH04",
+      "distanceKm": 0.3366925778498561,
+      "type": "endpoint-endpoint",
+      "weight": 0.03366925778498561
+    }
+  ]
+}

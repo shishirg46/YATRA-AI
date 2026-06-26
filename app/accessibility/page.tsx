@@ -6,6 +6,8 @@ import { Search, Navigation, MapPin, Crosshair } from "lucide-react";
 import { useGeolocation } from "@/lib/hooks/use-geolocation";
 import type { RouteAccessibilityResult, AccessibilitySearchResult } from "@/lib/accessibility/types";
 
+const NOMINATIM_BASE = process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
+
 const AccessibilityMap = dynamic(
   () => import("@/components/accessibility-map").then((m) => m.default),
   { ssr: false, loading: () => <div className="h-[500px] bg-gray-100 rounded-xl animate-pulse" /> },
@@ -41,7 +43,7 @@ export default function AccessibilityPage() {
       setSearching(true);
       try {
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=np`,
+          `${NOMINATIM_BASE}/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=np`,
           { headers: { "Accept-Language": "en" } },
         );
         const data = await res.json();
@@ -74,7 +76,7 @@ export default function AccessibilityPage() {
     setResult(null);
     setError(null);
     fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+      `${NOMINATIM_BASE}/reverse?lat=${lat}&lon=${lon}&format=json`,
       { headers: { "Accept-Language": "en" } },
     )
       .then((r) => r.json())

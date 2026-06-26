@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Loader2, Crosshair } from "lucide-react";
+
+const NOMINATIM_BASE = process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 
 interface MapPickerProps {
   onSelect: (lat: number, lng: number, name: string) => void;
@@ -37,28 +39,95 @@ export default function MapPicker({ onSelect }: MapPickerProps) {
 
   const handleMapClick = useCallback(async (lat: number, lng: number) => {
     setMarker({ lat, lng });
-    setReverseName(null);
+    setReverseName("Selected location");
     setResolving(true);
     resolvingRef.current = true;
 
+    async function reverseAt(aLat: number, aLon: number) {
+      try {
+        const r = await fetch(
+          `${NOMINATIM_BASE}/reverse?lat=${aLat}&lon=${aLon}&format=json&zoom=18&addressdetails=1`,
+          { headers: { Accept: "application/json", "Accept-Language": "en" } }
+        );
+        if (!r.ok) return null;
+        const d = await r.json();
+        return d;
+      } catch {
+        return null;
+      }
+    }
+
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14&addressdetails=1`,
-        { headers: { "User-Agent": "YatraAI/1.0" } }
-      );
-      if (!res.ok || !resolvingRef.current) return;
-      const data = await res.json();
-      if (!resolvingRef.current) return;
+      // Primary reverse
+      const primary = await reverseAt(lat, lng);
+      if (resolvingRef.current && primary) {
+        const addr = primary.address || {};
+        // Accept a broader set of place-name fields (priority order)
+        const primaryName =
+          addr.village ||
+          addr.town ||
+          addr.city ||
+          addr.municipality ||
+          addr.city_district ||
+          addr.hamlet ||
+          addr.suburb ||
+          addr.county ||
+          null;
+        if (primaryName) {
+          setReverseName(primaryName);
+          return;
+        }
+        // Fallback to the display_name first segment if available
+        if (primary.display_name) {
+          const first = String(primary.display_name).split(",")[0];
+          if (first) {
+            setReverseName(first);
+            return;
+          }
+        }
+      }
 
-      const displayName = data.display_name || "";
-      const addr = data.address || {};
-      const shortName =
-        addr.village || addr.town || addr.suburb || addr.city || addr.county || displayName.split(",")[0] || "Selected location";
+      // Failure handling: radius-based nearby search (meters)
+      const radii = [100, 250, 500, 1000];
+      const toLatDelta = (m: number) => m / 111111; // approx meters -> degrees lat
+      const toLonDelta = (m: number, atLat: number) => m / (111111 * Math.cos((atLat * Math.PI) / 180));
 
-      setReverseName(shortName);
-    } catch {
+      let foundName: string | null = null;
+      outer: for (const rMeters of radii) {
+        const dLat = toLatDelta(rMeters);
+        const dLon = toLonDelta(rMeters, lat);
+        const samples = [
+          { lat: lat + dLat, lon: lng }, // north
+          { lat: lat - dLat, lon: lng }, // south
+          { lat: lat, lon: lng + dLon }, // east
+          { lat: lat, lon: lng - dLon }, // west
+        ];
+
+        for (const s of samples) {
+          if (!resolvingRef.current) break outer;
+          const hit = await reverseAt(s.lat, s.lon);
+          if (!hit) continue;
+          const a = hit.address || {};
+          const name =
+            a.village ||
+            a.town ||
+            a.city ||
+            a.municipality ||
+            a.city_district ||
+            a.hamlet ||
+            a.suburb ||
+            a.county ||
+            null;
+          const finalName = name || (hit.display_name ? String(hit.display_name).split(",")[0] : null);
+          if (name) {
+            foundName = finalName;
+            break outer;
+          }
+        }
+      }
+
       if (resolvingRef.current) {
-        setReverseName("Selected location");
+        setReverseName(foundName || "Selected location");
       }
     } finally {
       if (resolvingRef.current) {
@@ -68,13 +137,15 @@ export default function MapPicker({ onSelect }: MapPickerProps) {
   }, []);
 
   const confirmLocation = useCallback(() => {
-    if (!marker || !reverseName) return;
-    onSelect(marker.lat, marker.lng, reverseName);
+    if (!marker) return;
+    onSelect(marker.lat, marker.lng, reverseName || "Selected location");
   }, [marker, reverseName, onSelect]);
 
-  // Cleanup ref on unmount
-  const cleanupRef = useRef(() => { resolvingRef.current = false; });
-  cleanupRef.current = () => { resolvingRef.current = false; };
+  useEffect(() => {
+    return () => {
+      resolvingRef.current = false;
+    };
+  }, []);
 
   return (
     <div>
@@ -100,22 +171,19 @@ export default function MapPicker({ onSelect }: MapPickerProps) {
         <div className="flex-1 min-w-0">
           {marker ? (
             <div>
-              <p className="text-xs text-slate-400 font-body">
+              <div className="text-xs text-slate-400 font-body">
                 {resolving ? (
                   <span className="inline-flex items-center gap-1">
                     <Loader2 size={10} className="animate-spin" />
                     Resolving place name…
                   </span>
                 ) : (
-                  <>
-                    <span className="text-white font-semibold">{reverseName || "Unknown"}</span>
-                    <br />
-                    <span className="text-slate-500">
-                      {marker.lat.toFixed(4)}, {marker.lng.toFixed(4)}
-                    </span>
-                  </>
+                  <div>
+                    <div className="text-white font-semibold truncate">{reverseName || "Unknown"}</div>
+                    <div className="text-slate-500">{marker.lat.toFixed(4)}, {marker.lng.toFixed(4)}</div>
+                  </div>
                 )}
-              </p>
+              </div>
             </div>
           ) : (
             <p className="text-xs text-slate-500 font-body flex items-center gap-1.5">
@@ -126,7 +194,7 @@ export default function MapPicker({ onSelect }: MapPickerProps) {
         </div>
         <button
           type="button"
-          disabled={!marker || !reverseName || resolving}
+          disabled={!marker || !reverseName}
           onClick={confirmLocation}
           className="shrink-0 px-4 py-2 rounded-lg text-xs font-body font-semibold transition-all bg-amber-500 hover:bg-amber-400 text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed"
         >

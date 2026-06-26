@@ -136,9 +136,10 @@ async function fetchOsmFallback(name: string): Promise<{
   coordinates?: { lat: number; lng: number };
   description?: string;
 }> {
+  const baseUrl = process.env.NOMINATIM_URL || process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
   const q = encodeURIComponent(`${name}, Nepal`);
   const data = await fetchJson<NominatimResult[]>(
-    `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${q}`,
+    `${baseUrl}/search?format=jsonv2&limit=1&q=${q}`,
     { headers: { "User-Agent": "YatraAI/1.0 place-details" } }
   );
   const best = data?.[0];

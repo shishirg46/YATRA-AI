@@ -130,6 +130,25 @@ export const RoadSurface = {
 export type RoadSurface = (typeof RoadSurface)[keyof typeof RoadSurface]
 
 
+export const RoadType = {
+  NATIONAL_HIGHWAY: 'NATIONAL_HIGHWAY',
+  FEEDER: 'FEEDER',
+  MID_HILL: 'MID_HILL',
+  OTHER: 'OTHER'
+} as const
+
+export type RoadType = (typeof RoadType)[keyof typeof RoadType]
+
+
+export const JunctionType = {
+  JUNCTION: 'JUNCTION',
+  INTERCHANGE: 'INTERCHANGE',
+  HIGHWAY_SPLIT: 'HIGHWAY_SPLIT'
+} as const
+
+export type JunctionType = (typeof JunctionType)[keyof typeof JunctionType]
+
+
 export const PlaceType = {
   PROVINCE: 'PROVINCE',
   DISTRICT: 'DISTRICT',
@@ -141,7 +160,9 @@ export const PlaceType = {
   HIGHWAY: 'HIGHWAY',
   BUS_PARK: 'BUS_PARK',
   JUNCTION: 'JUNCTION',
-  TOWN: 'TOWN'
+  TOWN: 'TOWN',
+  CITY: 'CITY',
+  VILLAGE: 'VILLAGE'
 } as const
 
 export type PlaceType = (typeof PlaceType)[keyof typeof PlaceType]

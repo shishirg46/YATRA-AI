@@ -99,6 +99,29 @@ const MODERATE_POLLUTION_DISTRICTS = new Set([
   "bara", "parsa", "rupandehi", "banke", "kailali", "chitwan",
 ]);
 
+// ── Safety score cache (in-memory, 15-min TTL) ───────────────────────────────
+
+interface CacheEntry {
+  result: ScoreResult;
+  expiresAt: number;
+}
+
+const SCORE_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const scoreCache = new Map<string, CacheEntry>();
+
+function safeCacheKey(
+  weather: WeatherInput,
+  hazard: HazardInput,
+  purposes: string[],
+  assessmentType: string,
+  dataSource: string,
+  location?: LocationContext,
+  riskTolerance?: "LOW" | "MEDIUM" | "HIGH",
+): string {
+  const loc = location ? `${location.districtName}|${location.altitude ?? 0}` : "";
+  return `${weather.temperature.toFixed(1)},${weather.rainfall.toFixed(1)},${weather.windSpeed.toFixed(1)}|${hazard.floodIndex.toFixed(2)},${hazard.landslideIndex.toFixed(2)}|${purposes.join(",")}|${assessmentType}|${dataSource}|${loc}|${riskTolerance ?? ""}`;
+}
+
 // ── Main scoring function ─────────────────────────────────────────────────────
 
 export function computeSafetyScore(
@@ -110,6 +133,12 @@ export function computeSafetyScore(
   location?:      LocationContext,
   riskTolerance?: "LOW" | "MEDIUM" | "HIGH",
 ): ScoreResult {
+  // Check cache first
+  const key = safeCacheKey(weather, hazard, purposes, assessmentType, dataSource, location, riskTolerance);
+  const cached = scoreCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.result;
+  }
 
   const penalties:   Record<string, number> = {};
   const multipliers: Record<string, number> = {};
@@ -315,7 +344,7 @@ export function computeSafetyScore(
   const isEstimatedLive = dataSource.startsWith("dhm-") || dataSource.startsWith("dhm-mfd-api");
   const confidence = isStaticFallback ? 0.55 : isEstimatedLive ? 0.85 : 0.85;
 
-  return {
+  const result: ScoreResult = {
     safetyScore,
     safetyLevel,
     confidence,
@@ -328,6 +357,11 @@ export function computeSafetyScore(
       reasoning,
     },
   };
+
+  // Store in cache
+  scoreCache.set(key, { result, expiresAt: Date.now() + SCORE_CACHE_TTL_MS });
+
+  return result;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import L, { LatLngBounds } from "leaflet";
 import { MapContainer, TileLayer, Popup, Marker, useMap, Polyline } from "react-leaflet";
 import { MapPin, Zap, Cloud } from "lucide-react";
+import type { HighwaySegment, RouteProvenance } from "@/lib/routing/types";
 import {
   toLatLng,
   getRiskColor,
@@ -77,6 +78,8 @@ interface RouteMapProps {
       duration: number;
     }>;
   }>;
+  highwaySegments?: HighwaySegment[];
+  provenance?: RouteProvenance | null;
 }
 
 function MapController({ bounds }: { bounds: LatLngBounds | null }) {
@@ -105,6 +108,8 @@ export default function RouteMap({
   height = "h-96",
   userLocation = null,
   segmentRoutes = [],
+  highwaySegments = [],
+  provenance = null,
 }: RouteMapProps) {
   const pathPoints = useMemo(() => {
     const raw = polyline && polyline.length >= 2 ? polyline : waypoints;
@@ -135,8 +140,14 @@ export default function RouteMap({
     }
   }, [pathPoints, userLocation]);
 
-  // Risk segments only when no road polyline (avoid duplicate lines)
+  // Render highway abstraction when DOR provenance is available,
+  // fall back to raw node segments for OSRM / estimated routes
   const renderSegments = () => {
+    if (provenance?.engine === "dor" && highwaySegments.length > 0) {
+      return highwaySegments.map((hs, i) => (
+        <HighwaySegmentLabel key={`hs-${i}`} segment={hs} index={i} />
+      ));
+    }
     if (segments.length === 0 || pathPoints.length > 2) return null;
 
     return segments.map((segment, idx) => (
@@ -391,6 +402,28 @@ function SegmentPolyline({
             __html: createSegmentPopup(segment),
           }}
         />
+      </Popup>
+    </Polyline>
+  );
+}
+
+function HighwaySegmentLabel({ segment, index }: { segment: HighwaySegment; index: number }) {
+  return (
+    <Polyline
+      positions={[
+        toLatLng(segment.fromLat, segment.fromLon),
+        toLatLng(segment.toLat, segment.toLon),
+      ]}
+      color="#fbbf24"
+      weight={4}
+      opacity={0.6}
+    >
+      <Popup>
+        <div className="font-body text-xs space-y-1">
+          <div className="font-semibold text-amber-400">{segment.roadCode}</div>
+          <div>{segment.fromPlace} → {segment.toPlace}</div>
+          <div className="text-slate-500">{segment.distanceKm.toFixed(1)} km ({segment.nodeCount} nodes)</div>
+        </div>
       </Popup>
     </Polyline>
   );

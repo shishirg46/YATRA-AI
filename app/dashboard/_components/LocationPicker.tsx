@@ -24,6 +24,7 @@ interface LocationPickerProps {
 type Tab = "search" | "map";
 
 const NEPAL_CENTER: [number, number] = [28.2, 84.0];
+const NOMINATIM_BASE = process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 
 const MapPickerInner = dynamic(
   () => import("./MapPicker"),
@@ -77,7 +78,7 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
       try {
         if (combined.length < 5) {
           const nomRes = await fetch(
-            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query + ", Nepal")}&format=json&limit=5&countrycodes=np`
+            `${NOMINATIM_BASE}/search?q=${encodeURIComponent(query + ", Nepal")}&format=json&limit=5&countrycodes=np`
           );
           if (nomRes.ok) {
             const data = await nomRes.json();
@@ -115,8 +116,10 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
     onSelect({
       id: `map-picker-${lat}-${lng}`,
       name,
-      district: "Selected location",
-      province: "Nepal",
+      // For map-picked locations we don't assume district/province values;
+      // leave them empty so the UI doesn't display placeholder text.
+      district: "",
+      province: "",
       latitude: lat,
       longitude: lng,
     });
@@ -207,7 +210,7 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-white truncate">{res.name}</p>
-                      <p className="text-[11px] text-slate-500 truncate">{res.district}, {res.province}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{[res.district, res.province].filter(Boolean).join(", ")}</p>
                     </div>
                     <Navigation size={12} className="text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>

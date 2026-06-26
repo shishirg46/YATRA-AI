@@ -2,185 +2,85 @@ import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
 import { findNearestRouteNode as spatialFindNearestRouteNode } from "@/lib/routing/spatial";
 import { MinPriorityQueue } from "@/lib/binary-heap";
-import { computeEdgeWeight } from "@/lib/routing/routing-config";
-import type { RouteNode as RouteNodeType } from "@/lib/routing/types";
+import { ROUTING_COEFFICIENTS } from "@/lib/routing/routing-config";
+import { buildAdjacency, invalidateAdjacencyCache } from "@/lib/routing/adjacency";
+import {
+  scoreEdge,
+  preloadHazardData,
+  preloadEdgeCache,
+  batchUpsertCache,
+} from "@/lib/routing/edge-scorer";
+import type { AdjNode, AdjEdge } from "@/lib/routing/adjacency";
+import type { HazardData, CacheEntry } from "@/lib/routing/edge-scorer";
 
-export type GraphNode = {
-  id: string;
-  name: string;
-  type: string;
-  lat: number;
-  lon: number;
-  isHub: boolean;
-  elevationM: number | null;
-  accessibilityLevel: string | null;
-  strategicImportance: string | null;
-  hazardExposureIndex: number | null;
-  connectivityRank: number | null;
-  monsoonVulnerability: number | null;
-};
-
-export type GraphEdge = {
-  from: string;
-  to: string;
-  weight: number;
-  surfaceType: string | null;
-  roadCondition: string | null;
-  gradientPct: number | null;
-  landslideRisk: number | null;
-  floodRisk: number | null;
-  weatherSensitivity: number | null;
-  reliabilityScore: number | null;
-  monsoonVulnerability: number | null;
-  travelReliability: number | null;
-};
-
-let graphCache: {
-  expiresAt: number;
-  nodes: Map<string, GraphNode>;
-  adjacency: Map<string, GraphEdge[]>;
-} | null = null;
-
-async function loadGraph(): Promise<{
-  nodes: Map<string, GraphNode>;
-  adjacency: Map<string, GraphEdge[]>;
-}> {
-  if (graphCache && graphCache.expiresAt > Date.now()) {
-    return { nodes: graphCache.nodes, adjacency: graphCache.adjacency };
-  }
-
-  const rows = await prisma.routeNode.findMany({
-    where: { isActive: true },
-    select: {
-      id: true,
-      name: true,
-      type: true,
-      latitude: true,
-      longitude: true,
-      isHub: true,
-      elevationM: true,
-      accessibilityLevel: true,
-      strategicImportance: true,
-      hazardExposureIndex: true,
-      connectivityRank: true,
-      monsoonVulnerability: true,
-      edgesFrom: {
-        select: {
-          toNodeId: true,
-          distanceKm: true,
-          surfaceType: true,
-          roadCondition: true,
-          gradientPct: true,
-          landslideRisk: true,
-          floodRisk: true,
-          weatherSensitivity: true,
-          reliabilityScore: true,
-          monsoonVulnerability: true,
-          travelReliability: true,
-        },
-      },
-      edgesTo: {
-        select: {
-          fromNodeId: true,
-          distanceKm: true,
-          surfaceType: true,
-          roadCondition: true,
-          gradientPct: true,
-          landslideRisk: true,
-          floodRisk: true,
-          weatherSensitivity: true,
-          reliabilityScore: true,
-          monsoonVulnerability: true,
-          travelReliability: true,
-        },
-      },
-    },
-  });
-
-  const nodes = new Map<string, GraphNode>();
-  const adjacency = new Map<string, GraphEdge[]>();
-
-  for (const r of rows) {
-    nodes.set(r.id, {
-      id: r.id,
-      name: r.name,
-      type: r.type,
-      lat: r.latitude,
-      lon: r.longitude,
-      isHub: r.isHub,
-      elevationM: r.elevationM,
-      accessibilityLevel: r.accessibilityLevel,
-      strategicImportance: r.strategicImportance,
-      hazardExposureIndex: r.hazardExposureIndex,
-      connectivityRank: r.connectivityRank,
-      monsoonVulnerability: r.monsoonVulnerability,
-    });
-    adjacency.set(r.id, []);
-  }
-
-  for (const r of rows) {
-    for (const e of r.edgesFrom) {
-      adjacency.get(r.id)?.push({
-        from: r.id,
-        to: e.toNodeId,
-        weight: e.distanceKm,
-        surfaceType: e.surfaceType,
-        roadCondition: e.roadCondition,
-        gradientPct: e.gradientPct,
-        landslideRisk: e.landslideRisk,
-        floodRisk: e.floodRisk,
-        weatherSensitivity: e.weatherSensitivity,
-        reliabilityScore: e.reliabilityScore,
-        monsoonVulnerability: e.monsoonVulnerability,
-        travelReliability: e.travelReliability,
-      });
-    }
-    for (const e of r.edgesTo) {
-      adjacency.get(r.id)?.push({
-        from: r.id,
-        to: e.fromNodeId,
-        weight: e.distanceKm,
-        surfaceType: e.surfaceType,
-        roadCondition: e.roadCondition,
-        gradientPct: e.gradientPct,
-        landslideRisk: e.landslideRisk,
-        floodRisk: e.floodRisk,
-        weatherSensitivity: e.weatherSensitivity,
-        reliabilityScore: e.reliabilityScore,
-        monsoonVulnerability: e.monsoonVulnerability,
-        travelReliability: e.travelReliability,
-      });
-    }
-  }
-
-  graphCache = {
-    expiresAt: Date.now() + 10 * 60 * 1000,
-    nodes,
-    adjacency,
-  };
-
-  return { nodes, adjacency };
-}
+export type GraphNode = AdjNode & { distanceKm?: number };
+export type GraphEdge = AdjEdge;
 
 export function invalidateGraphCache(): void {
-  graphCache = null;
+  invalidateAdjacencyCache();
 }
 
 export async function findNearestRouteNode(
   lat: number,
   lon: number,
-  maxKm = 35
+  maxKm = 35,
 ): Promise<(GraphNode & { distanceKm: number }) | null> {
-  return spatialFindNearestRouteNode(lat, lon, maxKm);
+  const result = await spatialFindNearestRouteNode(lat, lon, maxKm);
+  if (!result) return null;
+  return {
+    id: result.id,
+    name: result.name,
+    lat: result.lat,
+    lon: result.lon,
+    roadClass: result.type ?? "secondary",
+    isJunction: false,
+    elevationM: result.elevationM,
+    distanceKm: result.distanceKm,
+  };
 }
 
-/** Check if current month is monsoon season (Jun-Sep) */
-function isMonsoonSeason(): boolean {
-  const month = new Date().getMonth() + 1; // 1-12
-  return month >= 6 && month <= 9;
+/**
+ * Admissible A* heuristic:
+ *   haversine / maxspeed * alpha  +  elevationGain * terrainFactor
+ *
+ * The terrain term is a lower bound: any real path between two points has
+ * at least this much elevation gain. No hazard or road class terms are
+ * included, so the heuristic cannot overestimate. This tightens the bound
+ * ~30-50% for hilly terrain, reducing A* node expansions.
+ */
+function heuristic(from: AdjNode, to: AdjNode): number {
+  const dist = haversineKm(from.lat, from.lon, to.lat, to.lon);
+  const elevationGain = Math.max(0, (to.elevationM ?? 0) - (from.elevationM ?? 0));
+  return (dist / 80) * ROUTING_COEFFICIENTS.alpha
+       + (elevationGain / 1000) * 0.5;
 }
 
-/** Dijkstra shortest path on the route graph (balanced multi-cost). */
+type WeightProfile = {
+  alpha: number;
+  beta: number;
+  gamma: number;
+  delta: number;
+  epsilon: number;
+};
+
+const DEFAULT_PROFILE: WeightProfile = { ...ROUTING_COEFFICIENTS };
+const REDUCED_HAZARD_PROFILE: WeightProfile = {
+  ...ROUTING_COEFFICIENTS,
+  beta: ROUTING_COEFFICIENTS.beta / 2,
+  gamma: ROUTING_COEFFICIENTS.gamma * 0.7,
+  epsilon: ROUTING_COEFFICIENTS.epsilon / 2,
+};
+const DISTANCE_ONLY_PROFILE: WeightProfile = {
+  alpha: 1, beta: 0, gamma: 0, delta: 0, epsilon: 0,
+};
+
+/**
+ * A* shortest path on the OSM-based adjacency graph.
+ *
+ * Edge weights are computed via the scoring engine.
+ * Hazard data is preloaded once; cache entries are batch-upserted after search.
+ * Falls back through reduced-hazard → distance-only on failure.
+ */
 export async function findRouteNodePath(
   fromNodeId: string,
   toNodeId: string,
@@ -188,69 +88,119 @@ export async function findRouteNodePath(
   destLon?: number,
 ): Promise<GraphNode[]> {
   if (fromNodeId === toNodeId) {
-    const { nodes } = await loadGraph();
+    const { nodes } = await buildAdjacency();
     const n = nodes.get(fromNodeId);
     return n ? [n] : [];
   }
+  return findRouteNodePathWithFallback(fromNodeId, toNodeId, destLat, destLon, 1);
+}
 
-  const { nodes, adjacency } = await loadGraph();
-  const dist = new Map<string, number>();
-  const prev = new Map<string, string | null>();
+async function findRouteNodePathWithFallback(
+  fromNodeId: string,
+  toNodeId: string,
+  destLat?: number,
+  destLon?: number,
+  attempt: number = 1,
+): Promise<GraphNode[]> {
+  const profile: WeightProfile =
+    attempt === 1 ? DEFAULT_PROFILE
+    : attempt === 2 ? REDUCED_HAZARD_PROFILE
+    : DISTANCE_ONLY_PROFILE;
+
+  const graph = await buildAdjacency();
+  const { nodes, adjacency } = graph;
+
+  const fromNode = nodes.get(fromNodeId);
+  const toNode = nodes.get(toNodeId);
+  if (!fromNode || !toNode) return [];
+
+  const hazardMap = await preloadHazardData();
+  const pendingCache: CacheEntry[] = [];
+
+  // Preload EdgeCache for all nodes — single batch query before A* starts
+  // Ensures the expansion loop never touches the database (pure CPU-only)
+  const costOverrides = await preloadEdgeCache(
+    Array.from(nodes.keys()),
+    graph.graphVersion,
+  );
+
+  // A* state
+  const openSet = new Set<string>();
+  const gScore = new Map<string, number>();
+  const cameFrom = new Map<string, string>();
+  const visitedEdges = new Set<string>();
+
+  gScore.set(fromNodeId, 0);
+  const h = destLat != null && destLon != null
+    ? heuristic(fromNode, { lat: destLat, lon: destLon, elevationM: 0 } as AdjNode)
+    : heuristic(fromNode, toNode);
+  openSet.add(fromNodeId);
+
   const pq = new MinPriorityQueue();
+  pq.push(fromNodeId, h);
 
-  const monsoon = isMonsoonSeason();
-
-  for (const id of nodes.keys()) {
-    const d = id === fromNodeId ? 0 : Infinity;
-    dist.set(id, d);
-    prev.set(id, null);
-    pq.push(id, d);
-  }
-
-  while (pq.size > 0) {
+  while (pq.size > 0 && openSet.size > 0) {
     const current = pq.pop();
     if (!current) break;
-    if (current.key === toNodeId) break;
-    if (!Number.isFinite(current.priority)) break;
 
-    const curNode = nodes.get(current.key);
+    const currentId = current.key as string;
+    openSet.delete(currentId);
 
-    for (const edge of adjacency.get(current.key) ?? []) {
-      const nextNode = nodes.get(edge.to);
-      if (!curNode || !nextNode) continue;
+    if (currentId === toNodeId) break;
 
-      const distToDestCur = destLat != null && destLon != null
-        ? haversineKm(curNode.lat, curNode.lon, destLat, destLon)
-        : 0;
+    const currentNode = nodes.get(currentId);
+    if (!currentNode) continue;
+
+    const currentG = gScore.get(currentId) ?? Infinity;
+
+    const edges = adjacency.get(currentId) ?? [];
+    for (const edge of edges) {
+      const edgeKey = `${currentId}:${edge.to}`;
+      if (visitedEdges.has(edgeKey)) continue;
+      visitedEdges.add(edgeKey);
+
+      const neighbor = nodes.get(edge.to);
+      if (!neighbor) continue;
+
+      const distToDestCurrent = destLat != null && destLon != null
+        ? haversineKm(currentNode.lat, currentNode.lon, destLat, destLon) : 0;
       const distToDestNext = destLat != null && destLon != null
-        ? haversineKm(nextNode.lat, nextNode.lon, destLat, destLon)
-        : 0;
+        ? haversineKm(neighbor.lat, neighbor.lon, destLat, destLon) : 0;
 
-      const edgeWeight = destLat != null && destLon != null
-        ? computeEdgeWeight({
-            distanceKm: edge.weight,
-            reliabilityScore: edge.reliabilityScore,
-            landslideRisk: edge.landslideRisk,
-            floodRisk: edge.floodRisk,
-            monsoonVulnerability: edge.monsoonVulnerability,
-            roadCondition: edge.roadCondition,
-            distToDestCurrentKm: distToDestCur,
-            distToDestNextKm: distToDestNext,
-            isMonsoon: monsoon,
-          })
-        : edge.weight; // fallback to pure distance when no destination
+      const { scored, cacheEntry } = scoreEdge(
+        currentNode,
+        neighbor,
+        graph,
+        distToDestCurrent,
+        distToDestNext,
+        hazardMap,
+        profile,
+        costOverrides,
+      );
 
-      // Skip impassable edges (Infinity weight from monsoonPenalty)
-      if (!Number.isFinite(edgeWeight)) continue;
+      if (!Number.isFinite(scored.cost) || scored.cost < 0) continue;
 
-      const alt = current.priority + edgeWeight;
-      if (alt < (dist.get(edge.to) ?? Infinity)) {
-        dist.set(edge.to, alt);
-        prev.set(edge.to, current.key);
-        pq.push(edge.to, alt);
+      const tentativeG = currentG + scored.cost;
+      const neighborG = gScore.get(edge.to) ?? Infinity;
+
+      if (tentativeG < neighborG) {
+        cameFrom.set(edge.to, currentId);
+        gScore.set(edge.to, tentativeG);
+
+        const hNeighbor = destLat != null && destLon != null
+          ? heuristic(neighbor, { lat: destLat, lon: destLon, elevationM: 0 } as AdjNode)
+          : heuristic(neighbor, toNode);
+
+        const f = tentativeG + hNeighbor;
+        openSet.add(edge.to);
+        pq.push(edge.to, f);
+        pendingCache.push(cacheEntry);
       }
     }
   }
+
+  // Batch upsert cache entries
+  batchUpsertCache(pendingCache);
 
   // Reconstruct path
   const path: GraphNode[] = [];
@@ -258,11 +208,30 @@ export async function findRouteNodePath(
   while (cursor) {
     const node = nodes.get(cursor);
     if (node) path.unshift(node);
-    cursor = prev.get(cursor) ?? null;
+    cursor = cameFrom.get(cursor) ?? null;
   }
 
   if (path.length === 0 || path[0]?.id !== fromNodeId) {
+    if (attempt < 3) {
+      return findRouteNodePathWithFallback(fromNodeId, toNodeId, destLat, destLon, attempt + 1);
+    }
     return [];
+  }
+
+  if (attempt > 1) {
+    try {
+      await prisma.routeUsageLog.create({
+        data: {
+          fallbackLevel: attempt - 1,
+          segments: JSON.parse(JSON.stringify(path.map(n => ({ id: n.id, lat: n.lat, lon: n.lon })))),
+          totalDistance: 0,
+          vehicleProfile: "car",
+          source: "a*",
+        },
+      });
+    } catch {
+      // non-critical
+    }
   }
 
   return path;
@@ -274,16 +243,18 @@ export async function buildGraphWaypoints(
   destLat: number,
   destLon: number,
   originNodeId?: string | null,
-  destNodeId?: string | null
-): Promise<{ nodes: RouteNodeType[]; source: string }> {
-  const originNode =
-    originNodeId
-      ? (await loadGraph()).nodes.get(originNodeId)
-      : await findNearestRouteNode(originLat, originLon, 40);
-  const destNode =
-    destNodeId
-      ? (await loadGraph()).nodes.get(destNodeId)
-      : await findNearestRouteNode(destLat, destLon, 50);
+  destNodeId?: string | null,
+): Promise<{ nodes: Array<{ lat: number; lon: number; name: string; locationId: string | null; routeNodeId: string }>; source: string }> {
+  const graph = await buildAdjacency();
+  const { nodes } = graph;
+
+  const originNode = originNodeId
+    ? nodes.get(originNodeId)
+    : await findNearestRouteNode(originLat, originLon, 40);
+
+  const destNode = destNodeId
+    ? nodes.get(destNodeId)
+    : await findNearestRouteNode(destLat, destLon, 50);
 
   if (!originNode || !destNode) {
     return { nodes: [], source: "no-graph" };
@@ -297,31 +268,27 @@ export async function buildGraphWaypoints(
   const totalKm = haversineKm(originLat, originLon, destLat, destLon);
   const maxStops = totalKm > 350 ? 6 : totalKm > 150 ? 5 : totalKm > 60 ? 4 : 3;
 
-  // Prefer TOWN/JUNCTION/hub nodes; fall back to ROUTE_NODE only if not enough place nodes
-  const placeNodes = path.slice(1, -1).filter(
-    (n) => n.type !== "ROUTE_NODE" || n.isHub || n.strategicImportance != null
-  );
-  const fallbackNodes = path.slice(1, -1).filter((n) => n.type === "ROUTE_NODE" && !n.isHub);
-
-  const selected = placeNodes.length >= maxStops
-    ? placeNodes
-    : [...placeNodes, ...fallbackNodes];
-
-  const intermediates = selected.slice(0, maxStops).map((n) => ({
-    lat: n.lat,
-    lon: n.lon,
-    name: n.name,
-    locationId: null as string | null,
-    routeNodeId: n.id,
-  }));
+  const step = Math.max(1, Math.floor(path.length / (maxStops + 2)));
+  const intermediates = [];
+  for (let i = step; i < path.length - 1; i += step) {
+    const n = path[i];
+    intermediates.push({
+      lat: n.lat,
+      lon: n.lon,
+      name: n.name,
+      locationId: null,
+      routeNodeId: n.id,
+    });
+    if (intermediates.length >= maxStops) break;
+  }
 
   return {
     nodes: intermediates,
-    source: `graph:${path.map((n) => n.name).join("→")}`,
+    source: `a*:${path.length}nodes`,
   };
 }
 
 export async function getRouteNodeById(id: string): Promise<GraphNode | null> {
-  const { nodes } = await loadGraph();
+  const { nodes } = await buildAdjacency();
   return nodes.get(id) ?? null;
 }
