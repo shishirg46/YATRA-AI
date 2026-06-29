@@ -10,7 +10,21 @@
  *  2. USGS — earthquake history for the coordinate
  */
 
+const HISTORICAL_CONFIG = {
+  BIPAD_PAGE_SIZE: 100,
+  DEFAULT_YEARS: 5,
+  DEFAULT_RADIUS_KM: 150,
+  CACHE_TTL_MS: 24 * 60 * 60 * 1000,
+  REQUEST_TIMEOUT_MS: 10_000,
+  EQ_MAG_WEIGHT: 0.6,
+  EQ_FREQ_WEIGHT: 0.4,
+} as const;
+
+import { externalApiCache } from "./external-api-cache";
+
 export interface HistoricalHazardStats {
+  schemaVersion: 2;
+
   // Incident counts over past years for this season
   floodIncidents:     number;
   landslideIncidents: number;
@@ -30,8 +44,33 @@ export interface HistoricalHazardStats {
     severity:    "LOW" | "MEDIUM" | "HIGH";
   }[];
 
-  yearsAnalysed: number;
-  source:        string;
+  yearsRequested: number;
+  yearsAnalysed:  number;
+  confidence:     number;
+  sources:        string[];
+}
+
+/** Circular month difference: Dec (12) and Jan (1) are 1 apart, not 11. */
+function circularMonthDiff(a: number, b: number): number {
+  const d = Math.abs(a - b);
+  return Math.min(d, 12 - d);
+}
+
+/**
+ * Logarithmic normalization for incident counts.
+ * Reduces saturation in districts with frequent disasters.
+ *
+ * TODO: Replace with percentile normalization once nationwide
+ *       incident distributions are available.
+ */
+function logNorm(incidents: number, years: number): number {
+  const max = years * 3;
+  if (max <= 0) return 0;
+  return Math.log(1 + incidents) / Math.log(1 + max);
+}
+
+function round(n: number): number {
+  return Math.round(n * 100) / 100;
 }
 
 /**
@@ -42,9 +81,10 @@ export async function fetchHistoricalHazard(
   districtName: string,
   lat:          number,
   lon:          number,
-  targetDate:   string, // YYYY-MM-DD
-  years:        number = 5,
-  seismicRadiusKm: number = 150
+  targetDate:   string,
+  years:        number = HISTORICAL_CONFIG.DEFAULT_YEARS,
+  seismicRadiusKm: number = HISTORICAL_CONFIG.DEFAULT_RADIUS_KM,
+  signal?:      AbortSignal,
 ): Promise<HistoricalHazardStats> {
 
   const target      = new Date(targetDate);
@@ -52,23 +92,34 @@ export async function fetchHistoricalHazard(
   const currentYear = new Date().getFullYear();
 
   const [bipadStats, usgsStats] = await Promise.all([
-    fetchBipadHistorical(districtName, targetMonth, currentYear, years),
-    fetchUsgsHistorical(lat, lon, targetMonth, currentYear, years, seismicRadiusKm),
+    fetchBipadHistorical(districtName, targetMonth, currentYear, years, signal),
+    fetchUsgsHistorical(lat, lon, targetMonth, currentYear, years, seismicRadiusKm, signal),
   ]);
 
-  // Combine notable events from all sources
-  const notableEvents = [
-    ...bipadStats.notableEvents,
-    ...usgsStats.notableEvents,
-  ].sort((a, b) => b.date.localeCompare(a.date));
+  // Deduplicate notable events by date+type+description
+  const seen = new Set<string>();
+  const deduped = [...bipadStats.notableEvents, ...usgsStats.notableEvents].filter((e) => {
+    const key = `${e.date}|${e.type}|${e.description}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const notableEvents = deduped.sort((a, b) => b.date.localeCompare(a.date));
 
   // Historical risk indices — normalised over years analysed
-  // More incidents in the same season = higher index
-  const historicalFloodRisk     = Math.min(bipadStats.floodIncidents     / (years * 3), 1.0);
-  const historicalLandslideRisk = Math.min(bipadStats.landslideIncidents / (years * 3), 1.0);
+  const historicalFloodRisk     = logNorm(bipadStats.floodIncidents,     years);
+  const historicalLandslideRisk = logNorm(bipadStats.landslideIncidents, years);
   const historicalEarthquakeRisk = usgsStats.earthquakeRisk;
 
+  // Confidence: fraction of sources successfully queried
+  const bipadYearsOk = bipadStats.yearsAnalysed;
+  const usgsOk       = usgsStats.yearsAnalysed > 0 ? 1 : 0;
+  const totalOk      = bipadYearsOk + usgsOk;
+  const totalMax     = years + 1;
+
   return {
+    schemaVersion: 2,
+
     floodIncidents:     bipadStats.floodIncidents,
     landslideIncidents: bipadStats.landslideIncidents,
     earthquakeCount:    usgsStats.count,
@@ -78,9 +129,11 @@ export async function fetchHistoricalHazard(
     historicalLandslideRisk:  round(historicalLandslideRisk),
     historicalEarthquakeRisk: round(historicalEarthquakeRisk),
 
-    notableEvents: notableEvents.slice(0, 10), // top 10 most recent
-    yearsAnalysed: years,
-    source:        "bipad+usgs",
+    notableEvents: notableEvents.slice(0, 10),
+    yearsRequested: years,
+    yearsAnalysed:  bipadYearsOk,
+    confidence:     totalMax > 0 ? round(totalOk / totalMax) : 0,
+    sources:        ["bipad", "usgs"],
   };
 }
 
@@ -89,6 +142,7 @@ export async function fetchHistoricalHazard(
 interface BipadStats {
   floodIncidents:     number;
   landslideIncidents: number;
+  yearsAnalysed:      number;
   notableEvents: HistoricalHazardStats["notableEvents"];
 }
 
@@ -96,82 +150,123 @@ async function fetchBipadHistorical(
   district:    string,
   targetMonth: number,
   currentYear: number,
-  years:       number
+  years:       number,
+  signal?:     AbortSignal,
 ): Promise<BipadStats> {
 
-  let floodIncidents     = 0;
-  let landslideIncidents = 0;
-  const notableEvents: BipadStats["notableEvents"] = [];
+  const cacheKey = `bipad-historical:${district}:${targetMonth}:${years}:${currentYear}`;
 
-  // Query each past year separately so we get the same seasonal window
-  const requests = Array.from({ length: years }, (_, i) => {
-    const year  = currentYear - years + i;
-    // ±1 month window around target month
-    const mFrom = Math.max(1,  targetMonth - 1);
-    const mTo   = Math.min(12, targetMonth + 1);
-    const from  = `${year}-${String(mFrom).padStart(2, "0")}-01`;
-    const to    = `${year}-${String(mTo).padStart(2, "0")}-28`;
-    return fetchBipadRange(district, from, to, year);
-  });
+  const cached = await externalApiCache.getOrFetch(
+    cacheKey,
+    HISTORICAL_CONFIG.CACHE_TTL_MS,
+    async () => {
+      let floodIncidents     = 0;
+      let landslideIncidents = 0;
+      let yearsAnalysed      = 0;
+      const notableEvents: BipadStats["notableEvents"] = [];
 
-  const results = await Promise.allSettled(requests);
+      const requests = Array.from({ length: years }, (_, i) => {
+        const year  = currentYear - years + i;
+        const mFrom = Math.max(1,  targetMonth - 1);
+        const mTo   = Math.min(12, targetMonth + 1);
+        const from  = `${year}-${String(mFrom).padStart(2, "0")}-01`;
+        const lastDay = String(new Date(year, mTo, 0).getDate()).padStart(2, "0");
+        const to    = `${year}-${String(mTo).padStart(2, "0")}-${lastDay}`;
+        return fetchBipadRange(district, from, to, year, signal);
+      });
 
-  for (const result of results) {
-    if (result.status !== "fulfilled" || !result.value) continue;
-    floodIncidents     += result.value.flood;
-    landslideIncidents += result.value.landslide;
-    notableEvents.push(...result.value.events);
-  }
+      const results = await Promise.allSettled(requests);
 
-  return { floodIncidents, landslideIncidents, notableEvents };
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const year   = currentYear - years + i;
+        if (result.status !== "fulfilled" || !result.value) {
+          console.warn("[historical-hazard] BIPAD year %d failed:", year, result.status === "rejected" ? result.reason : "null response");
+          continue;
+        }
+        floodIncidents     += result.value.flood;
+        landslideIncidents += result.value.landslide;
+        notableEvents.push(...result.value.events);
+        yearsAnalysed++;
+      }
+
+      return { floodIncidents, landslideIncidents, yearsAnalysed, notableEvents } as BipadStats;
+    },
+    { timeoutMs: HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS * years, negativeTtlMs: 60_000, signal },
+  );
+  return cached ?? { floodIncidents: 0, landslideIncidents: 0, yearsAnalysed: 0, notableEvents: [] };
+}
+
+const HAZARD_TERMS = {
+  flood:     ["flood", "बाढी"],
+  landslide: ["landslide", "पहिरो"],
+} as const;
+
+interface BipadIncident {
+  incident_type?:  { title?: string };
+  hazard?:         { title?: string };
+  date_of_incident?: string;
+  loss?:           { estimated_loss?: number };
+  description?:    string;
 }
 
 async function fetchBipadRange(
   district: string,
   from:     string,
   to:       string,
-  year:     number
+  year:     number,
+  signal?:  AbortSignal,
 ): Promise<{ flood: number; landslide: number; events: HistoricalHazardStats["notableEvents"] } | null> {
   try {
-    const url = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&date_of_incident__gte=${from}&date_of_incident__lte=${to}&format=json&limit=100`;
+    const pageSize = HISTORICAL_CONFIG.BIPAD_PAGE_SIZE;
+    let offset = 0;
+    let allIncidents: BipadIncident[] = [];
 
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(10_000),
-      headers: { Accept: "application/json" },
-      cache:   "no-store",
-    });
+    while (true) {
+      const url = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&incident_on__gt=${from}&incident_on__lt=${to}&format=json&limit=${pageSize}&offset=${offset}`;
 
-    if (!res.ok) return null;
+      const res = await fetch(url, {
+        signal:  signal
+          ? AbortSignal.any([AbortSignal.timeout(HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS), signal])
+          : AbortSignal.timeout(HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS),
+        headers: { Accept: "application/json" },
+        cache:   "no-store",
+      });
 
-    const data = await res.json() as {
-      results?: {
-        incident_type?:  { title?: string };
-        hazard?:         { title?: string };
-        date_of_incident?: string;
-        loss?:           { estimated_loss?: number };
-        description?:    string;
-      }[]
-    };
+      if (!res.ok) return null;
 
-    const incidents = data.results ?? [];
+      const data = await res.json() as { results?: BipadIncident[] };
+      if (!Array.isArray(data.results)) return null;
+
+      const results = data.results;
+      allIncidents.push(...results);
+
+      if (results.length < pageSize) break;
+      offset += pageSize;
+    }
+
     let flood = 0, landslide = 0;
     const events: HistoricalHazardStats["notableEvents"] = [];
 
-    for (const inc of incidents) {
+    for (const inc of allIncidents) {
       const type = (inc.incident_type?.title ?? inc.hazard?.title ?? "").toLowerCase();
-      const isFlood     = type.includes("flood")     || type.includes("बाढी");
-      const isLandslide = type.includes("landslide") || type.includes("पहिरो");
+      const isFlood     = HAZARD_TERMS.flood.some((t) => type.includes(t));
+      const isLandslide = HAZARD_TERMS.landslide.some((t) => type.includes(t));
 
       if (isFlood)     flood++;
       if (isLandslide) landslide++;
 
       if (isFlood || isLandslide) {
         const loss = inc.loss?.estimated_loss ?? 0;
+        let severity: "HIGH" | "MEDIUM" | "LOW" = "LOW";
+        if (loss > 1_000_000) severity = "HIGH";
+        else if (loss > 100_000) severity = "MEDIUM";
+
         events.push({
           date:        inc.date_of_incident ?? `${year}`,
           type:        isFlood ? "Flood" : "Landslide",
           description: inc.description ?? `${isFlood ? "Flood" : "Landslide"} incident in ${district}`,
-          severity:    loss > 1_000_000 ? "HIGH" : loss > 100_000 ? "MEDIUM" : "LOW",
+          severity,
         });
       }
     }
@@ -188,6 +283,7 @@ interface UsgsStats {
   count:          number;
   maxMag:         number;
   earthquakeRisk: number;
+  yearsAnalysed:  number;
   notableEvents:  HistoricalHazardStats["notableEvents"];
 }
 
@@ -197,71 +293,83 @@ async function fetchUsgsHistorical(
   targetMonth: number,
   currentYear: number,
   years:       number,
-  radiusKm:    number
+  radiusKm:    number,
+  signal?:     AbortSignal,
 ): Promise<UsgsStats> {
   if (lat === 0 && lon === 0) {
-    return { count: 0, maxMag: 0, earthquakeRisk: 0, notableEvents: [] };
+    return { count: 0, maxMag: 0, earthquakeRisk: 0, yearsAnalysed: 0, notableEvents: [] };
   }
 
-  try {
-    // Query earthquakes M3.5+ within configurable radius over the past N years
-    const from = `${currentYear - years}-01-01`;
-    const to   = new Date().toISOString().split("T")[0];
+  const cacheKey = `usgs-historical:${lat}:${lon}:${targetMonth}:${years}:${currentYear}:${radiusKm}`;
 
-    const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${from}&endtime=${to}&latitude=${lat}&longitude=${lon}&maxradiuskm=${radiusKm}&minmagnitude=4.5&orderby=magnitude`;
+  const cached = await externalApiCache.getOrFetch(
+    cacheKey,
+    HISTORICAL_CONFIG.CACHE_TTL_MS,
+    async () => {
+      const from = `${currentYear - years}-01-01`;
+      const to   = new Date().toISOString().split("T")[0];
 
-    const res = await fetch(url, {
-      signal: AbortSignal.timeout(10_000),
-      cache:  "no-store",
-    });
+      const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${from}&endtime=${to}&latitude=${lat}&longitude=${lon}&maxradiuskm=${radiusKm}&minmagnitude=4.5&orderby=magnitude`;
 
-    if (!res.ok) return { count: 0, maxMag: 0, earthquakeRisk: 0, notableEvents: [] };
+      try {
+        const res = await fetch(url, {
+          signal: signal
+            ? AbortSignal.any([AbortSignal.timeout(HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS), signal])
+            : AbortSignal.timeout(HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS),
+          cache: "no-store",
+        });
 
-    const data = await res.json() as {
-      features?: {
-        properties?: { mag?: number; place?: string; time?: number };
-        geometry?:   { coordinates?: number[] };
-      }[]
-    };
+        if (!res.ok) return { count: 0, maxMag: 0, earthquakeRisk: 0, yearsAnalysed: 0, notableEvents: [] };
 
-    const quakes = data.features ?? [];
+        const data = await res.json() as {
+          features?: {
+            properties?: { mag?: number; place?: string; time?: number };
+            geometry?:   { coordinates?: number[] };
+          }[]
+        };
 
-    // Filter to same season (±1 month)
-    const seasonalQuakes = quakes.filter((q) => {
-      if (!q.properties?.time) return true;
-      const qMonth = new Date(q.properties.time).getMonth() + 1;
-      return Math.abs(qMonth - targetMonth) <= 1;
-    });
+        if (!Array.isArray(data.features)) {
+          return { count: 0, maxMag: 0, earthquakeRisk: 0, yearsAnalysed: 0, notableEvents: [] };
+        }
 
-    const mags    = seasonalQuakes.map((q) => q.properties?.mag ?? 0);
-    const maxMag  = mags.length > 0 ? Math.max(...mags) : 0;
-    const count   = seasonalQuakes.length;
+        const quakes = data.features;
 
-    // Risk index based on count + magnitude
-    let earthquakeRisk = 0;
-    if (maxMag >= 6.0) earthquakeRisk = 0.9;
-    else if (maxMag >= 5.0) earthquakeRisk = 0.6;
-    else if (maxMag >= 4.0) earthquakeRisk = 0.3;
-    else if (count > 10) earthquakeRisk = 0.2;
-    else if (count > 5)  earthquakeRisk = 0.1;
+        // Filter to same season using circular month comparison
+        const seasonalQuakes = quakes.filter((q) => {
+          if (!q.properties?.time) return true;
+          const qMonth = new Date(q.properties.time).getMonth() + 1;
+          return circularMonthDiff(qMonth, targetMonth) <= 1;
+        });
 
-    // Build notable events for significant quakes (M5+)
-    const notableEvents: HistoricalHazardStats["notableEvents"] = quakes
-      .filter((q) => (q.properties?.mag ?? 0) >= 5.0)
-      .slice(0, 5)
-      .map((q) => ({
-        date:        new Date(q.properties?.time ?? 0).toISOString().split("T")[0],
-        type:        "Earthquake",
-        description: `M${q.properties?.mag?.toFixed(1)} — ${q.properties?.place ?? "near this area"}`,
-        severity:    (q.properties?.mag ?? 0) >= 6 ? "HIGH" : "MEDIUM" as "HIGH" | "MEDIUM",
-      }));
+        const mags   = seasonalQuakes.map((q) => q.properties?.mag ?? 0);
+        const maxMag = mags.length > 0 ? Math.max(...mags) : 0;
+        const count  = seasonalQuakes.length;
 
-    return { count, maxMag, earthquakeRisk, notableEvents };
-  } catch {
-    return { count: 0, maxMag: 0, earthquakeRisk: 0, notableEvents: [] };
-  }
+        // Continuous risk model combining magnitude + frequency
+        const magScore   = Math.min(maxMag / 7.0, 1.0);
+        const freqScore  = Math.min(count / 20, 1.0);
+        const earthquakeRisk = magScore * HISTORICAL_CONFIG.EQ_MAG_WEIGHT
+                             + freqScore * HISTORICAL_CONFIG.EQ_FREQ_WEIGHT;
+
+        // Notable events for significant quakes (M5+)
+        const notableEvents: HistoricalHazardStats["notableEvents"] = quakes
+          .filter((q) => (q.properties?.mag ?? 0) >= 5.0)
+          .slice(0, 5)
+          .map((q) => ({
+            date:        new Date(q.properties?.time ?? 0).toISOString().split("T")[0],
+            type:        "Earthquake",
+            description: `M${q.properties?.mag?.toFixed(1)} — ${q.properties?.place ?? "near this area"}`,
+            severity:    (q.properties?.mag ?? 0) >= 6 ? "HIGH" : "MEDIUM" as "HIGH" | "MEDIUM",
+          }));
+
+        return { count, maxMag, earthquakeRisk, yearsAnalysed: 1, notableEvents } as UsgsStats;
+      } catch {
+        return { count: 0, maxMag: 0, earthquakeRisk: 0, yearsAnalysed: 0, notableEvents: [] } as UsgsStats;
+      }
+    },
+    { timeoutMs: HISTORICAL_CONFIG.REQUEST_TIMEOUT_MS, negativeTtlMs: 60_000, signal },
+  );
+  return cached ?? { count: 0, maxMag: 0, earthquakeRisk: 0, yearsAnalysed: 0, notableEvents: [] };
 }
 
-function round(n: number): number {
-  return Math.round(n * 100) / 100;
-}
+
