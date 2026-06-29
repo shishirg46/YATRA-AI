@@ -1,6 +1,10 @@
 export type VehicleType = "car" | "motorcycle" | "jeep";
 
+export const VEHICLE_TYPES: VehicleType[] = ["car", "motorcycle", "jeep"];
+
 export type TravelStyle = "budget" | "standard" | "luxury";
+
+export const TRAVEL_STYLE_VALUES: TravelStyle[] = ["budget", "standard", "luxury"];
 
 export type RoadClass = "highway" | "paved" | "unpaved" | "trail";
 

@@ -10,12 +10,15 @@ export const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-
 
 export const planRequestSchema = z.object({
   destinationId: z.string().min(1, "Destination is required"),
-  travelDate: dateString,
+  startDate: dateString,
+  endDate: dateString,
   tripType: z.enum(["SOLO", "GROUP"]).default("SOLO"),
-  budgetNPR: z.number().nonnegative().optional().default(0),
+  budgetNPR: z.number().nonnegative("Budget must be a non-negative number"),
   memberUsernames: z.array(z.string()).default([]),
   originLat: z.number().nullable().optional().default(null),
   originLon: z.number().nullable().optional().default(null),
+  vehicle: z.enum(["car", "motorcycle", "jeep"]),
+  travelStyle: z.enum(["budget", "standard", "luxury"]),
 });
 
 // ─── POST /api/analyze ────────────────────────────────────────────────────────

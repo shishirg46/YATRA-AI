@@ -1,6 +1,7 @@
 import { callAI } from "@/lib/ai/client";
 import { AI_SYSTEM_PROMPT } from "./config";
 import type { OriginLocation } from "./resolver";
+import type { BudgetSummary } from "@/lib/types/plan-report";
 
 type MemberAnalysis = {
   name: string;
@@ -29,14 +30,6 @@ type Alternative = {
   estimatedNPR: number;
 };
 
-type Budget = {
-  specified: number;
-  estimatedTotal: number;
-  feasible: boolean;
-  shortfall: number;
-  perPerson: number;
-};
-
 export function buildPrompt(
   location: { name: string; district: { name: string; province: { name: string } }; altitude: number | null },
   travelDate: string,
@@ -48,7 +41,7 @@ export function buildPrompt(
   groupAvgScore: number,
   conflict: boolean,
   mostVulnerable: { name: string; score: number } | undefined,
-  budget: Budget,
+  budget: Pick<BudgetSummary, "specified" | "estimatedTotal" | "feasible" | "shortfall" | "perPerson">,
   sortedAlternatives: Alternative[],
   ai: {
     verdict: string;
