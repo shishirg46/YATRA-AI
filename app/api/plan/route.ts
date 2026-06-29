@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { planRequestSchema, validateBody } from "@/lib/validation";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
-import { getCosts, computeBudget } from "@/lib/plan/config";
+import { computeBudget } from "@/lib/plan/config";
 import { loadDestination, loadLeaderData, loadGroupMembers } from "@/lib/plan/loader";
 import { resolveOriginAndRoute, assessRoute, resolveHome } from "@/lib/plan/resolver";
 import { analyzeTravellers, computePillar, computeGroupScore, gatherRecommendations } from "@/lib/plan/scorer";
@@ -29,10 +29,12 @@ async function planHandler(req: NextRequest) {
       return NextResponse.json({ message: parsed.error }, { status: parsed.status });
     }
 
-    const { destinationId, travelDate, tripType, budgetNPR, memberUsernames, originLat, originLon } = parsed.data;
+    const { destinationId, startDate, endDate, tripType, budgetNPR, memberUsernames, originLat, originLon, vehicle, travelStyle } = parsed.data;
 
-    if (new Date(travelDate) < new Date(new Date().toDateString()))
-      return NextResponse.json({ message: "Travel date must be today or in the future." }, { status: 400 });
+    if (new Date(startDate) < new Date(new Date().toDateString()))
+      return NextResponse.json({ message: "Start date must be today or in the future." }, { status: 400 });
+    if (new Date(endDate) < new Date(startDate))
+      return NextResponse.json({ message: "End date must be on or after start date." }, { status: 400 });
     if (tripType === "GROUP" && memberUsernames.length === 0)
       return NextResponse.json({ message: "Group trips require at least one partner." }, { status: 400 });
 
@@ -68,12 +70,12 @@ async function planHandler(req: NextRequest) {
     ];
 
     const { effectiveHome, routePlan, originResolutionNote } = await resolveOriginAndRoute(
-      originLat, originLon, session.user.id, destination, leaderUser?.homeLocation as any, travelDate,
+      originLat, originLon, session.user.id, destination, leaderUser?.homeLocation as any, startDate,
     );
 
-    const routeRisk = await assessRoute(effectiveHome, destination as any, travelDate);
+    const routeRisk = await assessRoute(effectiveHome, destination as any, startDate);
 
-    const currentMonth = new Date(travelDate).getMonth() + 1;
+    const currentMonth = new Date(startDate).getMonth() + 1;
     const isMonsoon = currentMonth >= 6 && currentMonth <= 9;
     const { historicDisasters, recentDisasters } = await fetchDisasterCounts(prisma);
     const corridorDistrictLookup = buildCorridorLookup(
@@ -112,7 +114,7 @@ async function planHandler(req: NextRequest) {
       altitude: destination.altitude,
     };
 
-    const memberAnalyses = await analyzeTravellers(allTravellers, locationInfo, travelDate, tripType);
+    const memberAnalyses = await analyzeTravellers(allTravellers, locationInfo, startDate, tripType);
     const leaderAnalysis = memberAnalyses[0];
 
     const resolvedHome = resolveHome(effectiveHome);
@@ -120,24 +122,36 @@ async function planHandler(req: NextRequest) {
     const pillarModel = await computePillar(
       { ...locationInfo, id: destination.id },
       resolvedHome,
-      travelDate,
+      startDate,
       tripType,
       leaderHealth ? { fitnessLevel: leaderHealth.fitnessLevel as "LOW" | "MODERATE" | "HIGH", mobilityLimited: leaderHealth.mobilityLimited, chronicConditions: leaderHealth.chronicConditions } : null,
     );
 
     const { groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable } = computeGroupScore(memberAnalyses, pillarModel.totalScore, tripType);
 
-    const costs = getCosts(destination.name, destination.altitude);
-    const budget = computeBudget(costs, destination.altitude, budgetNPR, allTravellers.length);
+    const effectiveOrigin = effectiveHome ? { lat: effectiveHome.latitude, lon: effectiveHome.longitude } : null;
+    const budget = await computeBudget({
+      destinationName: destination.name,
+      destinationLat: destination.latitude,
+      destinationLon: destination.longitude,
+      altitude: destination.altitude,
+      startDate,
+      endDate,
+      budgetNPR,
+      travellerCount: allTravellers.length,
+      travelStyle,
+      vehicle,
+      origin: effectiveOrigin,
+    });
 
     const sortedAlternatives = await findAlternatives(
-      destinationId, destination, travelDate, tripType, allTravellers, budgetNPR, destination.altitude,
+      destinationId, destination, startDate, tripType, allTravellers, budgetNPR, destination.altitude,
     );
 
     const actionableRecommendations = gatherRecommendations(pillarModel, destination.name);
 
     const ai = await callAiAnalysis(buildPrompt(
-      destination, travelDate, tripType, memberAnalyses,
+      destination, startDate, tripType, memberAnalyses,
       leaderAnalysis, groupScore, groupLevel, groupAvgScore,
       conflict, mostVulnerable, budget, sortedAlternatives,
       { verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "",
@@ -157,7 +171,11 @@ async function planHandler(req: NextRequest) {
         longitude: destination.longitude,
         altitude: destination.altitude,
       },
-      travelDate,
+      travelDate: startDate,
+      startDate,
+      endDate,
+      vehicle,
+      travelStyle,
       tripType,
       season: leaderAnalysis.riskReport.season,
       overallScore: groupScore,
@@ -206,7 +224,7 @@ async function planHandler(req: NextRequest) {
       weatherPillar: pillarModel.weather,
       personalPillar: pillarModel.personal,
       pillarScores: pillarModel.pillars,
-      budget: { specified: budgetNPR, estimatedTotal: budget.estimatedTotal, estimatedDays: budget.estDays, perPerson: budget.perPerson, breakdown: costs, feasible: budget.feasible, shortfall: budget.shortfall },
+      budget,
       alternatives: sortedAlternatives,
       ai,
       analyzedAt: new Date().toISOString(),
