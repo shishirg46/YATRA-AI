@@ -1,29 +1,23 @@
 import { prisma } from "@/lib/prisma";
 import { analyzeTemporalRisk } from "@/lib/analysis/temporal-risk";
-import { getCosts } from "./config";
+import { computeLivingCost, computeTripDays } from "./config";
 import type { Traveller } from "./scorer";
-
-type DestinationSummary = {
-  id: string;
-  name: string;
-  district: string;
-  province: string;
-  altitude: number | null;
-  safetyScore: number;
-  safetyLevel: string;
-  estimatedNPR: number;
-  budgetFeasible: boolean;
-};
+import type { TravelStyle } from "./trip-types";
+import type { Alternative } from "@/lib/types/plan-report";
 
 export async function findAlternatives(
   destinationId: string,
   location: { name: string; district: { name: string; province: { name: string } } },
-  travelDate: string,
+  startDate: string,
+  endDate: string,
   tripType: "SOLO" | "GROUP",
   allTravellers: Traveller[],
   budgetNPR: number,
   altitude: number | null,
-): Promise<DestinationSummary[]> {
+  travelStyle: TravelStyle,
+): Promise<Alternative[]> {
+  const tripDays = computeTripDays(startDate, endDate);
+
   const rawAlternatives = await prisma.location.findMany({
     where: {
       id: { not: destinationId },
@@ -37,17 +31,14 @@ export async function findAlternatives(
     take: 10,
   });
 
-  const altCosts = getCosts(location.name, altitude);
-  const estDays = (altitude ?? 0) > 3000 ? 7 : (altitude ?? 0) > 1500 ? 4 : 2;
-
   const scored = await Promise.all(
     rawAlternatives
       .filter((a) => a.riskReports.length > 0)
       .map(async (a) => {
-        const ac = getCosts(a.name, a.altitude);
-        const altDaily = ac.accommodation + ac.food + ac.transport;
-        const altTotal = altDaily * estDays;
-        const budgetOk = budgetNPR === 0 || altTotal <= budgetNPR * 1.1;
+        const dailyCost = computeLivingCost(a.name, a.altitude, travelStyle);
+        const altDailyTotal = dailyCost.total;
+        const altTotal = altDailyTotal * tripDays;
+        const budgetOk = altTotal <= budgetNPR;
 
         let minAltScore = a.riskReports[0].safetyScore;
         if (tripType === "GROUP" && allTravellers.length > 1) {
@@ -61,7 +52,7 @@ export async function findAlternatives(
                 lat: a.latitude,
                 lon: a.longitude,
                 altitude: a.altitude,
-                travelDate,
+                travelDate: startDate,
                 userHealth: h ? { ...h, homeAltitude: t.homeAltitude, homeProvince: t.homeProvince } : null,
                 tripType,
               });
@@ -81,6 +72,9 @@ export async function findAlternatives(
           safetyLevel: a.riskReports[0].safetyLevel,
           estimatedNPR: altTotal,
           budgetFeasible: budgetOk,
+          transportCost: 0,
+          dailyCost: altDailyTotal,
+          tripDays,
         };
       }),
   );

@@ -146,7 +146,7 @@ async function planHandler(req: NextRequest) {
     });
 
     const sortedAlternatives = await findAlternatives(
-      destinationId, destination, startDate, tripType, allTravellers, budgetNPR, destination.altitude,
+      destinationId, destination, startDate, endDate, tripType, allTravellers, budgetNPR, destination.altitude, travelStyle,
     );
 
     const actionableRecommendations = gatherRecommendations(pillarModel, destination.name);
