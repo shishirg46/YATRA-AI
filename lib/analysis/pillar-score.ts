@@ -169,54 +169,54 @@ function normalizeSectionKey(from: string, to: string): string {
   return `${a}->${b}`;
 }
 
-async function fetchForecastWeek(lat: number, lon: number, travelDate: string) {
-  type ForecastDay = {
-    date: string;
-    weatherCode: number;
-    tempMax: number;
-    tempMin: number;
-    rainProb: number;
-    windMax: number;
-    isTravelDate: boolean;
-  };
-  
-  // Using DHM API instead of Open-Meteo
+type ForecastDay = {
+  date: string;
+  weatherCode: number;
+  tempMax: number;
+  tempMin: number;
+  rainProb: number;
+  windMax: number;
+  isTravelDate: boolean;
+};
+
+async function fetchForecastWindow(lat: number, lon: number, startDate: string, endDate: string) {
   try {
     const url = `https://dhm.gov.np/mfd/api/forecast?lat=${lat}&lng=${lon}`;
     const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
     if (!res.ok) return [];
-    
+
     const data = await res.json() as any;
     const daily = data?.daily_forecast;
     if (!Array.isArray(daily) || daily.length === 0) return [];
-    
-    const all: ForecastDay[] = daily.map((d: any) => ({
-      date: d.datetime,
-      weatherCode: 0, // DHM doesn't use WMO codes, use 0 as placeholder
-      tempMax: Number(d.max_temperature ?? 0),
-      tempMin: Number(d.min_temperature ?? 0),
-      rainProb: Number(d.precipitation_probability ?? 0),
-      windMax: Number(d.wind_speed ?? 0),
-      isTravelDate: d.datetime === travelDate,
-    }));
-    
-    const travelTs = Date.parse(`${travelDate}T00:00:00Z`);
-    const startTs = travelTs - 2 * 24 * 60 * 60 * 1000;
-    const endTs = travelTs + 4 * 24 * 60 * 60 * 1000;
-    const centered = all.filter((d: ForecastDay) => {
-      const ts = Date.parse(`${d.date}T00:00:00Z`);
-      return ts >= startTs && ts <= endTs;
-    });
-    
-    if (centered.length >= 5) return centered;
 
-    // Fallback: nearest days around travel date
-    const travelIdx = all.findIndex((d: ForecastDay) => d.date === travelDate);
-    if (travelIdx >= 0) {
-      const from = Math.max(0, travelIdx - 2);
-      return all.slice(from, Math.min(all.length, from + 7));
-    }
-    return all.slice(0, 7);
+    const startTs = Date.parse(`${startDate}T00:00:00Z`);
+    const endTs = Date.parse(`${endDate}T23:59:59Z`);
+
+    const all: ForecastDay[] = daily.map((d: any) => {
+      const dt = d.datetime;
+      const ts = Date.parse(`${dt}T00:00:00Z`);
+      return {
+        date: dt,
+        weatherCode: 0,
+        tempMax: Number(d.max_temperature ?? 0),
+        tempMin: Number(d.min_temperature ?? 0),
+        rainProb: Number(d.precipitation_probability ?? 0),
+        windMax: Number(d.wind_speed ?? 0),
+        isTravelDate: ts >= startTs && ts <= endTs,
+      };
+    });
+
+    // Prefer days within the trip window; fall back to nearest forecast days
+    const inTrip = all.filter((d) => d.isTravelDate);
+    if (inTrip.length >= 1) return inTrip;
+
+    const midTs = (startTs + endTs) / 2;
+    const sorted = [...all].sort((a, b) => {
+      const aTs = Date.parse(`${a.date}T00:00:00Z`);
+      const bTs = Date.parse(`${b.date}T00:00:00Z`);
+      return Math.abs(aTs - midTs) - Math.abs(bTs - midTs);
+    });
+    return sorted.slice(0, 7);
   } catch {
     console.warn("[forecast] DHM API failed for weather forecast");
     return [];
@@ -242,6 +242,7 @@ export async function computePillarModel(input: {
     altitude: number | null;
   };
   travelDate: string;
+  endDate?: string;
   tripType: "SOLO" | "GROUP";
   userHealth: {
     fitnessLevel: "LOW" | "MODERATE" | "HIGH";
@@ -275,7 +276,7 @@ export async function computePillarModel(input: {
       fetchWeather(input.home.lat, input.home.lon).catch(() => null),
       fetchHazard(input.destination.district, input.destination.lat, input.destination.lon).catch(() => null),
       fetchWeather(input.destination.lat, input.destination.lon).catch(() => null),
-      fetchForecastWeek(input.destination.lat, input.destination.lon, input.travelDate).catch(() => []),
+      fetchForecastWindow(input.destination.lat, input.destination.lon, input.travelDate, input.endDate ?? input.travelDate).catch(() => []),
       loadPlaces().catch(() => [] as PlacePoint[]),
     ]);
 
@@ -343,7 +344,7 @@ export async function computePillarModel(input: {
         effect: segPenalty > 2 ? "Possible delays or partial road blockage. Keep 1 extra buffer day." : "Monitor advisories before departure.",
         status: segPenalty > 2.8 ? "Blocked" : segPenalty > 1.4 ? "Advisory" : "Clear",
         sources: [
-          seg.evidence?.historical?.source ?? "bipad+usgs",
+          seg.evidence?.historical?.sources?.join("+") ?? "bipad+usgs",
           "OpenStreetMap route geometry",
           ...(seg.roadSurface ? ["OSM road surface tags"] : []),
         ],

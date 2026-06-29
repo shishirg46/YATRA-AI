@@ -89,11 +89,13 @@ export async function computePillar(
   travelDate: string,
   tripType: "SOLO" | "GROUP",
   leaderHealth: { fitnessLevel: "LOW" | "MODERATE" | "HIGH"; mobilityLimited: boolean; chronicConditions: string[] } | null,
+  endDate?: string,
 ) {
   return computePillarModel({
     destination,
     home,
     travelDate,
+    endDate,
     tripType,
     userHealth: leaderHealth,
   });

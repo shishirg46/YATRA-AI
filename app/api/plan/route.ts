@@ -125,6 +125,7 @@ async function planHandler(req: NextRequest) {
       startDate,
       tripType,
       leaderHealth ? { fitnessLevel: leaderHealth.fitnessLevel as "LOW" | "MODERATE" | "HIGH", mobilityLimited: leaderHealth.mobilityLimited, chronicConditions: leaderHealth.chronicConditions } : null,
+      endDate,
     );
 
     const { groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable } = computeGroupScore(memberAnalyses, pillarModel.totalScore, tripType);
