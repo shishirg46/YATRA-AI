@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import L, { LatLngBounds } from "leaflet";
+import * as L from "leaflet";
 import { MapContainer, TileLayer, Marker, useMap, Polyline } from "react-leaflet";
-import { calculateBounds, isInNepalBounds, NEPAL_BOUNDS } from "@/lib/map-utils";
+import { calculateBounds, NEPAL_BOUNDS } from "@/lib/map-utils";
 import type { EnhancedRoad } from "@/lib/routing/types";
 
 const ROAD_COLORS = ["#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ef4444"];
@@ -48,32 +48,30 @@ export default function RouteMapMini({ roads }: { roads: EnhancedRoad[] }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
-  const bounds = useMemo(() => {
-    const allPoints: Array<{ lat: number; lon: number }> = [];
+  const allPoints = useMemo(() => {
+    const pts: Array<{ lat: number; lon: number }> = [];
     for (const road of roads) {
       for (const c of road.fullCoordinates) {
-        allPoints.push(c);
+        pts.push(c);
       }
     }
-    if (allPoints.length < 2) return null;
-    const [sw, ne] = calculateBounds(allPoints);
-    return L.latLngBounds(sw, ne);
+    return pts;
   }, [roads]);
+  const center = allPoints.length > 0
+    ? [allPoints[Math.floor(allPoints.length / 2)].lat, allPoints[Math.floor(allPoints.length / 2)].lon] as [number, number]
+    : [28.0, 84.0] as [number, number];
 
   if (!mounted) return <div className="h-52 rounded-xl bg-slate-800/50 animate-pulse" />;
 
   return (
     <MapContainer
-      bounds={bounds ?? undefined}
-      boundsOptions={{ padding: [40, 40] }}
+      center={center}
+      zoom={9}
       className="h-52 w-full rounded-xl"
       style={{ background: "#020617" }}
       zoomControl={true}
       scrollWheelZoom={true}
       dragging={true}
-      maxBounds={L.latLngBounds(NEPAL_BOUNDS[0], NEPAL_BOUNDS[1])}
-      maxBoundsViscosity={1}
-      minZoom={7}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
