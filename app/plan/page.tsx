@@ -254,7 +254,7 @@ function PlanInner() {
                 Vehicle <span className="text-red-400">*</span>
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {(["car", "motorcycle", "jeep"] as const).map((v) => (
+                {(["car", "motorcycle", "jeep", "bus"] as const).map((v) => (
                   <button key={v} type="button" onClick={() => setVehicle(v)}
                     className={`flex items-center gap-1.5 p-2.5 rounded-xl border text-left transition-all ${vehicle === v ? "bg-amber-400/10 border-amber-400/35 text-amber-300" : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600"}`}>
                     <Car size={14}/>

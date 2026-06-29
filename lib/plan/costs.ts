@@ -1,7 +1,14 @@
-import type { GeoPoint } from "@/lib/routing/types";
+import type { GeoPoint, VehicleProfile } from "@/lib/routing/types";
 import { fetchRoadRoute } from "@/lib/routing/openroute-service";
 import { VEHICLE_RATES } from "./trip-types";
 import type { VehicleType } from "./trip-types";
+
+const ROUTING_VEHICLE: Record<VehicleType, VehicleProfile> = {
+  car: "car",
+  motorcycle: "motorcycle",
+  jeep: "jeep",
+  bus: "car",
+};
 
 export interface TransportCostResult {
   distanceKm: number;
@@ -17,7 +24,8 @@ export async function computeTransportCost(
   vehicle: VehicleType,
   signal?: AbortSignal,
 ): Promise<TransportCostResult> {
-  const routes = await fetchRoadRoute(origin, destination, vehicle, undefined, signal);
+  const routingVehicle = ROUTING_VEHICLE[vehicle];
+  const routes = await fetchRoadRoute(origin, destination, routingVehicle, undefined, signal);
   const best = routes[0];
   if (!best) throw new Error("No route found");
 

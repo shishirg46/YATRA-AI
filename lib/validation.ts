@@ -17,7 +17,7 @@ export const planRequestSchema = z.object({
   memberUsernames: z.array(z.string()).default([]),
   originLat: z.number().nullable().optional().default(null),
   originLon: z.number().nullable().optional().default(null),
-  vehicle: z.enum(["car", "motorcycle", "jeep"]),
+  vehicle: z.enum(["car", "motorcycle", "jeep", "bus"]),
   travelStyle: z.enum(["budget", "standard", "luxury"]),
 });
 
