@@ -34,6 +34,7 @@ const SEVERITY_COLOR: Record<string, string> = {
   LOW:      "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
   MEDIUM:   "text-amber-400   bg-amber-400/10   border-amber-400/20",
   HIGH:     "text-orange-400  bg-orange-400/10  border-orange-400/20",
+  EXTREME:  "text-red-400     bg-red-400/10     border-red-400/20",
   CRITICAL: "text-red-400     bg-red-400/10     border-red-400/20",
 };
 
@@ -193,7 +194,7 @@ export default function PlanReportView({
                     <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border font-body text-[10px] font-bold ${cfg.color} ${cfg.bg} ${cfg.border}`}>
                       <LevelIcon size={10}/>{cfg.label}
                     </span>
-                    <span className="font-body text-[10px] text-slate-500 self-center">{Math.round(report.confidence * 100)}% confidence</span>
+                    {report.confidence > 0 && <ConfidenceBadge report={report} />}
                   </div>
                 </div>
               </div>
@@ -262,8 +263,35 @@ export default function PlanReportView({
               </div>
             )}
 
-            {/* Route Risk */}
-            {report.routeRisk && (
+            {/* Route Assessment */}
+            {report.routeAssessment ? (
+              <div className="plan-card rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <Navigation size={12} className="text-amber-400" />
+                  <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Route Assessment</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { label: "Road Conditions", level: report.routeAssessment.roadConditions },
+                    { label: "Seasonal Corridor Risk", level: report.routeAssessment.seasonalCorridorRisk },
+                    { label: "Overall Route Outlook", level: report.routeAssessment.overall },
+                  ].map((r) => (
+                    <div key={r.label} className="flex items-center justify-between">
+                      <span className="font-body text-[11px] text-slate-400">{r.label}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        r.level === "EXTREME" ? "text-red-300 border-red-500/20 bg-red-500/10" :
+                        r.level === "HIGH" ? "text-orange-300 border-orange-500/20 bg-orange-500/10" :
+                        r.level === "MEDIUM" ? "text-amber-300 border-amber-500/20 bg-amber-500/10" :
+                        "text-emerald-300 border-emerald-500/20 bg-emerald-500/10"
+                      }`}>{r.level}</span>
+                    </div>
+                  ))}
+                </div>
+                {report.routeRisk?.reason && (
+                  <p className="font-body text-[11px] text-slate-500 leading-relaxed mt-2 pt-2 border-t border-slate-700/50">{report.routeRisk.reason}</p>
+                )}
+              </div>
+            ) : report.routeRisk && (
               <div className={`plan-card rounded-2xl p-4 ${report.routeRisk.risk === "HIGH" || report.routeRisk.risk === "MEDIUM" ? "border-orange-500/20" : "border-emerald-500/20"}`}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5">
@@ -342,18 +370,29 @@ export default function PlanReportView({
           {/* ── Right: Scrollable Data Area ───────────────────────────── */}
           <div className="flex-1 min-w-0 space-y-5">
 
-            {/* 1. AI Verdict */}
-            {report.ai.verdict && (
+            {/* 1. AI Verdict + Analysis (merged) */}
+            {(report.ai.verdict || report.ai.riskExplanation) && (
               <div className={`plan-card rounded-2xl p-6 anim ${isUnsafe ? "border-red-500/20" : ""}`}
                 style={{ animationDelay: ".08s" }}>
                 <div className="flex items-start gap-3">
                   <Sparkles size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h2 className="font-display font-bold text-white text-base mb-1">AI Verdict</h2>
-                    <p className="font-body text-sm text-slate-200 leading-relaxed">{report.ai.verdict}</p>
-                    {isUnsafe && report.ai.whyUnsafe && (
-                      <div className="mt-3 p-3 rounded-xl bg-red-500/8 border border-red-500/20">
-                        <p className="font-body text-sm text-red-300 leading-relaxed"><strong>Why not safe:</strong> {report.ai.whyUnsafe}</p>
+                  <div className="min-w-0 flex-1">
+                    {report.ai.verdict && (
+                      <>
+                        <h2 className="font-display font-bold text-white text-base mb-1">AI Verdict</h2>
+                        <p className="font-body text-sm text-slate-200 leading-relaxed">{report.ai.verdict}</p>
+                      </>
+                    )}
+                    {report.ai.riskExplanation && (
+                      <div className="mt-4 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
+                        <p className="font-body text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Detailed Reasoning</p>
+                        <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.riskExplanation}</p>
+                      </div>
+                    )}
+                    {report.ai.alternativeReason && (
+                      <div className="mt-3 flex items-start gap-2 p-3 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
+                        <TrendingDown size={14} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                        <p className="font-body text-sm text-emerald-300 leading-relaxed">{report.ai.alternativeReason}</p>
                       </div>
                     )}
                     {report.ai.topTip && (
@@ -411,7 +450,7 @@ export default function PlanReportView({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {report.pillarScores.map((p) => (
-                      <div key={p.id} className="rounded-xl border border-slate-700/50 bg-slate-800/40 p-4">
+                      <div key={p.id} className={`rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 ${p.id === "weather_safety" && report.weatherPillar?.breakdown ? "row-span-2" : ""}`}>
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <p className="font-body text-sm text-white font-semibold">{p.title}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full border ${
@@ -421,6 +460,20 @@ export default function PlanReportView({
                           }`}>{p.score}/{p.maxPoints}</span>
                         </div>
                         <p className="font-body text-xs text-slate-400 leading-relaxed">{p.summary}</p>
+                        {p.id === "weather_safety" && report.weatherPillar?.breakdown && (
+                          <div className="mt-3 pt-2 border-t border-slate-700/50 space-y-1">
+                            {report.weatherPillar.breakdown.map((b, i) => (
+                              <div key={i} className="flex items-center justify-between font-body">
+                                <span className={`text-[11px] ${b.type === "base" ? "text-slate-400 font-semibold" : b.type === "result" ? "text-white font-semibold" : "text-slate-500"}`}>
+                                  {b.label}
+                                </span>
+                                <span className={`text-[11px] font-mono ${b.type === "result" ? "text-white font-bold" : b.value < 0 ? "text-red-400" : "text-slate-400"}`}>
+                                  {b.value > 0 ? "+" : ""}{b.value}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -665,26 +718,31 @@ export default function PlanReportView({
               </div>
             )}
 
-            {/* AI Analysis footer block */}
-            {report.ai.riskExplanation && (
-              <div className="plan-card rounded-2xl p-6 anim" style={{ animationDelay: ".56s" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles size={15} className="text-amber-400" />
-                  <h2 className="font-display font-bold text-white text-base">AI Analysis</h2>
-                </div>
-                <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.riskExplanation}</p>
-                <div className="mt-3 pt-3 border-t border-slate-800 flex items-start gap-2">
-                  <CheckCircle2 size={13} className="text-emerald-400 flex-shrink-0 mt-0.5" />
-                  <p className="font-body text-sm text-emerald-300 leading-relaxed"><strong>Top tip:</strong> {report.ai.topTip}</p>
-                </div>
-              </div>
-            )}
+
 
           </div>
 
         </div>
       </div>
     </div>
+  );
+}
+
+function ConfidenceBadge({ report: r }: { report: PlanReport }) {
+  const parts: string[] = [];
+  if (r.weatherStats) parts.push("historical weather");
+  if (r.liveWeather) parts.push("live weather observations");
+  if (r.liveHazard) parts.push("hazard data");
+  if (r.routeRisk || r.routeAssessment) parts.push("route information");
+  if (r.pillarScores) parts.push("scoring analysis");
+  const sources = parts.length > 0 ? parts.join(", ") : "available data";
+  return (
+    <span className="group relative font-body text-[10px] text-slate-500 self-center cursor-default">
+      {Math.round(r.confidence * 100)}% confidence
+      <span className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 w-56 px-2.5 py-1.5 rounded-lg bg-slate-700 border border-slate-600 text-[10px] text-slate-300 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 text-center">
+        Based on {sources}
+      </span>
+    </span>
   );
 }
 

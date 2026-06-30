@@ -171,14 +171,23 @@ export async function analyzeTemporalRisk(params: {
       });
     }
 
-    // Snow
-    if (weatherStats.snowProbability > 0.15 || weatherStats.avgSnowfall > 2) {
+    // Snow — gate by season and elevation
+    const isSnowMonsoon = month >= 6 && month <= 9;
+    const isSnowWinter = month === 12 || month === 1 || month === 2;
+    const destinationAlt = altitude ?? 0;
+    const isHighEnoughForSummerSnow = destinationAlt > 4500;
+    const shouldShowSnowfall = (isSnowMonsoon && isHighEnoughForSummerSnow) || !isSnowMonsoon;
+    if (shouldShowSnowfall && (weatherStats.snowProbability > 0.15 || weatherStats.avgSnowfall > 2)) {
       const penalty = Math.min(weatherStats.avgSnowfall * 1.5, 15);
       totalPenalty += penalty;
+      const snowSeverity = isSnowWinter && weatherStats.avgSnowfall > 10 ? "HIGH"
+        : isSnowWinter ? "MEDIUM"
+        : weatherStats.avgSnowfall > 10 ? "MEDIUM"
+        : "LOW";
       riskFactors.push({
         category:    "Weather",
         name:        "Snowfall",
-        severity:    weatherStats.avgSnowfall > 10 ? "HIGH" : "MEDIUM",
+        severity:    snowSeverity,
         score:       round(penalty),
         description: `${Math.round(weatherStats.snowProbability * 100)}% of days historically have snowfall. Average: ${weatherStats.avgSnowfall}cm. Trail access may be blocked.`,
         source:      "OpenMeteo 5-year historical",
@@ -224,12 +233,14 @@ export async function analyzeTemporalRisk(params: {
     if (hazardStats.historicalEarthquakeRisk > 0.1) {
       const penalty = hazardStats.historicalEarthquakeRisk * 20;
       totalPenalty += penalty;
+      const eqSeverity = hazardStats.earthquakeCount > 5 && hazardStats.maxEarthquakeMag >= 6
+        ? "HIGH" : hazardStats.earthquakeCount > 2 ? "MEDIUM" : "LOW";
       riskFactors.push({
         category:    "Hazard",
         name:        "Seismic activity",
-        severity:    hazardStats.maxEarthquakeMag >= 6 ? "HIGH" : "MEDIUM",
+        severity:    eqSeverity,
         score:       round(penalty),
-        description: `${hazardStats.earthquakeCount} earthquakes (M3.5+) recorded within 150km in this season over the past ${hazardStats.yearsAnalysed} years. Largest: M${hazardStats.maxEarthquakeMag.toFixed(1)}.`,
+        description: `Nepal is a seismically active country. ${hazardStats.earthquakeCount} earthquakes (M3.5+) have occurred within 150km of this destination during this season over the past ${hazardStats.yearsAnalysed} years, which is typical for the region. Travelers should remain aware that earthquakes are possible, although this is not currently a dominant risk factor for this trip.`,
         source:      "USGS Earthquake Catalog",
       });
     }

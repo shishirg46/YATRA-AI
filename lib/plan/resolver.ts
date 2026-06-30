@@ -102,8 +102,8 @@ export async function assessRoute(
       .filter(Boolean);
 
     const reason = segmentAlerts.length > 0
-      ? `Route hazards detected on ${highRiskSegments.length} of ${result.bestRoute.segments.length} segments: ${segmentAlerts.join("; ")}`
-      : `All ${result.bestRoute.segments.length} route segments appear favorable.`;
+      ? `Road hazards detected on ${highRiskSegments.length} of ${result.bestRoute.segments.length} segments: ${segmentAlerts.join("; ")}`
+      : `Road conditions on all ${result.bestRoute.segments.length} segments appear favorable based on route data.`;
 
     const first = result.bestRoute.segments[0];
     const last = result.bestRoute.segments[result.bestRoute.segments.length - 1];
@@ -142,6 +142,28 @@ export async function assessRoute(
   } catch {
     return null;
   }
+}
+
+const ROUTE_LEVEL_ORDER: Record<string, number> = {
+  LOW: 0, MEDIUM: 1, HIGH: 2, EXTREME: 3,
+};
+
+export function computeRouteOutlook(
+  roadConditions: "LOW" | "MEDIUM" | "HIGH",
+  seasonalCorridorRisk: "LOW" | "MEDIUM" | "HIGH" | "EXTREME",
+): "LOW" | "MEDIUM" | "HIGH" | "EXTREME" {
+  const rc = ROUTE_LEVEL_ORDER[roadConditions] ?? 0;
+  const sc = ROUTE_LEVEL_ORDER[seasonalCorridorRisk] ?? 0;
+
+  if (sc >= ROUTE_LEVEL_ORDER.EXTREME) return "EXTREME";
+  if (sc >= ROUTE_LEVEL_ORDER.HIGH && rc >= ROUTE_LEVEL_ORDER.HIGH) return "HIGH";
+  if (sc >= ROUTE_LEVEL_ORDER.HIGH && rc >= ROUTE_LEVEL_ORDER.MEDIUM) return "HIGH";
+  if (sc >= ROUTE_LEVEL_ORDER.HIGH) return "MEDIUM";
+  if (rc >= ROUTE_LEVEL_ORDER.HIGH && sc >= ROUTE_LEVEL_ORDER.MEDIUM) return "HIGH";
+  if (rc >= ROUTE_LEVEL_ORDER.HIGH) return "MEDIUM";
+  return ROUTE_LEVEL_ORDER[roadConditions] >= ROUTE_LEVEL_ORDER[seasonalCorridorRisk]
+    ? roadConditions
+    : seasonalCorridorRisk;
 }
 
 export const FALLBACK_HOME = {

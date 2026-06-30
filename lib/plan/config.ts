@@ -116,10 +116,14 @@ export function computeBudgetSummary(params: {
   label: string;
 }): BudgetSummary {
   const { specified, dailyCost, tripDays, transportCost, travellerCount, label } = params;
-  const dailyTotal = dailyCost.total;
-  const livingTotal = dailyTotal * tripDays;
-  const roundTripTransport = transportCost * 2;
-  const estimatedTotal = livingTotal + roundTripTransport;
+
+  const bAccommodation = Math.round(dailyCost.accommodation * tripDays);
+  const bFood = Math.round(dailyCost.meals * tripDays);
+  const bLocalTransport = Math.round(dailyCost.localTransport * tripDays);
+  const bMisc = Math.round(dailyCost.misc * tripDays);
+  const bIntercityTransport = Math.round(transportCost * 2);
+
+  const estimatedTotal = bAccommodation + bFood + bLocalTransport + bMisc + bIntercityTransport;
   const perPerson = specified > 0 ? Math.round(specified / travellerCount) : 0;
   const remainingBudget = specified > 0 ? Math.max(0, specified - estimatedTotal) : 0;
   const feasible = specified === 0 || specified >= estimatedTotal;
@@ -132,9 +136,11 @@ export function computeBudgetSummary(params: {
     tripDays,
     perPerson,
     breakdown: {
-      accommodation: Math.round(dailyCost.accommodation * tripDays),
-      food: Math.round(dailyCost.meals * tripDays),
-      transport: Math.round(dailyCost.localTransport * tripDays),
+      accommodation: bAccommodation,
+      food: bFood,
+      localTransport: bLocalTransport,
+      intercityTransport: bIntercityTransport,
+      misc: bMisc,
       label,
     },
     dailyCost,

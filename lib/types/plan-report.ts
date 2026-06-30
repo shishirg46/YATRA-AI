@@ -1,3 +1,5 @@
+import type { StageTiming, StageWarning, AiDiagnostics, PillarEvidence } from "@/lib/plan/pipeline-types";
+
 export interface DestinationResult {
   id: string; name: string; district: string; province: string; altitude: number | null;
   latitude?: number; longitude?: number;
@@ -40,6 +42,12 @@ export interface RouteRisk {
   reason: string;
 }
 
+export interface RouteAssessment {
+  roadConditions: "LOW" | "MEDIUM" | "HIGH";
+  seasonalCorridorRisk: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
+  overall: "LOW" | "MEDIUM" | "HIGH" | "EXTREME";
+}
+
 export interface Alternative {
   id: string; name: string; district: string; province: string;
   altitude: number | null; safetyScore: number; safetyLevel: string;
@@ -61,7 +69,7 @@ export interface BudgetSummary {
   estimatedDays: number;
   tripDays: number;
   perPerson: number;
-  breakdown: { accommodation: number; food: number; transport: number; label: string };
+  breakdown: { accommodation: number; food: number; localTransport: number; intercityTransport: number; misc: number; label: string };
   dailyCost: DailyCostBreakdown;
   transportCost: number;
   remainingBudget: number;
@@ -74,13 +82,33 @@ export interface PlanReport {
   travelDate:     string;
   startDate:      string;
   endDate:        string;
+  vehicle:        string;
+  travelStyle:    string;
   tripType:       string;
   liveWeather?:   WeatherSnapshot | null;
   liveHazard?:    HazardSnapshot | null;
   routeRisk?:     RouteRisk | null;
+  disasterRouteRisk?: unknown | null;
+  routeAssessment?: RouteAssessment | null;
+  routePlan?: {
+    nodes: Array<{ name: string; lat: number; lon: number }>;
+    segments: Array<{ from: string; to: string; distanceKm: number; riskLevel: string }>;
+    distanceKm: number;
+    durationHours: number;
+    corridor: string;
+    source: string;
+    resolutionNote?: string;
+  } | null;
   season:         string;
   overallScore:   number;
   overallLevel:   "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME";
+  baselineScore:  number;
+  seasonalModifier?: {
+    factors: Array<{ factor: string; points: number }>;
+    total: number;
+    effectiveScore: number;
+    baselineScore: number;
+  };
   groupAvgScore:  number;
   confidence:     number;
   conflict:       boolean;
@@ -94,7 +122,8 @@ export interface PlanReport {
   weatherStats:   { avgTempMax: number; avgTempMin: number; avgRainfall: number; avgWindSpeed: number; avgSnowfall: number; heavyRainProbability: number; freezingProbability: number; snowProbability: number; maxRainfall: number; minTemp: number; maxTemp: number; yearsAnalysed: number } | null;
   budget: BudgetSummary;
   alternatives:   Alternative[];
-  ai: { verdict: string; whyUnsafe: string; groupConflict: string; riskExplanation: string; healthWarning: string; budgetAdvice: string; alternativeReason: string; topTip: string };
+  ai: { verdict: string; whyUnsafe: string; groupConflict: string; riskExplanation: string; healthWarning: string; budgetAdvice: string; alternativeReason: string; topTip: string; routeAdvice?: string };
+  evidence?: PillarEvidence | null;
   pillarScores?: Array<{
     id: "route_historic" | "route_realtime" | "destination_safety" | "weather_safety" | "personal_safety";
     title: string;
@@ -128,6 +157,7 @@ export interface PlanReport {
     deltas: { temperature: number; altitude: number; humidity: number; rainfallRatio: number };
     acclimatizationDays: number;
     forecastWeek?: Array<{ date: string; weatherCode: number; tempMax: number; tempMin: number; rainProb: number; windMax: number; isTravelDate: boolean }>;
+    breakdown?: Array<{ label: string; value: number; type: "base" | "penalty" | "result" }>;
   };
   personalPillar?: {
     clearance: string;
@@ -137,6 +167,13 @@ export interface PlanReport {
     emergencyPreparedness: { hospital: string; helicopter: string; mobileCoverage: "Good" | "Partial" | "None"; pavedRoadAccessHours: number; evacuationWarning: string | null };
   };
   analyzedAt: string;
+
+  meta?: {
+    version: number;
+    timings: StageTiming[];
+    warnings: StageWarning[];
+    ai?: AiDiagnostics;
+  };
 }
 
 export type PlanReportSavePayload = {

@@ -48,6 +48,12 @@ export interface SegmentDetail {
   windSpeed: number;
 }
 
+export interface WeatherBreakdownItem {
+  label: string;
+  value: number;
+  type: "base" | "penalty" | "result";
+}
+
 export interface PillarModelResult {
   totalScore: number;
   overallLevel: "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME";
@@ -87,6 +93,7 @@ export interface PillarModelResult {
       windMax: number;
       isTravelDate: boolean;
     }>;
+    breakdown: WeatherBreakdownItem[];
   };
   personal: {
     clearance: string;
@@ -408,19 +415,21 @@ export async function computePillarModel(
   const destRain = destinationLiveWeather?.rainfall ?? (destinationWeather?.avgRainfall ?? 2);
   const rainfallRatio = destRain / homeRain;
   const uv = estimateUvIndex(input.destination.altitude ?? 0);
+  const wb: WeatherBreakdownItem[] = [{ label: "Starting score", value: 20, type: "base" }];
   let weatherPenalty = 0;
   const absTempDelta = Math.abs(tempDelta);
-  if (absTempDelta > 20) weatherPenalty += 4;
-  if (absTempDelta > 30) weatherPenalty += 4;
-  if (altitudeDelta > 2500) weatherPenalty += 6;
-  if (altitudeDelta > 3500) weatherPenalty += 4;
-  if (travelMonth >= 6 && travelMonth <= 9) weatherPenalty += 15;
-  if ((destinationLiveWeather?.rainfall ?? 0) > 10) weatherPenalty += 3;
+  if (absTempDelta > 20) { weatherPenalty += 4; wb.push({ label: "Temperature difference >20°C", value: -4, type: "penalty" }); }
+  if (absTempDelta > 30) { weatherPenalty += 4; wb.push({ label: "Temperature difference >30°C", value: -4, type: "penalty" }); }
+  if (altitudeDelta > 2500) { weatherPenalty += 6; wb.push({ label: "Altitude difference >2500m", value: -6, type: "penalty" }); }
+  if (altitudeDelta > 3500) { weatherPenalty += 4; wb.push({ label: "Altitude difference >3500m", value: -4, type: "penalty" }); }
+  if (travelMonth >= 6 && travelMonth <= 9) { weatherPenalty += 15; wb.push({ label: "Monsoon season", value: -15, type: "penalty" }); }
+  if ((destinationLiveWeather?.rainfall ?? 0) > 10) { weatherPenalty += 3; wb.push({ label: "Active heavy rainfall", value: -3, type: "penalty" }); }
   const effectiveWindChill = destTemp - ((destinationLiveWeather?.windSpeed ?? 0) * 1.5);
-  if (effectiveWindChill < -15) weatherPenalty += 4;
-  if (uv > 11) weatherPenalty += 2;
-  if (homeHumidity - destHumidity > 40) weatherPenalty += 2;
+  if (effectiveWindChill < -15) { weatherPenalty += 4; wb.push({ label: "Wind chill below -15°C", value: -4, type: "penalty" }); }
+  if (uv > 11) { weatherPenalty += 2; wb.push({ label: "Extreme UV index", value: -2, type: "penalty" }); }
+  if (homeHumidity - destHumidity > 40) { weatherPenalty += 2; wb.push({ label: "Humidity difference >40%", value: -2, type: "penalty" }); }
   const weatherScore = Math.round(clamp(20 - weatherPenalty, 0, 20));
+  wb.push({ label: "Final score", value: weatherScore, type: "result" });
 
   // v) Personal safety (20)
   let personalPenalty = 0;
@@ -585,6 +594,7 @@ export async function computePillarModel(
       deltas: { temperature: tempDelta, altitude: altitudeDelta, humidity: humidityDelta, rainfallRatio },
       acclimatizationDays,
       forecastWeek,
+      breakdown: wb,
     },
     personal: {
       clearance,
