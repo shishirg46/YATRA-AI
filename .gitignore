@@ -29,7 +29,7 @@ pnpm-debug.log*
 
 # Build artifacts
 public/styles/
-ollama/
+.ollama/
 
 # Project documentation (auto-generated, not for version control)
 PROJECT.md
@@ -38,6 +38,10 @@ PROJECT.md
 nepal-route-graph.json
 scripts/seed-full-graph.sql
 scripts/data/dor-road-network.densified.json
+scripts/data/real-road-graph.json
+scripts/data/anchored-edges.json
+scripts/data/topology-graph.json
+scripts/data/raw-edges.json
 
 
 nominatim/
