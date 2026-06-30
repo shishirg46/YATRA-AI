@@ -13,7 +13,7 @@
  *     https://eonet.gsfc.nasa.gov/api/v3/events
  *
  *  3. ReliefWeb API     — UN humanitarian disaster reports for Nepal
- *     https://api.reliefweb.int/v1/disasters
+     *     https://api.reliefweb.int/v2/disasters
  *
  *  4. USGS Earthquake   — Earthquakes within 100km of the coordinate in last 30 days
  *     https://earthquake.usgs.gov/fdsnws/event/1/query
@@ -225,8 +225,11 @@ export async function fetchHazard(
   if (bipad) landslideIndex = Math.max(landslideIndex, bipad.landslideIndex);
   if (eonet) landslideIndex = Math.max(landslideIndex, eonet.landslideIndex);
 
-  // If no real data from any source, use seasonal fallback
-  const hasRealData = sources.length > 0;
+  // If all sources returned zero-index data (no observed incidents), use seasonal fallback
+  const HAZARD_DATA_THRESHOLD = 0.05;
+  const hasRealData =
+    sources.length > 0 &&
+    (floodIndex > HAZARD_DATA_THRESHOLD || landslideIndex > HAZARD_DATA_THRESHOLD);
   if (!hasRealData) {
     const [fallbackFlood, fallbackLandslide] = seasonalFallback();
     floodIndex     = fallbackFlood;
@@ -256,7 +259,7 @@ async function fetchBipad(district: string, signal?: AbortSignal): Promise<Bipad
     async () => {
       try {
         const from = daysAgo(30);
-        const url  = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&date_of_incident__gte=${from}&format=json&limit=100`;
+        const url  = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(district)}&incident_on__gt=${from}&format=json&limit=100`;
 
         const res = await fetchWithRetry("bipad", district, async (opts) => {
           const r = await fetch(url, {
@@ -374,7 +377,7 @@ async function fetchReliefWeb(district: string, signal?: AbortSignal): Promise<R
         });
 
         const res = await fetchWithRetry("reliefweb", district, async (opts) => {
-          const r = await fetch("https://api.reliefweb.int/v1/disasters?appname=yatraai", {
+          const r = await fetch("https://api.reliefweb.int/v2/disasters?appname=yatraai", {
             method:  "POST",
             headers: { "Content-Type": "application/json", Accept: "application/json" },
             body,

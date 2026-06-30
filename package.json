@@ -6,8 +6,7 @@
     "dev": "next dev",
     "dev:db": "npm run db:ensure && next dev --no-turbopack",
     "dev:services": "podman start yatra-postgres nominatim yatra-osrm",
-    "dev:all": "concurrently --names \"docker,next\" \"podman start yatra-postgres nominatim yatra-osrm && sleep infinity\" \"next dev \"",
-    "ollama:pull": "ollama pull llama3.2",
+    "dev:all": "concurrently --names \"ollama,docker,next\" \"./.ollama/bin/ollama serve\" \"podman start yatra-postgres nominatim yatra-osrm && sleep infinity\" \"next dev \"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -39,6 +38,7 @@
     "@base-ui/react": "^1.5.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@tanstack/react-query": "^5.101.2",
     "@types/rbush": "^4.0.0",
     "better-auth": "^1.7.0-beta.4",
     "class-variance-authority": "^0.7.1",
@@ -57,11 +57,13 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-leaflet": "^5.0.0",
+    "recharts": "^3.9.0",
     "shapefile": "^0.6.6",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.6.0",
     "through2": "^5.0.1",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",

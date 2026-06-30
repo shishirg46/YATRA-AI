@@ -3,7 +3,7 @@ import type { TravelStyle, VehicleType } from "./trip-types";
 import { computeTransportCost } from "./costs";
 import type { GeoPoint } from "@/lib/routing/types";
 
-export const AI_SYSTEM_PROMPT = `You are a Nepal travel safety advisor. Be honest, specific, and compassionate. No generic filler. Short paragraphs. Always prioritise safety. Respond ONLY with valid JSON. No markdown, no backticks, no preamble.`;
+export const AI_SYSTEM_PROMPT = `You are a Nepal travel safety advisor. Be honest, specific, and compassionate. No generic filler. Short paragraphs. Always prioritise safety. Respond with sections using the format described in the prompt.`;
 
 export function scoreToLevel(score: number): "SAFE" | "CAUTION" | "HIGH_RISK" | "EXTREME" {
   if (score >= 80) return "SAFE";
@@ -132,9 +132,9 @@ export function computeBudgetSummary(params: {
     tripDays,
     perPerson,
     breakdown: {
-      accommodation: dailyCost.accommodation,
-      food: dailyCost.meals,
-      transport: dailyCost.localTransport,
+      accommodation: Math.round(dailyCost.accommodation * tripDays),
+      food: Math.round(dailyCost.meals * tripDays),
+      transport: Math.round(dailyCost.localTransport * tripDays),
       label,
     },
     dailyCost,

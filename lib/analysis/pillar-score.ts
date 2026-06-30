@@ -10,6 +10,7 @@ import {
 import { generateRouteIntelligence } from "@/lib/route-intelligence";
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
+import type { PillarEvidence, ForecastDay, PlacePoint } from "@/lib/plan/pipeline-types";
 
 type Level = "LOW" | "MEDIUM" | "HIGH";
 
@@ -137,8 +138,6 @@ function inferRoadSection(routeName: string, from: string, to: string): string {
   return `${from}-${to} section of ${routeName}`;
 }
 
-type PlacePoint = { name: string; lat: number; lon: number };
-
 async function loadPlaces(): Promise<PlacePoint[]> {
   const rows = await prisma.location.findMany({
     select: { name: true, latitude: true, longitude: true },
@@ -168,16 +167,6 @@ function normalizeSectionKey(from: string, to: string): string {
   const b = to.trim().toLowerCase();
   return `${a}->${b}`;
 }
-
-type ForecastDay = {
-  date: string;
-  weatherCode: number;
-  tempMax: number;
-  tempMin: number;
-  rainProb: number;
-  windMax: number;
-  isTravelDate: boolean;
-};
 
 async function fetchForecastWindow(lat: number, lon: number, startDate: string, endDate: string) {
   try {
@@ -223,33 +212,36 @@ async function fetchForecastWindow(lat: number, lon: number, startDate: string, 
   }
 }
 
-export async function computePillarModel(input: {
-  destination: {
-    id?: string;
-    name: string;
-    district: string;
-    province: string;
-    lat: number;
-    lon: number;
-    altitude: number | null;
-  };
-  home: {
-    name: string;
-    district: string;
-    province: string;
-    lat: number;
-    lon: number;
-    altitude: number | null;
-  };
-  travelDate: string;
-  endDate?: string;
-  tripType: "SOLO" | "GROUP";
-  userHealth: {
-    fitnessLevel: "LOW" | "MODERATE" | "HIGH";
-    mobilityLimited: boolean;
-    chronicConditions: string[];
-  } | null;
-}): Promise<PillarModelResult> {
+export async function computePillarModel(
+  input: {
+    destination: {
+      id?: string;
+      name: string;
+      district: string;
+      province: string;
+      lat: number;
+      lon: number;
+      altitude: number | null;
+    };
+    home: {
+      name: string;
+      district: string;
+      province: string;
+      lat: number;
+      lon: number;
+      altitude: number | null;
+    };
+    travelDate: string;
+    endDate?: string;
+    tripType: "SOLO" | "GROUP";
+    userHealth: {
+      fitnessLevel: "LOW" | "MODERATE" | "HIGH";
+      mobilityLimited: boolean;
+      chronicConditions: string[];
+    } | null;
+  },
+  evidence?: PillarEvidence,
+): Promise<PillarModelResult> {
   const travelMonth = new Date(input.travelDate).getMonth() + 1;
 
   const routeIntel = await generateRouteIntelligence(
@@ -266,19 +258,43 @@ export async function computePillarModel(input: {
     ? "Siddhartha Highway (Kathmandu -> Mugling -> Narayanghat -> Butwal -> Tansen/Palpa)"
     : (bestRoute?.name ?? "Primary route");
 
-  const [routeHistorical, routeRealtime, impactSummary, destinationHistorical, destinationWeather, homeWeather, destinationLiveHazard, destinationLiveWeather, forecastWeek, places] =
-    await Promise.all([
-      routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 8).catch(() => []) : Promise.resolve([]),
-      routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 8, 7).catch(() => []) : Promise.resolve([]),
-      routePoints.length ? getDisasterImpactSummary(routePoints, 12).catch(() => ({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 })) : Promise.resolve({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 }),
-      fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
-      fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
-      fetchWeather(input.home.lat, input.home.lon).catch(() => null),
-      fetchHazard(input.destination.district, input.destination.lat, input.destination.lon).catch(() => null),
-      fetchWeather(input.destination.lat, input.destination.lon).catch(() => null),
-      fetchForecastWindow(input.destination.lat, input.destination.lon, input.travelDate, input.endDate ?? input.travelDate).catch(() => []),
-      loadPlaces().catch(() => [] as PlacePoint[]),
-    ]);
+  let routeHistorical: any[];
+  let routeRealtime: any[];
+  let impactSummary: { dead: number; injured: number; missing: number; affected: number; displaced: number };
+  let destinationHistorical: any;
+  let destinationWeather: any;
+  let homeWeather: any;
+  let destinationLiveHazard: any;
+  let destinationLiveWeather: any;
+  let forecastWeek: ForecastDay[];
+  let places: PlacePoint[];
+
+  if (evidence) {
+    routeHistorical = evidence.routeHistorical as any[];
+    routeRealtime = evidence.routeRealtime as any[];
+    impactSummary = evidence.impactSummary;
+    destinationHistorical = evidence.destinationHistorical;
+    destinationWeather = evidence.destinationWeather;
+    homeWeather = evidence.homeWeather;
+    destinationLiveHazard = evidence.destinationLiveHazard;
+    destinationLiveWeather = evidence.destinationLiveWeather;
+    forecastWeek = evidence.forecastWeek;
+    places = evidence.places;
+  } else {
+    [routeHistorical, routeRealtime, impactSummary, destinationHistorical, destinationWeather, homeWeather, destinationLiveHazard, destinationLiveWeather, forecastWeek, places] =
+      await Promise.all([
+        routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 8).catch(() => []) : Promise.resolve([]),
+        routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 8, 7).catch(() => []) : Promise.resolve([]),
+        routePoints.length ? getDisasterImpactSummary(routePoints, 12).catch(() => ({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 })) : Promise.resolve({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 }),
+        fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
+        fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
+        fetchWeather(input.home.lat, input.home.lon).catch(() => null),
+        fetchHazard(input.destination.district, input.destination.lat, input.destination.lon).catch(() => null),
+        fetchWeather(input.destination.lat, input.destination.lon).catch(() => null),
+        fetchForecastWindow(input.destination.lat, input.destination.lon, input.travelDate, input.endDate ?? input.travelDate).catch(() => []),
+        loadPlaces().catch(() => [] as PlacePoint[]),
+      ]);
+  }
 
   // i) Route historic (25)
   let routeHistoricPenalty = 0;
@@ -398,7 +414,7 @@ export async function computePillarModel(input: {
   if (absTempDelta > 30) weatherPenalty += 4;
   if (altitudeDelta > 2500) weatherPenalty += 6;
   if (altitudeDelta > 3500) weatherPenalty += 4;
-  if (travelMonth >= 6 && travelMonth <= 9 && (destinationWeather?.avgRainfall ?? 0) > 20) weatherPenalty += 4;
+  if (travelMonth >= 6 && travelMonth <= 9) weatherPenalty += 15;
   if ((destinationLiveWeather?.rainfall ?? 0) > 10) weatherPenalty += 3;
   const effectiveWindChill = destTemp - ((destinationLiveWeather?.windSpeed ?? 0) * 1.5);
   if (effectiveWindChill < -15) weatherPenalty += 4;

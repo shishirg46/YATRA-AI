@@ -100,7 +100,7 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
   try {
     const url = `https://dhm.gov.np/mfd/api/forecast?lat=${lat}&lng=${lon}`;
     const res = await fetch(url, {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(3000),
       cache: "no-store",
     });
 

@@ -105,7 +105,7 @@ export interface RouteSegment {
       weatherTimestamp?: string;
     };
     historical: {
-      source?: string;
+      sources?: string[];
       yearsAnalysed?: number;
       notableEvents?: {
         date: string;
@@ -344,7 +344,9 @@ export async function buildRouteCore(
   resolvedDest: GeoPoint;
   generatedAt: string;
 }> {
-  ensureRecentRealtimeData().catch(() => {});
+  if (process.env.CRON_ENABLED !== "1") {
+    ensureRecentRealtimeData().catch(() => {});
+  }
 
   const vehicle = options?.vehicle ?? "car";
 
@@ -999,7 +1001,7 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
             weatherTimestamp: weather?.timestamp,
           },
           historical: {
-            source: historicalHazard?.source,
+            sources: historicalHazard?.sources,
             yearsAnalysed: historicalHazard?.yearsAnalysed,
             notableEvents: historicalHazard?.notableEvents?.slice(0, 3) ?? [],
           },
@@ -1017,7 +1019,14 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
     })
   );
 
-  const avgRisk = segmentRisks.reduce((sum, s) => sum + s.riskScore, 0) / segmentRisks.length;
+  let avgRisk = segmentRisks.reduce((sum, s) => sum + s.riskScore, 0) / segmentRisks.length;
+
+  // Monsoon season applies a base penalty to the route risk score
+  const _monthJul = new Date().getMonth() + 1;
+  const _isMonsoon = _monthJul >= 6 && _monthJul <= 9;
+  if (_isMonsoon) {
+    avgRisk = Math.min(1, avgRisk + 0.15);
+  }
 
   const landslideZones = [...new Set(segmentRisks.filter(s => s.hazards.includes("Landslide risk")).map(s => s.startPoint.name || "Unknown"))];
   const floodZones = [...new Set(segmentRisks.filter(s => s.hazards.includes("Flood risk")).map(s => s.startPoint.name || "Unknown"))];
@@ -1033,11 +1042,9 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
   }
 
   // Generate monsoon advisory
-  const month = new Date().getMonth() + 1;
-  const isMonsoon = month >= 6 && month <= 9;
-  const monsoonWarning = isMonsoon && segmentRisks.some((s) => (s.hazardProfile?.roadConditionRisk ?? 0) > 50)
+  const monsoonWarning = _isMonsoon && segmentRisks.some((s) => (s.hazardProfile?.roadConditionRisk ?? 0) > 50)
     ? "Monsoon season — road conditions may be poor on unpaved segments. Check for active road closures."
-    : isMonsoon
+    : _isMonsoon
     ? "Monsoon season — expect rain and possible delays on mountain roads."
     : null;
 
@@ -1069,11 +1076,11 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
       historicalRisk: avgRisk,
     },
     tripIntelligence: {
-      optimalDepartureTime: isMonsoon ? "Early morning (6-8 AM) before afternoon rains" : null,
+      optimalDepartureTime: _isMonsoon ? "Early morning (6-8 AM) before afternoon rains" : null,
       monsoonWarning,
       driverAdvisories,
       segmentHazards,
-      seasonalNote: isMonsoon
+      seasonalNote: _isMonsoon
         ? "June-September monsoon — mountain roads may be affected by landslides and rain"
         : "October-May dry season — generally favourable travel conditions across Nepal",
     },

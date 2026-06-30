@@ -109,7 +109,9 @@ export function computeGroupScore(
   const scores = memberAnalyses.map((m) => m.score);
   const groupMinScore = Math.min(...scores);
   const groupAvgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
-  const groupScore = tripType === "GROUP" ? Math.min(groupMinScore, pillarTotalScore) : pillarTotalScore;
+  const groupScore = tripType === "GROUP"
+    ? Math.min(groupMinScore, pillarTotalScore)
+    : Math.round((pillarTotalScore + groupMinScore) / 2);
   const groupLevel = scoreToLevel(groupScore);
   const conflict = memberAnalyses.some((m) => m.level === "HIGH_RISK" || m.level === "EXTREME");
   const mostVulnerable = memberAnalyses.find((m) => m.score === groupMinScore);
