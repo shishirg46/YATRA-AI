@@ -96,7 +96,7 @@ export async function computeDestinationLive(
     officialSource: weather?.officialSource ?? false,
   };
 
-  const hazard = await fetchHazard(destination.district, destination.latitude, destination.longitude);
+  const hazard = await fetchHazard(destination.latitude, destination.longitude, prisma);
 
   const liveHazard = {
     ...hazard,

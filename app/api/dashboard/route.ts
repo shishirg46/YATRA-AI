@@ -207,7 +207,7 @@ async function getDashboardHandler(request?: NextRequest) {
     if (originDistrict && homeLat && homeLon) {
       try {
         const result = await Promise.race([
-          fetchHazard(originDistrict, homeLat, homeLon),
+          fetchHazard(homeLat, homeLon, prisma),
           new Promise<null>((_, reject) =>
             setTimeout(() => reject(new Error("hazard fetch timeout")), 6000)
           ),
@@ -329,6 +329,7 @@ async function getDashboardHandler(request?: NextRequest) {
         category: dest.category,
         latitude: dest.latitude,
         longitude: dest.longitude,
+        image: dest.image ?? null,
         altitude: dest.altitude ?? null,
         safetyScore: score.safetyScore,
         safetyLevel: score.safetyLevel,
@@ -340,13 +341,31 @@ async function getDashboardHandler(request?: NextRequest) {
         assessedAt: new Date().toISOString(),
         verified: dest.verified,
         routeAccessible: dest.routeAccessible,
+        popularityScore: dest.popularityScore,
         dataQualityScore: dest.dataQualityScore,
         tags: dest.tags,
         recommendationMeta: buildRecommendationMeta(dest),
       };
     });
 
-    // Sort — verified/accessible first, then combine safety score and route risk
+    // Nearby boost: add haversine proximity bonus when user has a home location
+    function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    const nearbyBoost = (hasHome && homeLat != null && homeLon != null)
+      ? (dest: typeof mappedDestinations[number]) => {
+          const km = haversineKm(homeLat!, homeLon!, dest.latitude, dest.longitude);
+          return km <= 120 ? 15 : km <= 300 ? 8 : km <= 600 ? 3 : 0;
+        }
+      : () => 0;
+
+    // Sort — verified/accessible first, then combine safety score and route risk with nearby boost
     mappedDestinations.sort((a, b) => {
       if ((a.verified ? 1 : 0) !== (b.verified ? 1 : 0)) return (b.verified ? 1 : 0) - (a.verified ? 1 : 0);
       if ((a.routeAccessible ? 1 : 0) !== (b.routeAccessible ? 1 : 0)) return (b.routeAccessible ? 1 : 0) - (a.routeAccessible ? 1 : 0);
@@ -356,7 +375,7 @@ async function getDashboardHandler(request?: NextRequest) {
       const bRec = b.routeRisk
         ? Math.round(b.safetyScore * 0.6 + b.routeRisk.routeRiskScore * 0.4)
         : b.safetyScore;
-      return bRec - aRec;
+      return (bRec + nearbyBoost(b)) - (aRec + nearbyBoost(a));
     });
 
     const stats = {

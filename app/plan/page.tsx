@@ -188,7 +188,12 @@ function PlanInner() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && e.target instanceof HTMLInputElement) {
+                e.preventDefault();
+                e.currentTarget.requestSubmit();
+              }
+            }} className="space-y-4">
 
             {/* Destination */}
             <div className="grid gap-1.5">

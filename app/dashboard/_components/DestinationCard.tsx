@@ -4,12 +4,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  AlertTriangle, Compass, Droplet, Eye, Heart, MapPin, Navigation, Route,
+  AlertTriangle, Compass, Droplet, Eye, Heart, MapPin, Route,
   Thermometer, Wind, Mountain, TreePine, Landmark, Tent, Waves,
   Binoculars, Building2,
 } from "lucide-react";
 import { Destination } from "./types";
-import { SafetyBadge, ScoreRing } from "./ui";
 import { RouteModal } from "@/components/route-modal";
 import type { EnhancedRoad } from "@/lib/routing/types";
 
@@ -36,6 +35,24 @@ function keyFor(userLat: number, userLon: number, destLat: number, destLon: numb
 
 function isFiniteCoordinate(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
+}
+
+const safetyText: Record<string, string> = {
+  SAFE:      "text-emerald-400",
+  CAUTION:   "text-amber-400",
+  HIGH_RISK: "text-orange-400",
+  EXTREME:   "text-red-400",
+};
+const safetyLabel: Record<string, string> = {
+  SAFE:      "Safe",
+  CAUTION:   "Caution",
+  HIGH_RISK: "High risk",
+  EXTREME:   "Extreme",
+};
+
+function optimizeCldUrl(url: string | null, transforms: string): string | null {
+  if (!url || !url.includes("res.cloudinary.com")) return url;
+  return url.replace("/image/upload/", `/image/upload/${transforms}/`);
 }
 
 export function DestinationCard({
@@ -245,224 +262,194 @@ export function DestinationCard({
     FOREST:              { icon: <TreePine size={14} />,  color: "text-emerald-400", label: "Forest" },
     CAMP:                { icon: <Tent size={14} />,      color: "text-amber-400",   label: "Camp" },
     HILL:                { icon: <Mountain size={14} />,  color: "text-stone-400",   label: "Hill" },
-    TREKKING_VILLAGE:    { icon: <Tent size={14} />,      color: "text-lime-400",   label: "Trek Village" },
-    RIVERSIDE:           { icon: <Waves size={14} />,     color: "text-cyan-400",   label: "Riverside" },
-    WATERFALL:           { icon: <Droplet size={14} />,   color: "text-blue-400",   label: "Waterfall" },
+    TREKKING_VILLAGE:    { icon: <Tent size={14} />,      color: "text-lime-400",    label: "Trek Village" },
+    RIVERSIDE:           { icon: <Waves size={14} />,     color: "text-cyan-400",    label: "Riverside" },
+    WATERFALL:           { icon: <Droplet size={14} />,   color: "text-blue-400",    label: "Waterfall" },
   };
   const catMeta = CATEGORY_META[dest.category] ?? null;
 
   const borderAccent: Record<string, string> = {
-    SAFE: "border-l-emerald-400/40",
-    CAUTION: "border-l-amber-400/40",
+    SAFE:      "border-l-emerald-400/40",
+    CAUTION:   "border-l-amber-400/40",
     HIGH_RISK: "border-l-orange-400/40",
-    EXTREME: "border-l-red-400/40",
+    EXTREME:   "border-l-red-400/40",
   };
 
   return (
     <>
       <div
-        className={`destination-card p-5 flex flex-col gap-3 border-l-4 ${borderAccent[dest.safetyLevel] ?? "border-l-slate-600"} ${highlighted ? "border-amber-400/20" : ""}`}
+        className={`group relative overflow-hidden destination-card border-l-4 ${borderAccent[dest.safetyLevel] ?? "border-l-slate-600"} ${highlighted ? "border-amber-400/20" : ""}`}
         style={{ animation: `fadeUp .4s ease ${index * 0.03}s both` }}
       >
-        {/* ── Header: name + badges + score ring ── */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1 flex-wrap">
-              {catMeta && (
-                <span className={`shrink-0 ${catMeta.color}`}>{catMeta.icon}</span>
-              )}
-              <Link
-                onClick={() => trackBehavior("view_details")}
-                href={`/destinations/${dest.name.replace(/ /g, '_')}`}
-                className="hover:text-amber-400 transition-colors"
-              >
-                <h3 className="font-display font-bold text-white text-base leading-tight truncate">
-                  {dest.name}
-                </h3>
-              </Link>
-              {isNearby && (
-                <span className="shrink-0 px-2 py-0.5 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-400 font-body text-[10px] font-semibold uppercase tracking-wider">Nearby</span>
-              )}
-              {dest.verified === true && (
-                <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 font-body text-[10px] font-semibold uppercase tracking-wider">Verified</span>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <MapPin size={11} className="text-slate-500 flex-shrink-0" />
-              <span className="font-body text-xs text-slate-500 truncate">
-                {dest.district}, {dest.province}
-                {dest.altitude != null && dest.altitude > 0 && (
-                  <span className="text-slate-600 ml-1">· {dest.altitude.toLocaleString()}m</span>
-                )}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const next = !isSaved;
-                setIsSaved(next);
-                onToggleSave?.(dest.id, next);
-                fetch("/api/user/saved-destinations", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ destinationId: dest.id }),
-                }).catch(() => setIsSaved(!next));
-              }}
-              className={`p-1.5 rounded-lg transition-all hover:scale-110 ${
-                isSaved ? "text-rose-400" : "text-slate-600 hover:text-rose-400/70"
-              }`}
-              title={isSaved ? "Remove from saved" : "Save destination"}
-            >
-              <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
-            </button>
-            <ScoreRing score={dest.safetyScore} />
-          </div>
-        </div>
-
-        {/* ── Risk alert ── */}
-        {(dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME") && (
-          <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-body ${
-            dest.safetyLevel === "EXTREME"
-              ? "bg-red-500/10 border border-red-500/20 text-red-400"
-              : "bg-orange-500/10 border border-orange-500/20 text-orange-400"
-          }`}>
-            <AlertTriangle size={13} className="flex-shrink-0 mt-0.5" />
-            <span>
-              {dest.safetyLevel === "EXTREME"
-                ? "Do not travel — extreme hazard conditions"
-                : "Travel not recommended — consider alternatives"}
-            </span>
+        {/* ── Background image layers ── */}
+        {dest.image && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-all duration-700 group-hover:scale-105"
+              style={{ backgroundImage: `url(${optimizeCldUrl(dest.image, "w_600,c_fill,f_auto,q_auto")})` }}
+            />
+            <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-lg group-hover:bg-transparent group-hover:backdrop-blur-none transition-all duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent pointer-events-none group-hover:opacity-0 transition-all duration-500" />
+          </>
+        )}
+        {!dest.image && catMeta && (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+            <span className={`${catMeta.color} opacity-20 scale-150`}>{catMeta.icon}</span>
           </div>
         )}
 
-        {/* ── Safety + Category row ── */}
-        <div className="flex items-center justify-between">
-          <SafetyBadge level={dest.safetyLevel} />
-          {catMeta && (
-            <span className={`inline-flex items-center gap-1 font-body text-xs ${catMeta.color}`}>
-              {catMeta.icon}{catMeta.label}
-            </span>
-          )}
-        </div>
+        <div className="relative z-10 p-5 flex flex-col gap-3">
+          {/* Fades out on hover to reveal the bg image */}
+          <div className="group-hover:opacity-0 transition-all duration-500 flex flex-col gap-3">
 
-        {/* ── Live weather ── */}
-        {loadingLiveWeather && !activeWeather ? (
-          <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3 text-xs text-slate-400 animate-pulse">
-            Loading weather…
-          </div>
-        ) : activeWeather ? (
-          <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-[10px] uppercase tracking-wider text-sky-300">
-              <span>Weather</span>
-              {activeWeather.description && (
-                <span className="normal-case tracking-normal text-slate-400">{activeWeather.description}</span>
-              )}
+            {/* ── Header ── */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                {/* Name row */}
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  {catMeta && (
+                    <span className={`shrink-0 ${catMeta.color}`}>{catMeta.icon}</span>
+                  )}
+                  <Link
+                    onClick={() => trackBehavior("view_details")}
+                    href={`/destinations/${dest.name.replace(/ /g, '_')}`}
+                    className="hover:text-amber-400 transition-colors"
+                  >
+                    <h3 className="font-display font-bold text-white text-base leading-tight truncate">
+                      {dest.name}
+                    </h3>
+                  </Link>
+                  {isNearby && (
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-400 font-body text-[10px] font-semibold uppercase tracking-wider">Nearby</span>
+                  )}
+                </div>
+                {/* Location + altitude + safety — one quiet line */}
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={11} className="text-white flex-shrink-0" />
+                  <span className="font-body text-xs text-white truncate">
+                    {dest.district}, {dest.province}
+                    {dest.altitude != null && dest.altitude > 0 && (
+                      <span className="text-white/70 ml-1">· {dest.altitude.toLocaleString()}m</span>
+                    )}
+                    <span className={`ml-1.5 ${safetyText[dest.safetyLevel] ?? "text-slate-400"}`}>
+                      · {safetyLabel[dest.safetyLevel] ?? dest.safetyLevel}
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const next = !isSaved;
+                    setIsSaved(next);
+                    onToggleSave?.(dest.id, next);
+                    fetch("/api/user/saved-destinations", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ destinationId: dest.id }),
+                    }).catch(() => setIsSaved(!next));
+                  }}
+                  className={`p-1.5 rounded-lg transition-all hover:scale-110 active:scale-125 cursor-pointer ${
+                    isSaved ? "text-rose-400" : "text-slate-600 hover:text-rose-400/70"
+                  }`}
+                  title={isSaved ? "Remove from saved" : "Save destination"}
+                >
+                  <Heart size={16} fill={isSaved ? "currentColor" : "none"} />
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-3 gap-2">
-              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
-                <Thermometer size={13} className="text-amber-300" />
-                {activeWeather.temperature.toFixed(1)}°C
-              </div>
-              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
-                <Droplet size={13} className="text-sky-300" />
-                {activeWeather.rainfall.toFixed(1)}mm
-              </div>
-              <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-200">
-                <Wind size={13} className="text-cyan-300" />
-                {activeWeather.windSpeed.toFixed(1)}m/s
-              </div>
-            </div>
-          </div>
-        ) : null}
 
-        {/* ── Route info ── */}
-        {loadingSummary ? (
-          <div className="rounded-xl bg-slate-800/50 animate-pulse h-12" />
-        ) : routeSummary ? (
-          <div className="rounded-xl bg-slate-800/50 px-4 py-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="inline-flex items-center gap-2">
-                <Route size={14} className="text-amber-400" />
-                <span className="font-body text-sm text-white">
-                  {routeSummary.count} route{routeSummary.count === 1 ? "" : "s"} available
+            {/* ── Risk alert ── */}
+            {(dest.safetyLevel === "HIGH_RISK" || dest.safetyLevel === "EXTREME") && (
+              <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-body ${
+                dest.safetyLevel === "EXTREME"
+                  ? "bg-red-500/10 border border-red-500/20 text-red-400"
+                  : "bg-orange-500/10 border border-orange-500/20 text-orange-400"
+              }`}>
+                <AlertTriangle size={13} className="flex-shrink-0 mt-0.5" />
+                <span>
+                  {dest.safetyLevel === "EXTREME"
+                    ? "Do not travel — extreme hazard conditions"
+                    : "Travel not recommended — consider alternatives"}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={openRouteDetails}
-                className="px-3 py-1 rounded-md border border-slate-600 text-slate-200 hover:text-white hover:border-slate-500 transition-colors text-xs"
-              >
-                View
-              </button>
-            </div>
+            )}
 
-          </div>
-        ) : shouldFetchRoute && !hasOriginCoordinates ? (
-          <div className="rounded-xl bg-slate-800/50 px-4 py-3 text-xs text-slate-500">
-            <div className="flex flex-col gap-2">
-              <span className="inline-flex items-center gap-1.5">
-                <Navigation size={12} />
-                Set your location to see routes
-              </span>
-              <div className="flex items-center gap-2">
-                {onRequestLocation && (
-                  <button
-                    type="button"
-                    onClick={onRequestLocation}
-                    disabled={requestingLocation}
-                    className="flex-1 px-3 py-1.5 rounded-md border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
-                  >
-                    {requestingLocation ? "Requesting…" : "Enable GPS"}
-                  </button>
-                )}
-                {onOpenManualLocation && (
-                  <button
-                    type="button"
-                    onClick={onOpenManualLocation}
-                    className="flex-1 px-3 py-1.5 rounded-md bg-white/5 hover:bg-white/10 text-white transition-colors border border-white/5"
-                  >
-                    Set Manually
-                  </button>
-                )}
+            {/* ── Weather: hero temperature + secondary chips ── */}
+            {loadingLiveWeather && !activeWeather ? (
+              <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3">
+                <div className="h-2.5 w-16 rounded bg-slate-700/50 animate-pulse mb-3" />
+                <div className="h-6 w-20 rounded bg-slate-700/50 animate-pulse mb-3" />
+                <div className="flex gap-2">
+                  <div className="h-7 w-16 rounded-lg bg-slate-700/40 animate-pulse" />
+                  <div className="h-7 w-16 rounded-lg bg-slate-700/40 animate-pulse" />
+                </div>
               </div>
-            </div>
-          </div>
-        ) : shouldFetchRoute && hasOriginCoordinates && hasDestinationCoordinates ? (
-          <div className="rounded-xl bg-slate-800/50 px-4 py-3 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <Navigation size={12} />
-              Routes are unavailable right now
-            </span>
-          </div>
-        ) : null}
-
-        {/* ── Bottom bar ── */}
-        <div className="mt-auto pt-3 border-t border-slate-800 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-3">
-            {dest.verified === true ? (
-              <span className="font-body text-xs text-emerald-500">Verified</span>
-            ) : dest.confidence != null ? (
-              <span className="font-body text-xs text-slate-500">
-                {(dest.confidence * 100).toFixed(0)}% match
-              </span>
+            ) : activeWeather ? (
+              <div className="rounded-xl border border-slate-700/50 bg-slate-900/70 p-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 text-[10px] uppercase tracking-wider text-sky-300">
+                  <span>Weather</span>
+                  {activeWeather.description && (
+                    <span className="normal-case tracking-normal text-slate-400">{activeWeather.description}</span>
+                  )}
+                </div>
+                {/* Hero temp */}
+                <div className="flex items-baseline gap-1.5 mb-2">
+                  <Thermometer size={18} className="text-amber-300" />
+                  <span className="text-2xl font-display font-bold text-slate-100 leading-none">
+                    {activeWeather.temperature.toFixed(1)}
+                  </span>
+                  <span className="text-sm text-slate-400">°C</span>
+                </div>
+                {/* Secondary */}
+                <div className="flex gap-2">
+                  <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-300">
+                    <Droplet size={13} className="text-sky-300" />
+                    {activeWeather.rainfall.toFixed(1)}mm
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-950/80 px-2.5 py-1.5 text-[11px] text-slate-300">
+                    <Wind size={13} className="text-cyan-300" />
+                    {activeWeather.windSpeed.toFixed(1)}m/s
+                  </div>
+                </div>
+              </div>
             ) : null}
+
+          </div>
+
+          {/* ── Bottom bar — always visible, doesn't fade on hover ── */}
+          <div className="mt-auto pt-3 border-t border-slate-800 group-hover:border-transparent transition-all duration-500 flex items-center justify-between gap-2 bg-slate-900 -mx-5 -mb-5 px-5 pb-5 rounded-b-[16px]">
             <Link
               onClick={() => trackBehavior("view_details")}
               href={`/destinations/${dest.name.replace(/ /g, '_')}`}
-              className="flex items-center gap-1 font-body text-xs text-slate-500 hover:text-amber-400 transition-colors"
+              className="flex items-center gap-1 font-body text-xs text-white hover:text-amber-400 transition-colors cursor-pointer"
             >
               <Eye size={11} /> Details
             </Link>
+            <div className="flex items-center gap-2">
+              {routeSummary ? (
+                <button
+                  type="button"
+                  onClick={openRouteDetails}
+                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-body font-semibold transition-all bg-transparent border border-amber-500 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+                >
+                  <Route size={13} /> Routes
+                </button>
+              ) : dest.confidence != null ? (
+                <span className="font-body text-xs text-slate-300 bg-slate-800/60 border border-slate-700/50 rounded-full px-2.5 py-1">
+                  {(dest.confidence * 100).toFixed(0)}% match
+                </span>
+              ) : null}
+              <button
+                onClick={handlePlanTrip}
+                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-body font-semibold transition-all bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-sm shadow-amber-500/20 cursor-pointer"
+              >
+                <Compass size={13} /> Plan Trip
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handlePlanTrip}
-            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-body font-semibold transition-all bg-amber-500 hover:bg-amber-400 text-slate-900 shadow-sm shadow-amber-500/20"
-          >
-            <Compass size={13} /> Plan Trip
-          </button>
         </div>
       </div>
 
@@ -477,5 +464,3 @@ export function DestinationCard({
     </>
   );
 }
-
-

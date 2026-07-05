@@ -29,13 +29,31 @@ export type AggregateEdgeCache = {
 export type EdgeCacheAvgAggregateOutputType = {
   distanceKm: number | null
   gradientPct: number | null
+  maxGradientPct: number | null
+  curvatureDeg: number | null
   compositeCost: number | null
+  costFast: number | null
+  costSafe: number | null
+  costEmergency: number | null
+  costTruck: number | null
+  histLandslideCount: number | null
+  histFloodCount: number | null
+  histRoadClosureCnt: number | null
 }
 
 export type EdgeCacheSumAggregateOutputType = {
   distanceKm: number | null
   gradientPct: number | null
+  maxGradientPct: number | null
+  curvatureDeg: number | null
   compositeCost: number | null
+  costFast: number | null
+  costSafe: number | null
+  costEmergency: number | null
+  costTruck: number | null
+  histLandslideCount: number | null
+  histFloodCount: number | null
+  histRoadClosureCnt: number | null
 }
 
 export type EdgeCacheMinAggregateOutputType = {
@@ -44,8 +62,21 @@ export type EdgeCacheMinAggregateOutputType = {
   toNodeId: string | null
   distanceKm: number | null
   gradientPct: number | null
+  maxGradientPct: number | null
+  curvatureDeg: number | null
   surfaceType: $Enums.RoadSurface | null
   compositeCost: number | null
+  costFast: number | null
+  costSafe: number | null
+  costEmergency: number | null
+  costTruck: number | null
+  startDistrict: string | null
+  endDistrict: string | null
+  startProvince: string | null
+  endProvince: string | null
+  histLandslideCount: number | null
+  histFloodCount: number | null
+  histRoadClosureCnt: number | null
   riskSnapshotId: string | null
   graphVersion: string | null
   season: string | null
@@ -59,8 +90,21 @@ export type EdgeCacheMaxAggregateOutputType = {
   toNodeId: string | null
   distanceKm: number | null
   gradientPct: number | null
+  maxGradientPct: number | null
+  curvatureDeg: number | null
   surfaceType: $Enums.RoadSurface | null
   compositeCost: number | null
+  costFast: number | null
+  costSafe: number | null
+  costEmergency: number | null
+  costTruck: number | null
+  startDistrict: string | null
+  endDistrict: string | null
+  startProvince: string | null
+  endProvince: string | null
+  histLandslideCount: number | null
+  histFloodCount: number | null
+  histRoadClosureCnt: number | null
   riskSnapshotId: string | null
   graphVersion: string | null
   season: string | null
@@ -74,8 +118,21 @@ export type EdgeCacheCountAggregateOutputType = {
   toNodeId: number
   distanceKm: number
   gradientPct: number
+  maxGradientPct: number
+  curvatureDeg: number
   surfaceType: number
   compositeCost: number
+  costFast: number
+  costSafe: number
+  costEmergency: number
+  costTruck: number
+  startDistrict: number
+  endDistrict: number
+  startProvince: number
+  endProvince: number
+  histLandslideCount: number
+  histFloodCount: number
+  histRoadClosureCnt: number
   riskSnapshotId: number
   graphVersion: number
   season: number
@@ -88,13 +145,31 @@ export type EdgeCacheCountAggregateOutputType = {
 export type EdgeCacheAvgAggregateInputType = {
   distanceKm?: true
   gradientPct?: true
+  maxGradientPct?: true
+  curvatureDeg?: true
   compositeCost?: true
+  costFast?: true
+  costSafe?: true
+  costEmergency?: true
+  costTruck?: true
+  histLandslideCount?: true
+  histFloodCount?: true
+  histRoadClosureCnt?: true
 }
 
 export type EdgeCacheSumAggregateInputType = {
   distanceKm?: true
   gradientPct?: true
+  maxGradientPct?: true
+  curvatureDeg?: true
   compositeCost?: true
+  costFast?: true
+  costSafe?: true
+  costEmergency?: true
+  costTruck?: true
+  histLandslideCount?: true
+  histFloodCount?: true
+  histRoadClosureCnt?: true
 }
 
 export type EdgeCacheMinAggregateInputType = {
@@ -103,8 +178,21 @@ export type EdgeCacheMinAggregateInputType = {
   toNodeId?: true
   distanceKm?: true
   gradientPct?: true
+  maxGradientPct?: true
+  curvatureDeg?: true
   surfaceType?: true
   compositeCost?: true
+  costFast?: true
+  costSafe?: true
+  costEmergency?: true
+  costTruck?: true
+  startDistrict?: true
+  endDistrict?: true
+  startProvince?: true
+  endProvince?: true
+  histLandslideCount?: true
+  histFloodCount?: true
+  histRoadClosureCnt?: true
   riskSnapshotId?: true
   graphVersion?: true
   season?: true
@@ -118,8 +206,21 @@ export type EdgeCacheMaxAggregateInputType = {
   toNodeId?: true
   distanceKm?: true
   gradientPct?: true
+  maxGradientPct?: true
+  curvatureDeg?: true
   surfaceType?: true
   compositeCost?: true
+  costFast?: true
+  costSafe?: true
+  costEmergency?: true
+  costTruck?: true
+  startDistrict?: true
+  endDistrict?: true
+  startProvince?: true
+  endProvince?: true
+  histLandslideCount?: true
+  histFloodCount?: true
+  histRoadClosureCnt?: true
   riskSnapshotId?: true
   graphVersion?: true
   season?: true
@@ -133,8 +234,21 @@ export type EdgeCacheCountAggregateInputType = {
   toNodeId?: true
   distanceKm?: true
   gradientPct?: true
+  maxGradientPct?: true
+  curvatureDeg?: true
   surfaceType?: true
   compositeCost?: true
+  costFast?: true
+  costSafe?: true
+  costEmergency?: true
+  costTruck?: true
+  startDistrict?: true
+  endDistrict?: true
+  startProvince?: true
+  endProvince?: true
+  histLandslideCount?: true
+  histFloodCount?: true
+  histRoadClosureCnt?: true
   riskSnapshotId?: true
   graphVersion?: true
   season?: true
@@ -235,8 +349,21 @@ export type EdgeCacheGroupByOutputType = {
   toNodeId: string
   distanceKm: number
   gradientPct: number | null
+  maxGradientPct: number | null
+  curvatureDeg: number | null
   surfaceType: $Enums.RoadSurface | null
   compositeCost: number
+  costFast: number | null
+  costSafe: number | null
+  costEmergency: number | null
+  costTruck: number | null
+  startDistrict: string | null
+  endDistrict: string | null
+  startProvince: string | null
+  endProvince: string | null
+  histLandslideCount: number
+  histFloodCount: number
+  histRoadClosureCnt: number
   riskSnapshotId: string | null
   graphVersion: string
   season: string
@@ -273,8 +400,21 @@ export type EdgeCacheWhereInput = {
   toNodeId?: Prisma.StringFilter<"EdgeCache"> | string
   distanceKm?: Prisma.FloatFilter<"EdgeCache"> | number
   gradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  maxGradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  curvatureDeg?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
   surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"EdgeCache"> | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFilter<"EdgeCache"> | number
+  costFast?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costSafe?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costEmergency?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costTruck?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  startDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  startProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  histLandslideCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histFloodCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histRoadClosureCnt?: Prisma.IntFilter<"EdgeCache"> | number
   riskSnapshotId?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
   graphVersion?: Prisma.StringFilter<"EdgeCache"> | string
   season?: Prisma.StringFilter<"EdgeCache"> | string
@@ -290,8 +430,21 @@ export type EdgeCacheOrderByWithRelationInput = {
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrderInput | Prisma.SortOrder
   surfaceType?: Prisma.SortOrderInput | Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrderInput | Prisma.SortOrder
+  costSafe?: Prisma.SortOrderInput | Prisma.SortOrder
+  costEmergency?: Prisma.SortOrderInput | Prisma.SortOrder
+  costTruck?: Prisma.SortOrderInput | Prisma.SortOrder
+  startDistrict?: Prisma.SortOrderInput | Prisma.SortOrder
+  endDistrict?: Prisma.SortOrderInput | Prisma.SortOrder
+  startProvince?: Prisma.SortOrderInput | Prisma.SortOrder
+  endProvince?: Prisma.SortOrderInput | Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
   riskSnapshotId?: Prisma.SortOrderInput | Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   season?: Prisma.SortOrder
@@ -311,8 +464,21 @@ export type EdgeCacheWhereUniqueInput = Prisma.AtLeast<{
   toNodeId?: Prisma.StringFilter<"EdgeCache"> | string
   distanceKm?: Prisma.FloatFilter<"EdgeCache"> | number
   gradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  maxGradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  curvatureDeg?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
   surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"EdgeCache"> | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFilter<"EdgeCache"> | number
+  costFast?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costSafe?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costEmergency?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costTruck?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  startDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  startProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  histLandslideCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histFloodCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histRoadClosureCnt?: Prisma.IntFilter<"EdgeCache"> | number
   riskSnapshotId?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
   graphVersion?: Prisma.StringFilter<"EdgeCache"> | string
   season?: Prisma.StringFilter<"EdgeCache"> | string
@@ -328,8 +494,21 @@ export type EdgeCacheOrderByWithAggregationInput = {
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrderInput | Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrderInput | Prisma.SortOrder
   surfaceType?: Prisma.SortOrderInput | Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrderInput | Prisma.SortOrder
+  costSafe?: Prisma.SortOrderInput | Prisma.SortOrder
+  costEmergency?: Prisma.SortOrderInput | Prisma.SortOrder
+  costTruck?: Prisma.SortOrderInput | Prisma.SortOrder
+  startDistrict?: Prisma.SortOrderInput | Prisma.SortOrder
+  endDistrict?: Prisma.SortOrderInput | Prisma.SortOrder
+  startProvince?: Prisma.SortOrderInput | Prisma.SortOrder
+  endProvince?: Prisma.SortOrderInput | Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
   riskSnapshotId?: Prisma.SortOrderInput | Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   season?: Prisma.SortOrder
@@ -351,8 +530,21 @@ export type EdgeCacheScalarWhereWithAggregatesInput = {
   toNodeId?: Prisma.StringWithAggregatesFilter<"EdgeCache"> | string
   distanceKm?: Prisma.FloatWithAggregatesFilter<"EdgeCache"> | number
   gradientPct?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  maxGradientPct?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  curvatureDeg?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
   surfaceType?: Prisma.EnumRoadSurfaceNullableWithAggregatesFilter<"EdgeCache"> | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatWithAggregatesFilter<"EdgeCache"> | number
+  costFast?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  costSafe?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  costEmergency?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  costTruck?: Prisma.FloatNullableWithAggregatesFilter<"EdgeCache"> | number | null
+  startDistrict?: Prisma.StringNullableWithAggregatesFilter<"EdgeCache"> | string | null
+  endDistrict?: Prisma.StringNullableWithAggregatesFilter<"EdgeCache"> | string | null
+  startProvince?: Prisma.StringNullableWithAggregatesFilter<"EdgeCache"> | string | null
+  endProvince?: Prisma.StringNullableWithAggregatesFilter<"EdgeCache"> | string | null
+  histLandslideCount?: Prisma.IntWithAggregatesFilter<"EdgeCache"> | number
+  histFloodCount?: Prisma.IntWithAggregatesFilter<"EdgeCache"> | number
+  histRoadClosureCnt?: Prisma.IntWithAggregatesFilter<"EdgeCache"> | number
   riskSnapshotId?: Prisma.StringNullableWithAggregatesFilter<"EdgeCache"> | string | null
   graphVersion?: Prisma.StringWithAggregatesFilter<"EdgeCache"> | string
   season?: Prisma.StringWithAggregatesFilter<"EdgeCache"> | string
@@ -364,8 +556,21 @@ export type EdgeCacheCreateInput = {
   id?: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -381,8 +586,21 @@ export type EdgeCacheUncheckedCreateInput = {
   toNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -394,8 +612,21 @@ export type EdgeCacheUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -411,8 +642,21 @@ export type EdgeCacheUncheckedUpdateInput = {
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -426,8 +670,21 @@ export type EdgeCacheCreateManyInput = {
   toNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -439,8 +696,21 @@ export type EdgeCacheUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -454,8 +724,21 @@ export type EdgeCacheUncheckedUpdateManyInput = {
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -486,8 +769,21 @@ export type EdgeCacheCountOrderByAggregateInput = {
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrder
   surfaceType?: Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrder
+  costSafe?: Prisma.SortOrder
+  costEmergency?: Prisma.SortOrder
+  costTruck?: Prisma.SortOrder
+  startDistrict?: Prisma.SortOrder
+  endDistrict?: Prisma.SortOrder
+  startProvince?: Prisma.SortOrder
+  endProvince?: Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
   riskSnapshotId?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   season?: Prisma.SortOrder
@@ -498,7 +794,16 @@ export type EdgeCacheCountOrderByAggregateInput = {
 export type EdgeCacheAvgOrderByAggregateInput = {
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrder
+  costSafe?: Prisma.SortOrder
+  costEmergency?: Prisma.SortOrder
+  costTruck?: Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
 }
 
 export type EdgeCacheMaxOrderByAggregateInput = {
@@ -507,8 +812,21 @@ export type EdgeCacheMaxOrderByAggregateInput = {
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrder
   surfaceType?: Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrder
+  costSafe?: Prisma.SortOrder
+  costEmergency?: Prisma.SortOrder
+  costTruck?: Prisma.SortOrder
+  startDistrict?: Prisma.SortOrder
+  endDistrict?: Prisma.SortOrder
+  startProvince?: Prisma.SortOrder
+  endProvince?: Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
   riskSnapshotId?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   season?: Prisma.SortOrder
@@ -522,8 +840,21 @@ export type EdgeCacheMinOrderByAggregateInput = {
   toNodeId?: Prisma.SortOrder
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrder
   surfaceType?: Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrder
+  costSafe?: Prisma.SortOrder
+  costEmergency?: Prisma.SortOrder
+  costTruck?: Prisma.SortOrder
+  startDistrict?: Prisma.SortOrder
+  endDistrict?: Prisma.SortOrder
+  startProvince?: Prisma.SortOrder
+  endProvince?: Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
   riskSnapshotId?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   season?: Prisma.SortOrder
@@ -534,7 +865,16 @@ export type EdgeCacheMinOrderByAggregateInput = {
 export type EdgeCacheSumOrderByAggregateInput = {
   distanceKm?: Prisma.SortOrder
   gradientPct?: Prisma.SortOrder
+  maxGradientPct?: Prisma.SortOrder
+  curvatureDeg?: Prisma.SortOrder
   compositeCost?: Prisma.SortOrder
+  costFast?: Prisma.SortOrder
+  costSafe?: Prisma.SortOrder
+  costEmergency?: Prisma.SortOrder
+  costTruck?: Prisma.SortOrder
+  histLandslideCount?: Prisma.SortOrder
+  histFloodCount?: Prisma.SortOrder
+  histRoadClosureCnt?: Prisma.SortOrder
 }
 
 export type EdgeCacheCreateNestedManyWithoutFromNodeInput = {
@@ -625,8 +965,21 @@ export type EdgeCacheCreateWithoutFromNodeInput = {
   id?: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -640,8 +993,21 @@ export type EdgeCacheUncheckedCreateWithoutFromNodeInput = {
   toNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -663,8 +1029,21 @@ export type EdgeCacheCreateWithoutToNodeInput = {
   id?: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -678,8 +1057,21 @@ export type EdgeCacheUncheckedCreateWithoutToNodeInput = {
   fromNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -722,8 +1114,21 @@ export type EdgeCacheScalarWhereInput = {
   toNodeId?: Prisma.StringFilter<"EdgeCache"> | string
   distanceKm?: Prisma.FloatFilter<"EdgeCache"> | number
   gradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  maxGradientPct?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  curvatureDeg?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
   surfaceType?: Prisma.EnumRoadSurfaceNullableFilter<"EdgeCache"> | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFilter<"EdgeCache"> | number
+  costFast?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costSafe?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costEmergency?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  costTruck?: Prisma.FloatNullableFilter<"EdgeCache"> | number | null
+  startDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endDistrict?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  startProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  endProvince?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
+  histLandslideCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histFloodCount?: Prisma.IntFilter<"EdgeCache"> | number
+  histRoadClosureCnt?: Prisma.IntFilter<"EdgeCache"> | number
   riskSnapshotId?: Prisma.StringNullableFilter<"EdgeCache"> | string | null
   graphVersion?: Prisma.StringFilter<"EdgeCache"> | string
   season?: Prisma.StringFilter<"EdgeCache"> | string
@@ -752,8 +1157,21 @@ export type EdgeCacheCreateManyFromNodeInput = {
   toNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -766,8 +1184,21 @@ export type EdgeCacheCreateManyToNodeInput = {
   fromNodeId: string
   distanceKm: number
   gradientPct?: number | null
+  maxGradientPct?: number | null
+  curvatureDeg?: number | null
   surfaceType?: $Enums.RoadSurface | null
   compositeCost: number
+  costFast?: number | null
+  costSafe?: number | null
+  costEmergency?: number | null
+  costTruck?: number | null
+  startDistrict?: string | null
+  endDistrict?: string | null
+  startProvince?: string | null
+  endProvince?: string | null
+  histLandslideCount?: number
+  histFloodCount?: number
+  histRoadClosureCnt?: number
   riskSnapshotId?: string | null
   graphVersion: string
   season: string
@@ -779,8 +1210,21 @@ export type EdgeCacheUpdateWithoutFromNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -794,8 +1238,21 @@ export type EdgeCacheUncheckedUpdateWithoutFromNodeInput = {
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -808,8 +1265,21 @@ export type EdgeCacheUncheckedUpdateManyWithoutFromNodeInput = {
   toNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -821,8 +1291,21 @@ export type EdgeCacheUpdateWithoutToNodeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -836,8 +1319,21 @@ export type EdgeCacheUncheckedUpdateWithoutToNodeInput = {
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -850,8 +1346,21 @@ export type EdgeCacheUncheckedUpdateManyWithoutToNodeInput = {
   fromNodeId?: Prisma.StringFieldUpdateOperationsInput | string
   distanceKm?: Prisma.FloatFieldUpdateOperationsInput | number
   gradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxGradientPct?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  curvatureDeg?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   surfaceType?: Prisma.NullableEnumRoadSurfaceFieldUpdateOperationsInput | $Enums.RoadSurface | null
   compositeCost?: Prisma.FloatFieldUpdateOperationsInput | number
+  costFast?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costSafe?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costEmergency?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  costTruck?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  startDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endDistrict?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  startProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  endProvince?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  histLandslideCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histFloodCount?: Prisma.IntFieldUpdateOperationsInput | number
+  histRoadClosureCnt?: Prisma.IntFieldUpdateOperationsInput | number
   riskSnapshotId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
   season?: Prisma.StringFieldUpdateOperationsInput | string
@@ -867,8 +1376,21 @@ export type EdgeCacheSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   toNodeId?: boolean
   distanceKm?: boolean
   gradientPct?: boolean
+  maxGradientPct?: boolean
+  curvatureDeg?: boolean
   surfaceType?: boolean
   compositeCost?: boolean
+  costFast?: boolean
+  costSafe?: boolean
+  costEmergency?: boolean
+  costTruck?: boolean
+  startDistrict?: boolean
+  endDistrict?: boolean
+  startProvince?: boolean
+  endProvince?: boolean
+  histLandslideCount?: boolean
+  histFloodCount?: boolean
+  histRoadClosureCnt?: boolean
   riskSnapshotId?: boolean
   graphVersion?: boolean
   season?: boolean
@@ -884,8 +1406,21 @@ export type EdgeCacheSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   toNodeId?: boolean
   distanceKm?: boolean
   gradientPct?: boolean
+  maxGradientPct?: boolean
+  curvatureDeg?: boolean
   surfaceType?: boolean
   compositeCost?: boolean
+  costFast?: boolean
+  costSafe?: boolean
+  costEmergency?: boolean
+  costTruck?: boolean
+  startDistrict?: boolean
+  endDistrict?: boolean
+  startProvince?: boolean
+  endProvince?: boolean
+  histLandslideCount?: boolean
+  histFloodCount?: boolean
+  histRoadClosureCnt?: boolean
   riskSnapshotId?: boolean
   graphVersion?: boolean
   season?: boolean
@@ -901,8 +1436,21 @@ export type EdgeCacheSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   toNodeId?: boolean
   distanceKm?: boolean
   gradientPct?: boolean
+  maxGradientPct?: boolean
+  curvatureDeg?: boolean
   surfaceType?: boolean
   compositeCost?: boolean
+  costFast?: boolean
+  costSafe?: boolean
+  costEmergency?: boolean
+  costTruck?: boolean
+  startDistrict?: boolean
+  endDistrict?: boolean
+  startProvince?: boolean
+  endProvince?: boolean
+  histLandslideCount?: boolean
+  histFloodCount?: boolean
+  histRoadClosureCnt?: boolean
   riskSnapshotId?: boolean
   graphVersion?: boolean
   season?: boolean
@@ -918,8 +1466,21 @@ export type EdgeCacheSelectScalar = {
   toNodeId?: boolean
   distanceKm?: boolean
   gradientPct?: boolean
+  maxGradientPct?: boolean
+  curvatureDeg?: boolean
   surfaceType?: boolean
   compositeCost?: boolean
+  costFast?: boolean
+  costSafe?: boolean
+  costEmergency?: boolean
+  costTruck?: boolean
+  startDistrict?: boolean
+  endDistrict?: boolean
+  startProvince?: boolean
+  endProvince?: boolean
+  histLandslideCount?: boolean
+  histFloodCount?: boolean
+  histRoadClosureCnt?: boolean
   riskSnapshotId?: boolean
   graphVersion?: boolean
   season?: boolean
@@ -927,7 +1488,7 @@ export type EdgeCacheSelectScalar = {
   computedAt?: boolean
 }
 
-export type EdgeCacheOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fromNodeId" | "toNodeId" | "distanceKm" | "gradientPct" | "surfaceType" | "compositeCost" | "riskSnapshotId" | "graphVersion" | "season" | "ttl" | "computedAt", ExtArgs["result"]["edgeCache"]>
+export type EdgeCacheOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "fromNodeId" | "toNodeId" | "distanceKm" | "gradientPct" | "maxGradientPct" | "curvatureDeg" | "surfaceType" | "compositeCost" | "costFast" | "costSafe" | "costEmergency" | "costTruck" | "startDistrict" | "endDistrict" | "startProvince" | "endProvince" | "histLandslideCount" | "histFloodCount" | "histRoadClosureCnt" | "riskSnapshotId" | "graphVersion" | "season" | "ttl" | "computedAt", ExtArgs["result"]["edgeCache"]>
 export type EdgeCacheInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   fromNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
   toNode?: boolean | Prisma.RouteNodeDefaultArgs<ExtArgs>
@@ -953,8 +1514,21 @@ export type $EdgeCachePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     toNodeId: string
     distanceKm: number
     gradientPct: number | null
+    maxGradientPct: number | null
+    curvatureDeg: number | null
     surfaceType: $Enums.RoadSurface | null
     compositeCost: number
+    costFast: number | null
+    costSafe: number | null
+    costEmergency: number | null
+    costTruck: number | null
+    startDistrict: string | null
+    endDistrict: string | null
+    startProvince: string | null
+    endProvince: string | null
+    histLandslideCount: number
+    histFloodCount: number
+    histRoadClosureCnt: number
     riskSnapshotId: string | null
     graphVersion: string
     season: string
@@ -1390,8 +1964,21 @@ export interface EdgeCacheFieldRefs {
   readonly toNodeId: Prisma.FieldRef<"EdgeCache", 'String'>
   readonly distanceKm: Prisma.FieldRef<"EdgeCache", 'Float'>
   readonly gradientPct: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly maxGradientPct: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly curvatureDeg: Prisma.FieldRef<"EdgeCache", 'Float'>
   readonly surfaceType: Prisma.FieldRef<"EdgeCache", 'RoadSurface'>
   readonly compositeCost: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly costFast: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly costSafe: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly costEmergency: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly costTruck: Prisma.FieldRef<"EdgeCache", 'Float'>
+  readonly startDistrict: Prisma.FieldRef<"EdgeCache", 'String'>
+  readonly endDistrict: Prisma.FieldRef<"EdgeCache", 'String'>
+  readonly startProvince: Prisma.FieldRef<"EdgeCache", 'String'>
+  readonly endProvince: Prisma.FieldRef<"EdgeCache", 'String'>
+  readonly histLandslideCount: Prisma.FieldRef<"EdgeCache", 'Int'>
+  readonly histFloodCount: Prisma.FieldRef<"EdgeCache", 'Int'>
+  readonly histRoadClosureCnt: Prisma.FieldRef<"EdgeCache", 'Int'>
   readonly riskSnapshotId: Prisma.FieldRef<"EdgeCache", 'String'>
   readonly graphVersion: Prisma.FieldRef<"EdgeCache", 'String'>
   readonly season: Prisma.FieldRef<"EdgeCache", 'String'>

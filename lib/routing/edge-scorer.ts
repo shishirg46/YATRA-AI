@@ -205,9 +205,11 @@ export function preloadHazardData(): Promise<ReadonlyMap<string, HazardData>> {
     }
 
     // Version safety: discard if model version changed during load
+    // NOTE: no recursion here — under HMR the constant binding changes,
+    // causing unbounded recursion. Just return empty, next caller retries.
     if (loadVersion !== HAZARD_MODEL_VERSION) {
       hazardCachePromise = null;
-      return preloadHazardData();
+      return new Map<string, HazardData>();
     }
 
     const frozen = Object.freeze(map) as ReadonlyMap<string, HazardData>;

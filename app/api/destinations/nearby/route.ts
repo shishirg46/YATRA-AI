@@ -11,7 +11,7 @@ async function getNearbyDestinationsHandler(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") ?? "20", 10);
 
     if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
-      return NextResponse.json({ error: "lat and lon query params required" }, { status: 400 });
+      return NextResponse.json({ message: "lat and lon query params required" }, { status: 400 });
     }
 
     const destinations = await getNearbyDestinations(lat, lon, radiusKm, limit);
@@ -20,7 +20,7 @@ async function getNearbyDestinationsHandler(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[destinations/nearby]", err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 

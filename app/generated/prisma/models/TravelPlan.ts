@@ -45,6 +45,8 @@ export type TravelPlanMinAggregateOutputType = {
   budgetNPR: number | null
   startNotifiedAt: Date | null
   endNotifiedAt: Date | null
+  reminded3dAt: Date | null
+  reminded1dAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -60,6 +62,8 @@ export type TravelPlanMaxAggregateOutputType = {
   budgetNPR: number | null
   startNotifiedAt: Date | null
   endNotifiedAt: Date | null
+  reminded3dAt: Date | null
+  reminded1dAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -76,6 +80,8 @@ export type TravelPlanCountAggregateOutputType = {
   groupRiskResult: number
   startNotifiedAt: number
   endNotifiedAt: number
+  reminded3dAt: number
+  reminded1dAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -101,6 +107,8 @@ export type TravelPlanMinAggregateInputType = {
   budgetNPR?: true
   startNotifiedAt?: true
   endNotifiedAt?: true
+  reminded3dAt?: true
+  reminded1dAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -116,6 +124,8 @@ export type TravelPlanMaxAggregateInputType = {
   budgetNPR?: true
   startNotifiedAt?: true
   endNotifiedAt?: true
+  reminded3dAt?: true
+  reminded1dAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,6 +142,8 @@ export type TravelPlanCountAggregateInputType = {
   groupRiskResult?: true
   startNotifiedAt?: true
   endNotifiedAt?: true
+  reminded3dAt?: true
+  reminded1dAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -235,6 +247,8 @@ export type TravelPlanGroupByOutputType = {
   groupRiskResult: runtime.JsonValue | null
   startNotifiedAt: Date | null
   endNotifiedAt: Date | null
+  reminded3dAt: Date | null
+  reminded1dAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: TravelPlanCountAggregateOutputType | null
@@ -274,6 +288,8 @@ export type TravelPlanWhereInput = {
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
   startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded3dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded1dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -295,6 +311,8 @@ export type TravelPlanOrderByWithRelationInput = {
   groupRiskResult?: Prisma.SortOrderInput | Prisma.SortOrder
   startNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminded3dAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminded1dAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   leader?: Prisma.UserOrderByWithRelationInput
@@ -319,6 +337,8 @@ export type TravelPlanWhereUniqueInput = Prisma.AtLeast<{
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
   startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded3dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded1dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   leader?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
@@ -340,6 +360,8 @@ export type TravelPlanOrderByWithAggregationInput = {
   groupRiskResult?: Prisma.SortOrderInput | Prisma.SortOrder
   startNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   endNotifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminded3dAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  reminded1dAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.TravelPlanCountOrderByAggregateInput
@@ -364,6 +386,8 @@ export type TravelPlanScalarWhereWithAggregatesInput = {
   groupRiskResult?: Prisma.JsonNullableWithAggregatesFilter<"TravelPlan">
   startNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
   endNotifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
+  reminded3dAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
+  reminded1dAt?: Prisma.DateTimeNullableWithAggregatesFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"TravelPlan"> | Date | string
 }
@@ -379,6 +403,8 @@ export type TravelPlanCreateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
@@ -400,6 +426,8 @@ export type TravelPlanUncheckedCreateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
@@ -419,6 +447,8 @@ export type TravelPlanUpdateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
@@ -440,6 +470,8 @@ export type TravelPlanUncheckedUpdateInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
@@ -460,6 +492,8 @@ export type TravelPlanCreateManyInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -475,6 +509,8 @@ export type TravelPlanUpdateManyMutationInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -491,6 +527,8 @@ export type TravelPlanUncheckedUpdateManyInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -522,6 +560,8 @@ export type TravelPlanCountOrderByAggregateInput = {
   groupRiskResult?: Prisma.SortOrder
   startNotifiedAt?: Prisma.SortOrder
   endNotifiedAt?: Prisma.SortOrder
+  reminded3dAt?: Prisma.SortOrder
+  reminded1dAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -541,6 +581,8 @@ export type TravelPlanMaxOrderByAggregateInput = {
   budgetNPR?: Prisma.SortOrder
   startNotifiedAt?: Prisma.SortOrder
   endNotifiedAt?: Prisma.SortOrder
+  reminded3dAt?: Prisma.SortOrder
+  reminded1dAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -556,6 +598,8 @@ export type TravelPlanMinOrderByAggregateInput = {
   budgetNPR?: Prisma.SortOrder
   startNotifiedAt?: Prisma.SortOrder
   endNotifiedAt?: Prisma.SortOrder
+  reminded3dAt?: Prisma.SortOrder
+  reminded1dAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -686,6 +730,8 @@ export type TravelPlanCreateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberCreateNestedManyWithoutPlanInput
@@ -705,6 +751,8 @@ export type TravelPlanUncheckedCreateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
@@ -754,6 +802,8 @@ export type TravelPlanScalarWhereInput = {
   groupRiskResult?: Prisma.JsonNullableFilter<"TravelPlan">
   startNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   endNotifiedAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded3dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
+  reminded1dAt?: Prisma.DateTimeNullableFilter<"TravelPlan"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"TravelPlan"> | Date | string
 }
@@ -769,6 +819,8 @@ export type TravelPlanCreateWithoutEmergencyAlertsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
@@ -789,6 +841,8 @@ export type TravelPlanUncheckedCreateWithoutEmergencyAlertsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
@@ -823,6 +877,8 @@ export type TravelPlanUpdateWithoutEmergencyAlertsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
@@ -843,6 +899,8 @@ export type TravelPlanUncheckedUpdateWithoutEmergencyAlertsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
@@ -861,6 +919,8 @@ export type TravelPlanCreateWithoutLocationShareSessionsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
@@ -881,6 +941,8 @@ export type TravelPlanUncheckedCreateWithoutLocationShareSessionsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
@@ -915,6 +977,8 @@ export type TravelPlanUpdateWithoutLocationShareSessionsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
@@ -935,6 +999,8 @@ export type TravelPlanUncheckedUpdateWithoutLocationShareSessionsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
@@ -953,6 +1019,8 @@ export type TravelPlanCreateWithoutStopsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
@@ -973,6 +1041,8 @@ export type TravelPlanUncheckedCreateWithoutStopsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.TravelPlanMemberUncheckedCreateNestedManyWithoutPlanInput
@@ -1007,6 +1077,8 @@ export type TravelPlanUpdateWithoutStopsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
@@ -1027,6 +1099,8 @@ export type TravelPlanUncheckedUpdateWithoutStopsInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
@@ -1045,6 +1119,8 @@ export type TravelPlanCreateWithoutMembersInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   leader: Prisma.UserCreateNestedOneWithoutTravelPlansInput
@@ -1065,6 +1141,8 @@ export type TravelPlanUncheckedCreateWithoutMembersInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   stops?: Prisma.TravelStopUncheckedCreateNestedManyWithoutPlanInput
@@ -1099,6 +1177,8 @@ export type TravelPlanUpdateWithoutMembersInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leader?: Prisma.UserUpdateOneRequiredWithoutTravelPlansNestedInput
@@ -1119,6 +1199,8 @@ export type TravelPlanUncheckedUpdateWithoutMembersInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   stops?: Prisma.TravelStopUncheckedUpdateManyWithoutPlanNestedInput
@@ -1137,6 +1219,8 @@ export type TravelPlanCreateManyLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Date | string | null
   endNotifiedAt?: Date | string | null
+  reminded3dAt?: Date | string | null
+  reminded1dAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1152,6 +1236,8 @@ export type TravelPlanUpdateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUpdateManyWithoutPlanNestedInput
@@ -1171,6 +1257,8 @@ export type TravelPlanUncheckedUpdateWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.TravelPlanMemberUncheckedUpdateManyWithoutPlanNestedInput
@@ -1190,6 +1278,8 @@ export type TravelPlanUncheckedUpdateManyWithoutLeaderInput = {
   groupRiskResult?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   startNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   endNotifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded3dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  reminded1dAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1264,6 +1354,8 @@ export type TravelPlanSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   groupRiskResult?: boolean
   startNotifiedAt?: boolean
   endNotifiedAt?: boolean
+  reminded3dAt?: boolean
+  reminded1dAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1286,6 +1378,8 @@ export type TravelPlanSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   groupRiskResult?: boolean
   startNotifiedAt?: boolean
   endNotifiedAt?: boolean
+  reminded3dAt?: boolean
+  reminded1dAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1303,6 +1397,8 @@ export type TravelPlanSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   groupRiskResult?: boolean
   startNotifiedAt?: boolean
   endNotifiedAt?: boolean
+  reminded3dAt?: boolean
+  reminded1dAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1320,11 +1416,13 @@ export type TravelPlanSelectScalar = {
   groupRiskResult?: boolean
   startNotifiedAt?: boolean
   endNotifiedAt?: boolean
+  reminded3dAt?: boolean
+  reminded1dAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TravelPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "leaderId" | "tripType" | "status" | "startDate" | "endDate" | "budgetNPR" | "groupRiskResult" | "startNotifiedAt" | "endNotifiedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["travelPlan"]>
+export type TravelPlanOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "leaderId" | "tripType" | "status" | "startDate" | "endDate" | "budgetNPR" | "groupRiskResult" | "startNotifiedAt" | "endNotifiedAt" | "reminded3dAt" | "reminded1dAt" | "createdAt" | "updatedAt", ExtArgs["result"]["travelPlan"]>
 export type TravelPlanInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   leader?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   members?: boolean | Prisma.TravelPlan$membersArgs<ExtArgs>
@@ -1361,6 +1459,8 @@ export type $TravelPlanPayload<ExtArgs extends runtime.Types.Extensions.Internal
     groupRiskResult: runtime.JsonValue | null
     startNotifiedAt: Date | null
     endNotifiedAt: Date | null
+    reminded3dAt: Date | null
+    reminded1dAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["travelPlan"]>
@@ -1802,6 +1902,8 @@ export interface TravelPlanFieldRefs {
   readonly groupRiskResult: Prisma.FieldRef<"TravelPlan", 'Json'>
   readonly startNotifiedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly endNotifiedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
+  readonly reminded3dAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
+  readonly reminded1dAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"TravelPlan", 'DateTime'>
 }

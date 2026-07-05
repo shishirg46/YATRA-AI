@@ -1,22 +1,23 @@
 import type {
   StageName, StageContext, AnalysisPhase, AnalysisContext, AnalysisOptions,
-  PillarEvidence, ForecastDay, PlacePoint, PromptFacts, AiResult, AiDiagnostics,
+  PillarEvidence, ForecastDay, PlacePoint, AiResult, AiDiagnostics,
   StageWarning, StageTiming,
 } from "./pipeline-types";
 import { FatalAnalysisError, ANALYSIS_PIPELINE_VERSION } from "./pipeline-types";
 import type { Traveller } from "./scorer";
 import { analyzeTravellers, computeGroupScore, gatherRecommendations } from "./scorer";
 import { loadDestination, loadLeaderData, loadGroupMembers } from "./loader";
-import { resolveOriginAndRoute, assessRoute, resolveHome, computeRouteOutlook } from "./resolver";
+import { resolveOriginAndRoute, assessRoute, resolveHome, computeRouteOutlook, tryGenerateRouteIntelligence } from "./resolver";
 import { computeBudget } from "./config";
-import { findAlternatives } from "./alternatives";
-import { buildPrompt, callAiAnalysis } from "./ai";
-import { buildPromptFacts } from "./prompt-facts";
+import { findAlternatives, shouldRunAlternativeAnalysis } from "./alternatives";
 import type { PillarModelResult } from "@/lib/analysis/pillar-score";
 import { computePillarModel } from "@/lib/analysis/pillar-score";
-import { generateRouteAnalysis } from "@/lib/analysis/nlg-route-analysis";
+import { generateRouteIntelligence } from "@/lib/route-intelligence";
 import { computeRouteRisk } from "@/lib/scoring/route-risk";
 import type { RouteRiskResult } from "@/lib/scoring/route-risk";
+import { TemplateCache } from "@/lib/explain/templates/cache";
+import { runExplanationEngine } from "@/lib/explain/mapper";
+import type { EvaluatorInput } from "@/lib/explain/types";
 import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
@@ -56,6 +57,7 @@ interface PipelineState {
   allTravellers?: Traveller[];
   routePlan?: Awaited<ReturnType<typeof buildSegmentedRoute>> | null;
   routeRisk?: Awaited<ReturnType<typeof assessRoute>>;
+  routeIntelligence?: Awaited<ReturnType<typeof generateRouteIntelligence>> | null;
   disasterRouteRisk?: RouteRiskResult | null;
   resolvedHome?: ReturnType<typeof resolveHome>;
   originResolutionNote?: string;
@@ -93,6 +95,7 @@ interface StageOutputMap {
   route: {
     routePlan: Awaited<ReturnType<typeof buildSegmentedRoute>> | null;
     routeRisk: Awaited<ReturnType<typeof assessRoute>>;
+    routeIntelligence: Awaited<ReturnType<typeof generateRouteIntelligence>> | null;
     disasterRouteRisk: RouteRiskResult | null;
     resolvedHome: ReturnType<typeof resolveHome>;
     originResolutionNote?: string;
@@ -181,8 +184,16 @@ async function stageResolveRoute(
     destination, leaderUser?.homeLocation as any, ctx.startDate,
   );
 
+  const routeIntelligence = await tryGenerateRouteIntelligence(
+    { lat: effectiveHome?.latitude ?? destination.latitude, lon: effectiveHome?.longitude ?? destination.longitude, name: effectiveHome?.name ?? destination.name },
+    { lat: destination.latitude, lon: destination.longitude, name: destination.name },
+    ctx.startDate,
+    { destinationId: destination.id },
+  );
+
   const routeRisk = await assessRoute(
     effectiveHome, destination as any, ctx.startDate,
+    { routeIntelligence },
   );
 
   const currentMonth = new Date(ctx.startDate).getMonth() + 1;
@@ -220,6 +231,7 @@ async function stageResolveRoute(
   return {
     routePlan: routePlan ?? null,
     routeRisk: routeRisk ?? null,
+    routeIntelligence,
     disasterRouteRisk: disasterRouteRisk ?? null,
     resolvedHome,
     originResolutionNote,
@@ -236,7 +248,7 @@ async function stageCollectEvidence(
 
   const [weatherResult, rawHazard] = await Promise.all([
     fetchWeather(locationInfo!.lat, locationInfo!.lon),
-    fetchHazard(locationInfo!.district, locationInfo!.lat, locationInfo!.lon),
+    fetchHazard(locationInfo!.lat, locationInfo!.lon, prisma),
   ]);
 
   const liveWeather = weatherResult ?? {
@@ -261,7 +273,7 @@ async function stageCollectEvidence(
       fetchHistoricalHazard(locationInfo!.district, locationInfo!.lat, locationInfo!.lon, ctx.startDate, 5, 75).catch(() => null),
       fetchHistoricalWeather(locationInfo!.lat, locationInfo!.lon, ctx.startDate, 5).catch(() => null),
       fetchWeather(resolvedHome!.lat, resolvedHome!.lon).catch(() => null),
-      fetchHazard(locationInfo!.district, locationInfo!.lat, locationInfo!.lon).catch(() => null),
+      fetchHazard(locationInfo!.lat, locationInfo!.lon, prisma).catch(() => null),
       fetchWeather(locationInfo!.lat, locationInfo!.lon).catch(() => null),
       fetchForecastWindowInline(locationInfo!.lat, locationInfo!.lon, ctx.startDate, ctx.endDate).catch(() => []),
       loadPlaces().catch(() => [] as PlacePoint[]),
@@ -379,6 +391,7 @@ async function stageComputePillars(
 
   const pillarModel = await computePillarModel(
     {
+      routeIntelligence: state.routeIntelligence,
       destination: {
         id: state.destination!.id,
         name: locationInfo!.name,
@@ -459,7 +472,11 @@ async function stageFindAlternatives(
   state: PipelineState,
   _ctx: StageContext,
 ): Promise<StageOutputMap["alternatives"]> {
-  const { ctx, allTravellers, destination } = state;
+  const { ctx, allTravellers, destination, groupLevel } = state;
+
+  if (!shouldRunAlternativeAnalysis(groupLevel ?? "SAFE")) {
+    return { alternatives: [] };
+  }
 
   const alternatives = await findAlternatives(
     ctx.destinationId,
@@ -479,124 +496,173 @@ async function stageFindAlternatives(
   return { alternatives };
 }
 
-// ── Stage 8: AI narrative (recoverable) ────────────────────────────────────
+// ── Stage 8: Deterministic explanation engine ──────────────────────────────
 
 async function stageGenerateAiNarrative(
   state: PipelineState,
   _ctx: StageContext,
 ): Promise<StageOutputMap["ai"]> {
-  const {
-    ctx, locationInfo, leaderAnalysis, memberAnalyses,
-    groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable,
-    budget, alternatives, pillarModel, evidence,
-  } = state;
-
-  const facts: PromptFacts = buildPromptFacts({
-    ctx: { startDate: ctx.startDate, tripType: ctx.tripType },
-    destination: locationInfo,
-    leaderAnalysis,
-    groupScore,
-    groupLevel,
-    groupAvgScore,
-    conflict,
-    mostVulnerable: mostVulnerable && conflict
-      ? { name: mostVulnerable.name, score: mostVulnerable.score }
-      : undefined,
-    memberAnalyses,
-    budget: budget
-      ? {
-          specified: budget.specified,
-          estimatedTotal: budget.estimatedTotal,
-          feasible: budget.feasible,
-          shortfall: budget.shortfall,
-          perPerson: budget.perPerson,
-        }
-      : undefined,
-    alternatives: alternatives?.map((a) => ({
-      name: a.name,
-      district: a.district,
-      safetyScore: a.safetyScore,
-      estimatedNPR: a.estimatedNPR,
-    })),
-    pillarModel,
-    evidence,
-  });
-
   const startTime = performance.now();
-  let fallbackUsed = false;
 
-  const prompt = buildPrompt(facts);
-  const ai = await callAiAnalysis(prompt, facts).catch(() => {
-    fallbackUsed = true;
-    return generateFallbackAiResult(state);
-  });
+  if (!TemplateCache.instance.size) {
+    try {
+      await TemplateCache.initialize(prisma);
+    } catch (err) {
+      console.error("[pipeline] TemplateCache init failed:", err);
+    }
+  }
 
-  const routeAdvice = await generateRouteAnalysis({
-    segments: pillarModel!.segmentDetails,
-    routeName: pillarModel!.route.highway,
-    segmentFlags: pillarModel!.route.segmentFlags.map((f) => ({
-      where: f.where,
-      what: f.what,
-      status: f.status,
-    })),
-    weatherForecast: (pillarModel!.weather.forecastWeek ?? []).map((d) => ({
-      date: d.date,
-      tempMax: d.tempMax,
-      tempMin: d.tempMin,
-      rainProb: d.rainProb,
-      windMax: d.windMax,
-    })),
-    startDate: ctx.startDate,
-    endDate: ctx.endDate,
-    season: leaderAnalysis!.riskReport.season,
-  }).catch(() => "");
+  const input = buildEvaluatorInput(state);
+
+  let output = { ai: emptyAiResult(), routeAdvice: "" };
+  try {
+    const result = await runExplanationEngine(input);
+    output = result.output;
+  } catch (err) {
+    console.error("[pipeline] ExplanationEngine failed:", err);
+  }
 
   const durationMs = performance.now() - startTime;
 
   return {
-    ai,
-    routeAdvice: routeAdvice || "",
+    ai: output.ai,
+    routeAdvice: output.routeAdvice,
     aiDiagnostics: {
-      provider: "ollama",
-      model: "tinyllama",
+      provider: "deterministic",
+      model: "explanation-engine-v2",
       durationMs,
-      fallbackUsed,
+      fallbackUsed: false,
     },
   };
 }
 
-// ── AI fallback ────────────────────────────────────────────────────────────
-
-function generateFallbackAiResult(state: PipelineState): AiResult {
-  const level = state.groupLevel ?? "CAUTION";
-  const score = state.groupScore ?? 70;
-
-  const verdictByLevel: Record<string, string> = {
-    SAFE: `Overall score: ${score}/100. The destination appears safe for travel during your selected dates. Take standard travel precautions.`,
-    CAUTION: `Overall score: ${score}/100. Travel is generally feasible, but seasonal conditions may increase the risk of disruption. Refer to the safety indicators above.`,
-    HIGH_RISK: `Overall score: ${score}/100. This destination presents elevated risks during the selected dates. Carefully review the risk factors and consider alternatives.`,
-    EXTREME: `Overall score: ${score}/100. Travel is not recommended during this period. Consider safer alternatives or postpone your trip.`,
-  };
+function buildEvaluatorInput(state: PipelineState): EvaluatorInput {
+  const loc = state.locationInfo!;
+  const la = state.leaderAnalysis!;
+  const ctx = state.ctx;
+  const dest = state.destination!;
 
   return {
-    verdict: verdictByLevel[level] ?? verdictByLevel.CAUTION,
-    whyUnsafe: level === "HIGH_RISK" || level === "EXTREME"
-      ? "Multiple risk factors contribute to an elevated safety concern for this destination and date combination. Review the detailed risk breakdown above."
-      : "",
-    groupConflict: state.conflict && state.mostVulnerable
-      ? `Member ${state.mostVulnerable.name} has the lowest safety score (${state.mostVulnerable.score}/100). Consider their limitations when planning activities.`
-      : "",
-    riskExplanation: level === "HIGH_RISK" || level === "EXTREME"
-      ? "This destination presents elevated risks during the selected dates. "
-      : "This destination is generally safe for travel. ",
-    healthWarning: state.leaderAnalysis?.healthFlags?.length
-      ? `Health flags detected: ${state.leaderAnalysis.healthFlags.join(", ")}.`
-      : "",
-    budgetAdvice: state.budget
-      ? `Budget of NPR ${(state.budget.specified ?? 0).toLocaleString()} is ${state.budget.feasible ? "sufficient" : "not sufficient"} for estimated costs of NPR ${(state.budget.estimatedTotal ?? 0).toLocaleString()}.`
-      : "",
-    alternativeReason: "",
-    topTip: "Stay informed of local weather and road conditions before departure.",
+    destination: {
+      id: dest.id,
+      name: dest.name,
+      district: dest.district.name,
+      province: dest.district.province.name,
+      latitude: dest.latitude,
+      longitude: dest.longitude,
+      altitude: dest.altitude,
+    },
+    locationInfo: {
+      name: loc.name,
+      district: loc.district,
+      province: loc.province,
+      lat: loc.lat,
+      lon: loc.lon,
+      altitude: loc.altitude,
+    },
+    travelDate: ctx.startDate,
+    startDate: ctx.startDate,
+    endDate: ctx.endDate,
+    vehicle: ctx.vehicle,
+    travelStyle: ctx.travelStyle,
+    tripType: ctx.tripType,
+    season: la.riskReport.season,
+    overallScore: state.groupScore ?? 0,
+    overallLevel: (state.groupLevel ?? "CAUTION") as any,
+    baselineScore: state.pillarModel?.baselineScore ?? 0,
+    seasonalModifier: state.pillarModel ? {
+      factors: state.pillarModel.seasonalFactors.map((f) => ({ factor: f.factor, points: f.points })),
+      total: -state.pillarModel.seasonalFactors.reduce((s, f) => s + f.points, 0),
+      effectiveScore: state.groupScore ?? 0,
+      baselineScore: state.pillarModel.baselineScore,
+    } : undefined,
+    groupAvgScore: state.groupAvgScore ?? 0,
+    confidence: la.riskReport.confidence,
+    conflict: state.conflict ?? false,
+    mostVulnerableMember: state.conflict && state.mostVulnerable
+      ? { name: state.mostVulnerable.name, score: state.mostVulnerable.score, level: state.mostVulnerable.level, risks: state.mostVulnerable.topRisks }
+      : null,
+    memberAnalyses: (state.memberAnalyses ?? []).map((m) => ({
+      userId: m.userId,
+      name: m.name,
+      username: m.username,
+      isLeader: m.isLeader,
+      score: m.score,
+      level: m.level,
+      topRisks: m.topRisks,
+      healthFlags: m.healthFlags,
+    })),
+    riskFactors: la.riskReport.riskFactors.map((f: any) => ({
+      category: f.category ?? "",
+      name: f.name,
+      severity: f.severity,
+      score: f.score ?? 0,
+      description: f.description ?? "",
+    })),
+    healthAdvisories: la.riskReport.healthAdvisories.map((h: any) => ({
+      condition: h.condition,
+      risk: h.risk,
+      detail: h.detail,
+      affectedGroups: h.affectedGroups,
+    })),
+    recommendations: [
+      ...la.riskReport.recommendations.map((r: any) => ({ type: r.type ?? "", text: r.text })),
+      ...(state.actionableRecommendations ?? []).map((r: any) => ({ type: r.type ?? "", text: r.text })),
+    ],
+    notableEvents: la.riskReport.notableEvents.map((e: any) => ({
+      date: e.date,
+      type: e.type,
+      description: e.description,
+      severity: e.severity,
+    })),
+    seasonalContext: la.riskReport.seasonalContext,
+    weatherStats: la.riskReport.weatherStats as any,
+    budget: state.budget!,
+    alternatives: (state.alternatives ?? []).map((a) => ({
+      id: a.id,
+      name: a.name,
+      district: a.district,
+      province: a.province,
+      altitude: a.altitude,
+      safetyScore: a.safetyScore,
+      safetyLevel: a.safetyLevel,
+      estimatedNPR: a.estimatedNPR,
+      budgetFeasible: a.budgetFeasible,
+      transportCost: a.transportCost,
+      dailyCost: a.dailyCost,
+      tripDays: a.tripDays,
+    })),
+    liveWeather: state.liveWeather as any,
+    liveHazard: state.liveHazard as any,
+    routeRisk: state.routeRisk as any,
+    disasterRouteRisk: state.disasterRouteRisk as any,
+    routeAssessment: state.routePlan ? {
+      roadConditions: "MEDIUM" as const,
+      seasonalCorridorRisk: "MEDIUM" as const,
+      overall: (state.groupLevel ?? "CAUTION") as any,
+    } : undefined,
+    routePlan: state.routePlan ? {
+      nodes: state.routePlan.nodes.map((n: any) => ({ name: n.name, lat: n.lat, lon: n.lon })),
+      segments: state.routePlan.segments.map((s: any) => ({
+        from: s.from.name ?? s.from,
+        to: s.to.name ?? s.to,
+        distanceKm: Math.round((s.distance / 1000) * 10) / 10,
+        riskLevel: s.riskLevel,
+      })),
+      distanceKm: Math.round((state.routePlan!.distance / 1000) * 10) / 10,
+      durationHours: Math.round((state.routePlan!.duration / 3600) * 10) / 10,
+      corridor: state.routePlan.nodes.map((n: any) => n.name).join(" \u2192 "),
+      source: state.routePlan.source,
+      resolutionNote: state.originResolutionNote,
+    } : null,
+    routePillar: state.pillarModel?.route as any,
+    segmentDetails: state.pillarModel?.segmentDetails as any,
+    destinationPillar: state.pillarModel?.destination as any,
+    weatherPillar: state.pillarModel?.weather as any,
+    personalPillar: state.pillarModel?.personal as any,
+    pillarScores: state.pillarModel?.pillars as any,
+    stopAnalyses: undefined,
+    evidence: state.evidence ?? null,
   };
 }
 
@@ -732,7 +798,7 @@ const PIPELINE: readonly StageDef<any>[] = [
   { name: "pillars", label: "Computing pillars", fatal: false, run: stageComputePillars },
   { name: "budget", label: "Calculating budget", fatal: false, run: stageComputeBudget },
   { name: "alternatives", label: "Finding alternatives", fatal: false, run: stageFindAlternatives },
-  { name: "ai", label: "Generating AI narrative", fatal: false, run: stageGenerateAiNarrative },
+  { name: "ai", label: "Generating explanation", fatal: false, run: stageGenerateAiNarrative },
   { name: "response", label: "Building response", fatal: false, run: stageBuildResponse },
 ];
 

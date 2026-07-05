@@ -1,4 +1,4 @@
-import type { GeoPoint, VehicleProfile } from "@/lib/routing/types";
+import type { GeoPoint, RoadRoute, VehicleProfile } from "@/lib/routing/types";
 import { fetchRoadRoute } from "@/lib/routing/openroute-service";
 import { VEHICLE_RATES } from "./trip-types";
 import type { VehicleType } from "./trip-types";
@@ -24,8 +24,15 @@ export async function computeTransportCost(
   vehicle: VehicleType,
   signal?: AbortSignal,
 ): Promise<TransportCostResult> {
-  const routingVehicle = ROUTING_VEHICLE[vehicle];
-  const routes = await fetchRoadRoute(origin, destination, routingVehicle, undefined, signal);
+  const routingVehicle = ROUTING_VEHICLE[vehicle] ?? "car";
+  let routes: RoadRoute[];
+  try {
+    routes = await fetchRoadRoute(origin, destination, routingVehicle, undefined, signal);
+  } catch (err) {
+    console.error(`[costs] fetchRoadRoute failed:`, (err as Error)?.message);
+    console.error(`[costs] origin: ${origin.lat},${origin.lon} dest: ${destination.lat},${destination.lon} vehicle: ${routingVehicle}`);
+    throw err;
+  }
   const best = routes[0];
   if (!best) throw new Error("No route found");
 

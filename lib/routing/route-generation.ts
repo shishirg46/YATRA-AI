@@ -1,4 +1,4 @@
-import { haversineKm, isPointInNepal } from "@/lib/routing/geo";
+import { haversineKm, haversineM, isPointInNepal } from "@/lib/routing/geo";
 import { reverseGeocodeNepal } from "@/lib/routing/nominatim";
 import { fetchOsrmRouteThroughNodes } from "@/lib/routing/osrm-client";
 import type {
@@ -32,6 +32,7 @@ function normalizeSettlementName(name: string): string | null {
   const normalized = name
     .replace(/\bward\s*(no\.?|number)?\s*\d+\b/gi, "")
     .replace(/\bmunicipality\b/gi, "")
+    .replace(/\bcity\b/gi, "")
     .replace(/\bsub-?metropolitan\b/gi, "")
     .replace(/\bmetropolitan\b/gi, "")
     .replace(/\brural\b/gi, "")
@@ -99,6 +100,65 @@ function sampleRouteCoordinates(
 
   const step = Math.ceil(samples.length / maxPoints);
   return samples.filter((_, index) => index % step === 0).slice(0, maxPoints);
+}
+
+/**
+ * Check if a place is within a road-aligned rectangle:
+ *   ±alongMeters along the road, ±crossMeters perpendicular.
+ * Direction is derived from adjacent samples.
+ */
+function inRoadCorridor(
+  lat: number, lon: number,
+  placeLat: number, placeLon: number,
+  samples: RouteCoord[],
+  index: number,
+  alongMeters: number,
+  crossMeters: number,
+): boolean {
+  const prev = index > 0 ? samples[index - 1] : null;
+  const next = index < samples.length - 1 ? samples[index + 1] : null;
+
+  let dlat: number, dlng: number;
+  if (prev && next) {
+    dlat = next.lat - prev.lat;
+    dlng = next.lon - prev.lon;
+  } else if (prev) {
+    dlat = lat - prev.lat;
+    dlng = lon - prev.lon;
+  } else if (next) {
+    dlat = next.lat - lat;
+    dlng = next.lon - lon;
+  } else {
+    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
+  }
+
+  const dirLen = Math.hypot(dlat, dlng);
+  if (dirLen < 1e-12) {
+    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
+  }
+
+  const ux = dlng / dirLen;
+  const uy = dlat / dirLen;
+
+  const cosLat = Math.cos(lat * Math.PI / 180);
+  const dx = (placeLon - lon) * (111320 * cosLat);
+  const dy = (placeLat - lat) * 111320;
+
+  const uxm = ux * (111320 * cosLat);
+  const uym = uy * 111320;
+  const umag = Math.hypot(uxm, uym);
+  if (umag < 1e-12) return true;
+
+  const uxn = uxm / umag;
+  const uyn = uym / umag;
+
+  const vxn = -uyn;
+  const vyn = uxn;
+
+  const along = dx * uxn + dy * uyn;
+  const cross = Math.abs(dx * vxn + dy * vyn);
+
+  return Math.abs(along) <= alongMeters && cross <= crossMeters;
 }
 
 async function buildGeneratedRoad(
@@ -227,8 +287,12 @@ function buildEnhancedSegments(
     const fromNamedIdx = namedIndices[i];
     const toNamedIdx = i < namedIndices.length - 1 ? namedIndices[i + 1] : namedCoords.length - 1;
 
-    const fromName = namedCoords[fromNamedIdx].placeName!;
-    const toName = namedCoords[toNamedIdx].placeName!;
+    const fromName = namedCoords[fromNamedIdx].placeName
+      || (i === 0 ? input.start.name : undefined)
+      || "Start";
+    const toName = namedCoords[toNamedIdx].placeName
+      || (i === namedIndices.length - 1 ? input.destination.name : undefined)
+      || "End";
     const subCoords = namedCoords.slice(fromNamedIdx, toNamedIdx + 1);
 
     const fromFullIdx = namedFullIndices[i];
@@ -270,12 +334,18 @@ async function buildEnhancedRoad(
   for (let i = 0; i < rawSamples.length; i += CONCURRENCY) {
     const batch = rawSamples.slice(i, i + CONCURRENCY);
     const results = await Promise.all(
-      batch.map(async (point) => {
+      batch.map(async (point, batchIdx) => {
+        const idx = i + batchIdx;
         if (!isPointInNepal(point.lat, point.lon)) {
           return { coord: point, placeName: null, placeType: null };
         }
         const result = await reverseGeocodeNepal(point.lat, point.lon).catch(() => null);
         if (!result) return { coord: point, placeName: null, placeType: null };
+        if (idx > 0 && idx < rawSamples.length - 1) {
+          if (!inRoadCorridor(point.lat, point.lon, result.lat, result.lon, rawSamples, idx, 500, 250)) {
+            return { coord: point, placeName: null, placeType: null };
+          }
+        }
         const name = extractSettlementName(result.address);
         return {
           coord: point,

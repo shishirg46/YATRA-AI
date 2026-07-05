@@ -1,4 +1,5 @@
 import { findNearestPlacePG, type PlaceResult } from "@/lib/routing/spatial";
+import { reverseGeocodeNepal } from "@/lib/routing/nominatim";
 
 export interface PlaceSequenceOptions {
   /** Search radius in meters for each sample point (default: 3000) */
@@ -39,6 +40,7 @@ export async function buildPlaceSequence(
 
   const found: PlaceSequenceItem[] = [];
   const seen = new Set<string>();
+  const nominatimCache = new Map<string, PlaceResult>();
   let prevLat = polyline[0].lat;
   let prevLon = polyline[0].lon;
   let cumulativeKm = 0;
@@ -54,7 +56,37 @@ export async function buildPlaceSequence(
 
     if (cumulativeKm - lastPlaceKm < minGapKm) continue;
 
-    const place = await findNearestPlacePG(pt.lat, pt.lon, radiusMeters);
+    // Try PostGIS place table first
+    let place = await findNearestPlacePG(pt.lat, pt.lon, radiusMeters);
+
+    // Fallback to Nominatim reverse geocode when the place table has no match
+    if (!place) {
+      const cacheKey = `${pt.lat.toFixed(3)},${pt.lon.toFixed(3)}`;
+      let cached = nominatimCache.get(cacheKey);
+      if (!cached) {
+        const nom = await reverseGeocodeNepal(pt.lat, pt.lon);
+        if (nom) {
+          cached = {
+            id: `nom-${cacheKey}`,
+            name: nom.shortName,
+            nameEn: nom.shortName,
+            nameNe: null,
+            lat: nom.lat,
+            lon: nom.lon,
+            distanceKm: nom.lat !== pt.lat || nom.lon !== pt.lon
+              ? haversineKm(pt.lat, pt.lon, nom.lat, nom.lon)
+              : 0,
+            type: nom.placeType === "village" ? "VILLAGE"
+              : nom.placeType === "town" ? "TOWN"
+              : nom.placeType === "city" ? "CITY"
+              : "TOWN",
+            adminLevel: null,
+          };
+          nominatimCache.set(cacheKey, cached);
+        }
+      }
+      place = cached ?? null;
+    }
     if (!place) continue;
     if (minType === "TOWN" && place.type === "VILLAGE") continue;
     if (minType === "CITY" && place.type !== "CITY") continue;

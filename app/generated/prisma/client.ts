@@ -257,6 +257,31 @@ export type AuditLog = Prisma.AuditLogModel
  */
 export type yatra_disaster_events = Prisma.yatra_disaster_eventsModel
 /**
+ * Model Intersection
+ * 
+ */
+export type Intersection = Prisma.IntersectionModel
+/**
+ * Model Hazard
+ * 
+ */
+export type Hazard = Prisma.HazardModel
+/**
+ * Model SegmentHazard
+ * 
+ */
+export type SegmentHazard = Prisma.SegmentHazardModel
+/**
+ * Model GraphConfig
+ * 
+ */
+export type GraphConfig = Prisma.GraphConfigModel
+/**
+ * Model ExplanationTemplate
+ * 
+ */
+export type ExplanationTemplate = Prisma.ExplanationTemplateModel
+/**
  * Model UserPrivacy
  * 
  */

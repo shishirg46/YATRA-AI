@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
       // ── Step 2: Fetch hazard data from multiple sources ───────────────────
       // Pass lat/lon so USGS, OpenAQ, and EONET can query by coordinate
-      const hazardRaw = await fetchHazard(loc.district.name, loc.latitude, loc.longitude);
+      const hazardRaw = await fetchHazard(loc.latitude, loc.longitude, prisma);
 
       // Enrich heat index from temperature (hot weather = higher heat risk)
       const heatIndex = Math.max(0, Math.min((weather.temperature - 25) / 20, 1.0));

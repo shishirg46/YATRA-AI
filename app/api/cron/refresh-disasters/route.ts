@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ensureDisasterEventTable, ingestRealtime, ingestHistoricalBipad } from "@/lib/disaster-pipeline";
 import { fetchHazard } from "@/lib/collectors/hazard";
+import { fetchRecentBipadIncidents, matchAlertsToUsers } from "@/lib/bipad-alerts";
 
 const CRON_SECRET = process.env.CRON_SECRET ?? process.env.ASSESS_SECRET;
 
@@ -44,6 +45,12 @@ export async function GET(req: NextRequest) {
     results.realtime = realtimeResult;
     console.log("[cron/refresh-disasters] Realtime ingestion:", realtimeResult);
 
+    // Step 2.5: Match ingested incidents to users and create notifications
+    const alerts = await fetchRecentBipadIncidents(24);
+    const notificationsWritten = alerts.length > 0 ? await matchAlertsToUsers(alerts) : 0;
+    results.notificationsWritten = notificationsWritten;
+    console.log("[cron/refresh-disasters] Notifications written:", notificationsWritten);
+
     // Step 3: Historical ingestion (once daily — checks internal dedup)
     const historicalResult = await ingestHistoricalBipad(2020, new Date().getFullYear());
     results.historical = historicalResult;
@@ -60,7 +67,7 @@ export async function GET(req: NextRequest) {
     let hazardsRefreshed = 0;
     for (const loc of locations) {
       try {
-        const hazard = await fetchHazard(loc.name, loc.latitude, loc.longitude);
+        const hazard = await fetchHazard(loc.latitude, loc.longitude, prisma);
         await prisma.hazardData.create({
           data: {
             locationId: loc.id,

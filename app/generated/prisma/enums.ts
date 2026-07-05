@@ -234,3 +234,22 @@ export const ReportSeverity = {
 } as const
 
 export type ReportSeverity = (typeof ReportSeverity)[keyof typeof ReportSeverity]
+
+
+export const ExplanationSeverity = {
+  LOW: 'LOW',
+  MEDIUM: 'MEDIUM',
+  HIGH: 'HIGH',
+  EXTREME: 'EXTREME'
+} as const
+
+export type ExplanationSeverity = (typeof ExplanationSeverity)[keyof typeof ExplanationSeverity]
+
+
+export const ExplanationAudience = {
+  TRAVELER: 'TRAVELER',
+  PROFESSIONAL: 'PROFESSIONAL',
+  EMERGENCY: 'EMERGENCY'
+} as const
+
+export type ExplanationAudience = (typeof ExplanationAudience)[keyof typeof ExplanationAudience]

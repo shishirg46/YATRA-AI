@@ -20,17 +20,44 @@ export type OsmWayModel = runtime.Types.Result.DefaultSelection<Prisma.$OsmWayPa
 
 export type AggregateOsmWay = {
   _count: OsmWayCountAggregateOutputType | null
+  _avg: OsmWayAvgAggregateOutputType | null
+  _sum: OsmWaySumAggregateOutputType | null
   _min: OsmWayMinAggregateOutputType | null
   _max: OsmWayMaxAggregateOutputType | null
+}
+
+export type OsmWayAvgAggregateOutputType = {
+  lanes: number | null
+  width: number | null
+  maxspeed: number | null
+}
+
+export type OsmWaySumAggregateOutputType = {
+  lanes: number | null
+  width: number | null
+  maxspeed: number | null
 }
 
 export type OsmWayMinAggregateOutputType = {
   id: string | null
   name: string | null
   roadClass: string | null
+  highway: string | null
+  surface: string | null
+  tracktype: string | null
+  smoothness: string | null
+  lanes: number | null
+  width: number | null
+  maxspeed: number | null
+  bridge: string | null
+  tunnel: string | null
+  access: string | null
+  service: string | null
+  junction: string | null
   oneWay: boolean | null
   graphVersion: string | null
   importBatchId: string | null
+  sourceFile: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -40,9 +67,22 @@ export type OsmWayMaxAggregateOutputType = {
   id: string | null
   name: string | null
   roadClass: string | null
+  highway: string | null
+  surface: string | null
+  tracktype: string | null
+  smoothness: string | null
+  lanes: number | null
+  width: number | null
+  maxspeed: number | null
+  bridge: string | null
+  tunnel: string | null
+  access: string | null
+  service: string | null
+  junction: string | null
   oneWay: boolean | null
   graphVersion: string | null
   importBatchId: string | null
+  sourceFile: string | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -52,9 +92,23 @@ export type OsmWayCountAggregateOutputType = {
   id: number
   name: number
   roadClass: number
+  highway: number
+  surface: number
+  tracktype: number
+  smoothness: number
+  lanes: number
+  width: number
+  maxspeed: number
+  bridge: number
+  tunnel: number
+  access: number
+  service: number
+  junction: number
   oneWay: number
+  tags: number
   graphVersion: number
   importBatchId: number
+  sourceFile: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -62,13 +116,38 @@ export type OsmWayCountAggregateOutputType = {
 }
 
 
+export type OsmWayAvgAggregateInputType = {
+  lanes?: true
+  width?: true
+  maxspeed?: true
+}
+
+export type OsmWaySumAggregateInputType = {
+  lanes?: true
+  width?: true
+  maxspeed?: true
+}
+
 export type OsmWayMinAggregateInputType = {
   id?: true
   name?: true
   roadClass?: true
+  highway?: true
+  surface?: true
+  tracktype?: true
+  smoothness?: true
+  lanes?: true
+  width?: true
+  maxspeed?: true
+  bridge?: true
+  tunnel?: true
+  access?: true
+  service?: true
+  junction?: true
   oneWay?: true
   graphVersion?: true
   importBatchId?: true
+  sourceFile?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -78,9 +157,22 @@ export type OsmWayMaxAggregateInputType = {
   id?: true
   name?: true
   roadClass?: true
+  highway?: true
+  surface?: true
+  tracktype?: true
+  smoothness?: true
+  lanes?: true
+  width?: true
+  maxspeed?: true
+  bridge?: true
+  tunnel?: true
+  access?: true
+  service?: true
+  junction?: true
   oneWay?: true
   graphVersion?: true
   importBatchId?: true
+  sourceFile?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -90,9 +182,23 @@ export type OsmWayCountAggregateInputType = {
   id?: true
   name?: true
   roadClass?: true
+  highway?: true
+  surface?: true
+  tracktype?: true
+  smoothness?: true
+  lanes?: true
+  width?: true
+  maxspeed?: true
+  bridge?: true
+  tunnel?: true
+  access?: true
+  service?: true
+  junction?: true
   oneWay?: true
+  tags?: true
   graphVersion?: true
   importBatchId?: true
+  sourceFile?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -137,6 +243,18 @@ export type OsmWayAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: OsmWayAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: OsmWaySumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: OsmWayMinAggregateInputType
@@ -167,6 +285,8 @@ export type OsmWayGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: OsmWayCountAggregateInputType | true
+  _avg?: OsmWayAvgAggregateInputType
+  _sum?: OsmWaySumAggregateInputType
   _min?: OsmWayMinAggregateInputType
   _max?: OsmWayMaxAggregateInputType
 }
@@ -175,13 +295,29 @@ export type OsmWayGroupByOutputType = {
   id: string
   name: string | null
   roadClass: string
+  highway: string | null
+  surface: string | null
+  tracktype: string | null
+  smoothness: string | null
+  lanes: number | null
+  width: number | null
+  maxspeed: number | null
+  bridge: string | null
+  tunnel: string | null
+  access: string | null
+  service: string | null
+  junction: string | null
   oneWay: boolean
-  graphVersion: string
+  tags: runtime.JsonValue | null
+  graphVersion: string | null
   importBatchId: string | null
+  sourceFile: string | null
   isActive: boolean
   createdAt: Date
   updatedAt: Date
   _count: OsmWayCountAggregateOutputType | null
+  _avg: OsmWayAvgAggregateOutputType | null
+  _sum: OsmWaySumAggregateOutputType | null
   _min: OsmWayMinAggregateOutputType | null
   _max: OsmWayMaxAggregateOutputType | null
 }
@@ -208,9 +344,23 @@ export type OsmWayWhereInput = {
   id?: Prisma.StringFilter<"OsmWay"> | string
   name?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   roadClass?: Prisma.StringFilter<"OsmWay"> | string
+  highway?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  surface?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  tracktype?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  smoothness?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  lanes?: Prisma.IntNullableFilter<"OsmWay"> | number | null
+  width?: Prisma.FloatNullableFilter<"OsmWay"> | number | null
+  maxspeed?: Prisma.IntNullableFilter<"OsmWay"> | number | null
+  bridge?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  tunnel?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  access?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  service?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  junction?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   oneWay?: Prisma.BoolFilter<"OsmWay"> | boolean
-  graphVersion?: Prisma.StringFilter<"OsmWay"> | string
+  tags?: Prisma.JsonNullableFilter<"OsmWay">
+  graphVersion?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   importBatchId?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  sourceFile?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   isActive?: Prisma.BoolFilter<"OsmWay"> | boolean
   createdAt?: Prisma.DateTimeFilter<"OsmWay"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OsmWay"> | Date | string
@@ -221,9 +371,23 @@ export type OsmWayOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   roadClass?: Prisma.SortOrder
+  highway?: Prisma.SortOrderInput | Prisma.SortOrder
+  surface?: Prisma.SortOrderInput | Prisma.SortOrder
+  tracktype?: Prisma.SortOrderInput | Prisma.SortOrder
+  smoothness?: Prisma.SortOrderInput | Prisma.SortOrder
+  lanes?: Prisma.SortOrderInput | Prisma.SortOrder
+  width?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxspeed?: Prisma.SortOrderInput | Prisma.SortOrder
+  bridge?: Prisma.SortOrderInput | Prisma.SortOrder
+  tunnel?: Prisma.SortOrderInput | Prisma.SortOrder
+  access?: Prisma.SortOrderInput | Prisma.SortOrder
+  service?: Prisma.SortOrderInput | Prisma.SortOrder
+  junction?: Prisma.SortOrderInput | Prisma.SortOrder
   oneWay?: Prisma.SortOrder
-  graphVersion?: Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
+  graphVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   importBatchId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceFile?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -237,9 +401,23 @@ export type OsmWayWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OsmWayWhereInput | Prisma.OsmWayWhereInput[]
   name?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   roadClass?: Prisma.StringFilter<"OsmWay"> | string
+  highway?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  surface?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  tracktype?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  smoothness?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  lanes?: Prisma.IntNullableFilter<"OsmWay"> | number | null
+  width?: Prisma.FloatNullableFilter<"OsmWay"> | number | null
+  maxspeed?: Prisma.IntNullableFilter<"OsmWay"> | number | null
+  bridge?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  tunnel?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  access?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  service?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  junction?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   oneWay?: Prisma.BoolFilter<"OsmWay"> | boolean
-  graphVersion?: Prisma.StringFilter<"OsmWay"> | string
+  tags?: Prisma.JsonNullableFilter<"OsmWay">
+  graphVersion?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   importBatchId?: Prisma.StringNullableFilter<"OsmWay"> | string | null
+  sourceFile?: Prisma.StringNullableFilter<"OsmWay"> | string | null
   isActive?: Prisma.BoolFilter<"OsmWay"> | boolean
   createdAt?: Prisma.DateTimeFilter<"OsmWay"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OsmWay"> | Date | string
@@ -250,15 +428,31 @@ export type OsmWayOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
   roadClass?: Prisma.SortOrder
+  highway?: Prisma.SortOrderInput | Prisma.SortOrder
+  surface?: Prisma.SortOrderInput | Prisma.SortOrder
+  tracktype?: Prisma.SortOrderInput | Prisma.SortOrder
+  smoothness?: Prisma.SortOrderInput | Prisma.SortOrder
+  lanes?: Prisma.SortOrderInput | Prisma.SortOrder
+  width?: Prisma.SortOrderInput | Prisma.SortOrder
+  maxspeed?: Prisma.SortOrderInput | Prisma.SortOrder
+  bridge?: Prisma.SortOrderInput | Prisma.SortOrder
+  tunnel?: Prisma.SortOrderInput | Prisma.SortOrder
+  access?: Prisma.SortOrderInput | Prisma.SortOrder
+  service?: Prisma.SortOrderInput | Prisma.SortOrder
+  junction?: Prisma.SortOrderInput | Prisma.SortOrder
   oneWay?: Prisma.SortOrder
-  graphVersion?: Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
+  graphVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   importBatchId?: Prisma.SortOrderInput | Prisma.SortOrder
+  sourceFile?: Prisma.SortOrderInput | Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OsmWayCountOrderByAggregateInput
+  _avg?: Prisma.OsmWayAvgOrderByAggregateInput
   _max?: Prisma.OsmWayMaxOrderByAggregateInput
   _min?: Prisma.OsmWayMinOrderByAggregateInput
+  _sum?: Prisma.OsmWaySumOrderByAggregateInput
 }
 
 export type OsmWayScalarWhereWithAggregatesInput = {
@@ -268,9 +462,23 @@ export type OsmWayScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"OsmWay"> | string
   name?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
   roadClass?: Prisma.StringWithAggregatesFilter<"OsmWay"> | string
+  highway?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  surface?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  tracktype?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  smoothness?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  lanes?: Prisma.IntNullableWithAggregatesFilter<"OsmWay"> | number | null
+  width?: Prisma.FloatNullableWithAggregatesFilter<"OsmWay"> | number | null
+  maxspeed?: Prisma.IntNullableWithAggregatesFilter<"OsmWay"> | number | null
+  bridge?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  tunnel?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  access?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  service?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  junction?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
   oneWay?: Prisma.BoolWithAggregatesFilter<"OsmWay"> | boolean
-  graphVersion?: Prisma.StringWithAggregatesFilter<"OsmWay"> | string
+  tags?: Prisma.JsonNullableWithAggregatesFilter<"OsmWay">
+  graphVersion?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
   importBatchId?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
+  sourceFile?: Prisma.StringNullableWithAggregatesFilter<"OsmWay"> | string | null
   isActive?: Prisma.BoolWithAggregatesFilter<"OsmWay"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OsmWay"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"OsmWay"> | Date | string
@@ -280,9 +488,23 @@ export type OsmWayCreateInput = {
   id: string
   name?: string | null
   roadClass: string
+  highway?: string | null
+  surface?: string | null
+  tracktype?: string | null
+  smoothness?: string | null
+  lanes?: number | null
+  width?: number | null
+  maxspeed?: number | null
+  bridge?: string | null
+  tunnel?: string | null
+  access?: string | null
+  service?: string | null
+  junction?: string | null
   oneWay?: boolean
-  graphVersion: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: string | null
   importBatchId?: string | null
+  sourceFile?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -293,9 +515,23 @@ export type OsmWayUncheckedCreateInput = {
   id: string
   name?: string | null
   roadClass: string
+  highway?: string | null
+  surface?: string | null
+  tracktype?: string | null
+  smoothness?: string | null
+  lanes?: number | null
+  width?: number | null
+  maxspeed?: number | null
+  bridge?: string | null
+  tunnel?: string | null
+  access?: string | null
+  service?: string | null
+  junction?: string | null
   oneWay?: boolean
-  graphVersion: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: string | null
   importBatchId?: string | null
+  sourceFile?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -306,9 +542,23 @@ export type OsmWayUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -319,9 +569,23 @@ export type OsmWayUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -332,9 +596,23 @@ export type OsmWayCreateManyInput = {
   id: string
   name?: string | null
   roadClass: string
+  highway?: string | null
+  surface?: string | null
+  tracktype?: string | null
+  smoothness?: string | null
+  lanes?: number | null
+  width?: number | null
+  maxspeed?: number | null
+  bridge?: string | null
+  tunnel?: string | null
+  access?: string | null
+  service?: string | null
+  junction?: string | null
   oneWay?: boolean
-  graphVersion: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: string | null
   importBatchId?: string | null
+  sourceFile?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -344,9 +622,23 @@ export type OsmWayUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -356,9 +648,23 @@ export type OsmWayUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -373,21 +679,54 @@ export type OsmWayCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
+  highway?: Prisma.SortOrder
+  surface?: Prisma.SortOrder
+  tracktype?: Prisma.SortOrder
+  smoothness?: Prisma.SortOrder
+  lanes?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  maxspeed?: Prisma.SortOrder
+  bridge?: Prisma.SortOrder
+  tunnel?: Prisma.SortOrder
+  access?: Prisma.SortOrder
+  service?: Prisma.SortOrder
+  junction?: Prisma.SortOrder
   oneWay?: Prisma.SortOrder
+  tags?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sourceFile?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type OsmWayAvgOrderByAggregateInput = {
+  lanes?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  maxspeed?: Prisma.SortOrder
 }
 
 export type OsmWayMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
+  highway?: Prisma.SortOrder
+  surface?: Prisma.SortOrder
+  tracktype?: Prisma.SortOrder
+  smoothness?: Prisma.SortOrder
+  lanes?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  maxspeed?: Prisma.SortOrder
+  bridge?: Prisma.SortOrder
+  tunnel?: Prisma.SortOrder
+  access?: Prisma.SortOrder
+  service?: Prisma.SortOrder
+  junction?: Prisma.SortOrder
   oneWay?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sourceFile?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -397,12 +736,31 @@ export type OsmWayMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
+  highway?: Prisma.SortOrder
+  surface?: Prisma.SortOrder
+  tracktype?: Prisma.SortOrder
+  smoothness?: Prisma.SortOrder
+  lanes?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  maxspeed?: Prisma.SortOrder
+  bridge?: Prisma.SortOrder
+  tunnel?: Prisma.SortOrder
+  access?: Prisma.SortOrder
+  service?: Prisma.SortOrder
+  junction?: Prisma.SortOrder
   oneWay?: Prisma.SortOrder
   graphVersion?: Prisma.SortOrder
   importBatchId?: Prisma.SortOrder
+  sourceFile?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type OsmWaySumOrderByAggregateInput = {
+  lanes?: Prisma.SortOrder
+  width?: Prisma.SortOrder
+  maxspeed?: Prisma.SortOrder
 }
 
 export type OsmWayCreateNestedOneWithoutNodesInput = {
@@ -425,9 +783,23 @@ export type OsmWayCreateWithoutNodesInput = {
   id: string
   name?: string | null
   roadClass: string
+  highway?: string | null
+  surface?: string | null
+  tracktype?: string | null
+  smoothness?: string | null
+  lanes?: number | null
+  width?: number | null
+  maxspeed?: number | null
+  bridge?: string | null
+  tunnel?: string | null
+  access?: string | null
+  service?: string | null
+  junction?: string | null
   oneWay?: boolean
-  graphVersion: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: string | null
   importBatchId?: string | null
+  sourceFile?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -437,9 +809,23 @@ export type OsmWayUncheckedCreateWithoutNodesInput = {
   id: string
   name?: string | null
   roadClass: string
+  highway?: string | null
+  surface?: string | null
+  tracktype?: string | null
+  smoothness?: string | null
+  lanes?: number | null
+  width?: number | null
+  maxspeed?: number | null
+  bridge?: string | null
+  tunnel?: string | null
+  access?: string | null
+  service?: string | null
+  junction?: string | null
   oneWay?: boolean
-  graphVersion: string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: string | null
   importBatchId?: string | null
+  sourceFile?: string | null
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -465,9 +851,23 @@ export type OsmWayUpdateWithoutNodesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -477,9 +877,23 @@ export type OsmWayUncheckedUpdateWithoutNodesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roadClass?: Prisma.StringFieldUpdateOperationsInput | string
+  highway?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  surface?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tracktype?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  smoothness?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lanes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  width?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  maxspeed?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bridge?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tunnel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  access?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  service?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  junction?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oneWay?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  graphVersion?: Prisma.StringFieldUpdateOperationsInput | string
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   importBatchId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sourceFile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -520,9 +934,23 @@ export type OsmWaySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   name?: boolean
   roadClass?: boolean
+  highway?: boolean
+  surface?: boolean
+  tracktype?: boolean
+  smoothness?: boolean
+  lanes?: boolean
+  width?: boolean
+  maxspeed?: boolean
+  bridge?: boolean
+  tunnel?: boolean
+  access?: boolean
+  service?: boolean
+  junction?: boolean
   oneWay?: boolean
+  tags?: boolean
   graphVersion?: boolean
   importBatchId?: boolean
+  sourceFile?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -534,9 +962,23 @@ export type OsmWaySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   roadClass?: boolean
+  highway?: boolean
+  surface?: boolean
+  tracktype?: boolean
+  smoothness?: boolean
+  lanes?: boolean
+  width?: boolean
+  maxspeed?: boolean
+  bridge?: boolean
+  tunnel?: boolean
+  access?: boolean
+  service?: boolean
+  junction?: boolean
   oneWay?: boolean
+  tags?: boolean
   graphVersion?: boolean
   importBatchId?: boolean
+  sourceFile?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -546,9 +988,23 @@ export type OsmWaySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   roadClass?: boolean
+  highway?: boolean
+  surface?: boolean
+  tracktype?: boolean
+  smoothness?: boolean
+  lanes?: boolean
+  width?: boolean
+  maxspeed?: boolean
+  bridge?: boolean
+  tunnel?: boolean
+  access?: boolean
+  service?: boolean
+  junction?: boolean
   oneWay?: boolean
+  tags?: boolean
   graphVersion?: boolean
   importBatchId?: boolean
+  sourceFile?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -558,15 +1014,29 @@ export type OsmWaySelectScalar = {
   id?: boolean
   name?: boolean
   roadClass?: boolean
+  highway?: boolean
+  surface?: boolean
+  tracktype?: boolean
+  smoothness?: boolean
+  lanes?: boolean
+  width?: boolean
+  maxspeed?: boolean
+  bridge?: boolean
+  tunnel?: boolean
+  access?: boolean
+  service?: boolean
+  junction?: boolean
   oneWay?: boolean
+  tags?: boolean
   graphVersion?: boolean
   importBatchId?: boolean
+  sourceFile?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OsmWayOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "roadClass" | "oneWay" | "graphVersion" | "importBatchId" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["osmWay"]>
+export type OsmWayOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "roadClass" | "highway" | "surface" | "tracktype" | "smoothness" | "lanes" | "width" | "maxspeed" | "bridge" | "tunnel" | "access" | "service" | "junction" | "oneWay" | "tags" | "graphVersion" | "importBatchId" | "sourceFile" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["osmWay"]>
 export type OsmWayInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   nodes?: boolean | Prisma.OsmWay$nodesArgs<ExtArgs>
   _count?: boolean | Prisma.OsmWayCountOutputTypeDefaultArgs<ExtArgs>
@@ -583,9 +1053,23 @@ export type $OsmWayPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     name: string | null
     roadClass: string
+    highway: string | null
+    surface: string | null
+    tracktype: string | null
+    smoothness: string | null
+    lanes: number | null
+    width: number | null
+    maxspeed: number | null
+    bridge: string | null
+    tunnel: string | null
+    access: string | null
+    service: string | null
+    junction: string | null
     oneWay: boolean
-    graphVersion: string
+    tags: runtime.JsonValue | null
+    graphVersion: string | null
     importBatchId: string | null
+    sourceFile: string | null
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1016,9 +1500,23 @@ export interface OsmWayFieldRefs {
   readonly id: Prisma.FieldRef<"OsmWay", 'String'>
   readonly name: Prisma.FieldRef<"OsmWay", 'String'>
   readonly roadClass: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly highway: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly surface: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly tracktype: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly smoothness: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly lanes: Prisma.FieldRef<"OsmWay", 'Int'>
+  readonly width: Prisma.FieldRef<"OsmWay", 'Float'>
+  readonly maxspeed: Prisma.FieldRef<"OsmWay", 'Int'>
+  readonly bridge: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly tunnel: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly access: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly service: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly junction: Prisma.FieldRef<"OsmWay", 'String'>
   readonly oneWay: Prisma.FieldRef<"OsmWay", 'Boolean'>
+  readonly tags: Prisma.FieldRef<"OsmWay", 'Json'>
   readonly graphVersion: Prisma.FieldRef<"OsmWay", 'String'>
   readonly importBatchId: Prisma.FieldRef<"OsmWay", 'String'>
+  readonly sourceFile: Prisma.FieldRef<"OsmWay", 'String'>
   readonly isActive: Prisma.FieldRef<"OsmWay", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"OsmWay", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"OsmWay", 'DateTime'>

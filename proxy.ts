@@ -104,6 +104,19 @@ function setSecurityHeaders(res: NextResponse): NextResponse {
     "Strict-Transport-Security",
     "max-age=31536000; includeSubDomains; preload"
   );
+  res.headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+      "img-src 'self' data: blob: res.cloudinary.com upload.wikimedia.org images.unsplash.com lh3.googleusercontent.com www.gravatar.com *.tile.openstreetmap.org",
+      "font-src 'self' fonts.gstatic.com",
+      "connect-src 'self' *.openstreetmap.org *.nominatim.openstreetmap.org",
+      "frame-src 'self' accounts.google.com",
+      "base-uri 'self'",
+    ].join("; "),
+  );
   return res;
 }
 

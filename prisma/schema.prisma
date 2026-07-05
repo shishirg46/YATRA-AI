@@ -358,9 +358,11 @@ model RouteNode {
   sequenceIndex        Int?
   roadClass            String?
   isJunctionNode       Boolean             @default(false)
+  osmNodeId            BigInt?
   placeId              String?
   isHub                Boolean             @default(false)
   isActive             Boolean             @default(true)
+  graphVersion         String?
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   edgesFrom            RouteEdge[]         @relation("EdgeFrom")
@@ -375,6 +377,8 @@ model RouteNode {
   @@index([isHub, isActive])
   @@index([strategicImportance])
   @@index([osmWayId, sequenceIndex])
+  @@index([graphVersion])
+  @@index([osmNodeId])
   @@map("route_node")
 }
 
@@ -480,16 +484,37 @@ model OsmWay {
   id              String      @id
   name            String?
   roadClass       String
+  highway         String?
+  surface         String?
+  tracktype       String?
+  smoothness      String?
+  lanes           Int?
+  width           Float?
+  maxspeed        Int?
+  bridge          String?
+  tunnel          String?
+  access          String?
+  service         String?
+  junction        String?
   oneWay          Boolean     @default(false)
-  graphVersion    String      // bumped on OSM reimport
-  importBatchId   String?     // UUID of the import run
+  tags            Json?       @default("{}")
+  graphVersion    String?
+  importBatchId   String?
+  sourceFile      String?
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   nodes           RouteNode[]
 
+  @@index([tags], type: Gin)
+  @@index([graphVersion])
   @@map("osm_way")
 }
+
+// NOTE: osm_node is NOT a Prisma model. It's a raw SQL table managed by the
+// import pipeline (01-import-osm-pbf.ts). It uses BIGINT PK matching original
+// OSM node IDs. No application table references it via FK. It's a pure build
+// artifact recreated on each import.
 
 model RoadSegment {
   id               String     @id @default(uuid())
@@ -558,23 +583,39 @@ model HazardHex {
 }
 
 model EdgeCache {
-  id              String      @id @default(uuid())
-  fromNodeId      String
-  toNodeId        String
-  distanceKm      Float
-  gradientPct     Float?
-  surfaceType     RoadSurface?
-  compositeCost   Float
-  riskSnapshotId  String?
-  graphVersion    String
-  season          String      // "monsoon" | "dry"
-  ttl             DateTime
-  computedAt      DateTime    @default(now())
-  fromNode        RouteNode   @relation("EdgeCacheFrom", fields: [fromNodeId], references: [id])
-  toNode          RouteNode   @relation("EdgeCacheTo", fields: [toNodeId], references: [id])
+  id                  String      @id @default(uuid())
+  fromNodeId          String
+  toNodeId            String
+  distanceKm          Float
+  gradientPct         Float?
+  maxGradientPct      Float?
+  curvatureDeg        Float?
+  surfaceType         RoadSurface?
+  compositeCost       Float
+  costFast            Float?
+  costSafe            Float?
+  costEmergency       Float?
+  costTruck           Float?
+  startDistrict       String?
+  endDistrict         String?
+  startProvince       String?
+  endProvince         String?
+  histLandslideCount  Int         @default(0)
+  histFloodCount      Int         @default(0)
+  histRoadClosureCnt  Int         @default(0)
+  riskSnapshotId      String?
+  graphVersion        String
+  season              String      // "monsoon" | "dry"
+  ttl                 DateTime
+  computedAt          DateTime    @default(now())
+  fromNode            RouteNode   @relation("EdgeCacheFrom", fields: [fromNodeId], references: [id])
+  toNode              RouteNode   @relation("EdgeCacheTo", fields: [toNodeId], references: [id])
 
   @@unique([fromNodeId, toNodeId, graphVersion, season])
   @@index([ttl])
+  @@index([graphVersion])
+  @@index([startDistrict])
+  @@index([endDistrict])
   @@map("edge_cache")
 }
 
@@ -702,6 +743,8 @@ model TravelPlan {
   groupRiskResult Json?
   startNotifiedAt DateTime?
   endNotifiedAt   DateTime?
+  reminded3dAt    DateTime?
+  reminded1dAt    DateTime?
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
   leader              User               @relation("TripLeader", fields: [leaderId], references: [id], onDelete: Cascade)
@@ -811,6 +854,67 @@ model yatra_disaster_events {
   @@index([date], map: "idx_disaster_events_date")
   @@index([lat, lon], map: "idx_disaster_events_lat_lon")
   @@index([type], map: "idx_disaster_events_type")
+}
+
+model Intersection {
+  id            String   @id @default(uuid())
+  osmNodeId     BigInt   @unique
+  connectedWays String[]
+  degree        Int
+  geom          Unsupported("geometry(Point,4326)")
+  graphVersion  String
+
+  @@index([graphVersion])
+  @@map("intersection")
+}
+
+model Hazard {
+  id            String                        @id
+  geometry      Unsupported("geometry(Geometry,4326)")
+  hazardType    String                        @map("hazard_type")
+  severity      String                        @default("unknown")
+  confidence    Float?
+  source        String?
+  externalId    String?                       @map("external_id")
+  validFrom     DateTime?                     @map("valid_from") @db.Timestamptz(6)
+  validTo       DateTime?                     @map("valid_to") @db.Timestamptz(6)
+  metadata      Json?                         @default("{}")
+  createdAt     DateTime                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                      @default(now()) @map("updated_at") @db.Timestamptz(6)
+  segmentHazards SegmentHazard[]
+
+  @@index([geometry], type: Gin)
+  @@index([hazardType])
+  @@index([severity])
+  @@index([source])
+  @@map("hazard")
+}
+
+model SegmentHazard {
+  segmentId      String   @map("segment_id")
+  hazardId       String   @map("hazard_id")
+  overlapLengthM Float    @map("overlap_length_m")
+  startOffsetM   Float    @map("start_offset_m")
+  endOffsetM     Float    @map("end_offset_m")
+  affectedPercent Float   @map("affected_percent")
+  computedAt     DateTime @default(now()) @map("computed_at") @db.Timestamptz(6)
+  hazard         Hazard   @relation(fields: [hazardId], references: [id], onDelete: Cascade)
+
+  @@id([segmentId, hazardId])
+  @@index([segmentId])
+  @@index([hazardId])
+  @@map("segment_hazard")
+}
+
+model GraphConfig {
+  id                  String   @id @default("singleton")
+  currentGraphVersion String   @default("")
+  previousGraphVersion String?
+  buildStatus         String   @default("READY")
+  publishedBy         String?
+  publishedAt         DateTime @default(now())
+
+  @@map("graph_config")
 }
 
 enum EmergencyStatus {
@@ -978,6 +1082,37 @@ enum ReportSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+enum ExplanationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  EXTREME
+}
+
+enum ExplanationAudience {
+  TRAVELER
+  PROFESSIONAL
+  EMERGENCY
+}
+
+model ExplanationTemplate {
+  id              String               @id @default(uuid())
+  templateGroup   String               // 'weather','route','health','budget','seasonal','summary','recommendation','destination','group','intro','top_tip','evidence'
+  condition       String               // 'heavy_rain','recent_landslide','budget_sufficient'
+  severity        ExplanationSeverity?
+  audience        ExplanationAudience  @default(TRAVELER)
+  variant         Int                  @default(1)
+  template        String
+  priority        Int                  @default(50)
+  templateVersion Int                  @default(1)
+  enabled         Boolean              @default(true)
+  archivedAt      DateTime?
+  createdAt       DateTime             @default(now())
+
+  @@index([templateGroup, condition, severity, audience])
+  @@map("explanation_template")
 }
 
 model UserPrivacy {

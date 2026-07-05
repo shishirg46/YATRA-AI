@@ -10,6 +10,7 @@
  * This enables answering: "Is it safe to travel from Kathmandu to Pokhara in July?"
  */
 
+import { prisma } from "@/lib/prisma";
 import { fetchHistoricalWeather } from "@/lib/collectors/historical-weather";
 import { fetchHistoricalHazard } from "@/lib/collectors/historical-hazard";
 import { fetchHazard } from "@/lib/collectors/hazard";
@@ -90,7 +91,7 @@ export async function analyzeRouteSafety(
     allPlaces.map(async (place) => {
       const [currentWeatherRaw, currentHazardRaw, historicalWeatherRaw, historicalHazardRaw] = await Promise.all([
         fetchWeather(place.lat, place.lon).catch(() => null),
-        fetchHazard(place.district, place.lat, place.lon).catch(() => null),
+        fetchHazard(place.lat, place.lon, prisma).catch(() => null),
         fetchHistoricalWeather(place.lat, place.lon, departureDate, 5).catch(() => null),
         fetchHistoricalHazard(place.district, place.lat, place.lon, departureDate, 5).catch(() => null),
       ]);
@@ -332,21 +333,24 @@ function generateRecommendations(
 ): string[] {
   const recommendations: string[] = [];
 
+  const placeName = data.place.name;
+  const district  = data.place.district;
+
   if (safetyLevel === "EXTREME" || safetyLevel === "HIGH_RISK") {
-    recommendations.push("Consider postponing travel");
-    recommendations.push("Check for road closures");
+    recommendations.push(`Consider postponing travel to ${placeName} in ${district}`);
+    recommendations.push(`Check for road closures near ${placeName}`);
   }
 
   if (data.currentWeather?.rainfall > 10) {
-    recommendations.push("Avoid travel during heavy rain");
+    recommendations.push(`Avoid travel during heavy rain in ${district}`);
   }
 
   if (data.historicalHazard?.historicalLandslideRisk > 0.5) {
-    recommendations.push("Travel during dry season");
+    recommendations.push(`Travel during dry season for safer conditions in ${district}`);
   }
 
   if (recommendations.length === 0) {
-    recommendations.push("Standard travel precautions apply");
+    recommendations.push(`Standard travel precautions apply for ${placeName}`);
   }
 
   return recommendations;

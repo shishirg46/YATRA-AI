@@ -1,5 +1,8 @@
-import { analyzeTemporalRisk, generateSeasonalContext } from "@/lib/analysis/temporal-risk";
+import { analyzeTemporalRisk } from "@/lib/analysis/temporal-risk";
+import { TemplateCache } from "@/lib/explain/templates/cache";
+import { renderTemplate } from "@/lib/explain/templates/renderer";
 import { computePillarModel } from "@/lib/analysis/pillar-score";
+import type { RouteIntelligenceResult } from "@/lib/route-intelligence";
 import { scoreToLevel } from "./config";
 
 export type Traveller = {
@@ -34,19 +37,6 @@ export async function analyzeTravellers(
   travelDate: string,
   tripType: "SOLO" | "GROUP",
 ) {
-  // Generate seasonal context ONCE (not per traveller) to avoid N duplicate AI calls
-  const travelDateObj = new Date(travelDate);
-  const month = travelDateObj.getMonth() + 1;
-  const season = getSeason(month);
-  const seasonalCtx = await generateSeasonalContext({
-    destinationName: destination.name,
-    district: destination.district,
-    province: destination.province,
-    altitude: destination.altitude ?? 0,
-    month,
-    season,
-  });
-
   return Promise.all(
     travellers.map(async (t) => {
       const report = await analyzeTemporalRisk({
@@ -59,7 +49,6 @@ export async function analyzeTravellers(
         travelDate,
         userHealth: t.health ? { ...t.health, homeAltitude: t.homeAltitude, homeProvince: t.homeProvince } : null,
         tripType,
-        precomputedSeasonalContext: seasonalCtx,
       });
       return {
         userId: t.id,
@@ -90,8 +79,10 @@ export async function computePillar(
   tripType: "SOLO" | "GROUP",
   leaderHealth: { fitnessLevel: "LOW" | "MODERATE" | "HIGH"; mobilityLimited: boolean; chronicConditions: string[] } | null,
   endDate?: string,
+  routeIntelligence?: RouteIntelligenceResult,
 ) {
   return computePillarModel({
+    routeIntelligence: routeIntelligence as any,
     destination,
     home,
     travelDate,
@@ -118,20 +109,30 @@ export function computeGroupScore(
   return { groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable };
 }
 
+function rec(condition: string, params: Record<string, string | number>, fallback: string): string {
+  try {
+    const templates = TemplateCache.instance.get("recommendation", condition);
+    if (templates.length > 0) {
+      return renderTemplate(templates[0].template, params);
+    }
+  } catch { /* cache not ready — use fallback */ }
+  return fallback;
+}
+
 export function gatherRecommendations(
-  pillarModel: { route: { segmentFlags: { where: string; effect: string; when: string }[] }; personal: { guideRequired: boolean; flags: string[]; emergencyPreparedness: { hospital: string } } },
+  pillarModel: { route: { segmentFlags: { where: string; when: string; what: string; effect: string }[] }; personal: { guideRequired: boolean; flags: string[]; emergencyPreparedness: { hospital: string } } },
   locationName: string,
 ) {
   const r: { type: "ROUTE" | "MEDICAL"; text: string }[] = [
     ...pillarModel.route.segmentFlags.map((f) => ({
       type: "ROUTE" as const,
-      text: `${f.where}: ${f.effect} (${f.when}).`,
+      text: `${f.where}: ${f.effect} ${f.what ? `[${f.what}] ` : ""}(${f.when}).`,
     })),
     ...(pillarModel.personal.guideRequired
-      ? [{ type: "ROUTE" as const, text: "Hire a licensed guide for this itinerary due to terrain/risk profile." }]
+      ? [{ type: "ROUTE" as const, text: `Hire a licensed guide for ${locationName} due to terrain and risk profile of the route.` }]
       : []),
     ...(pillarModel.personal.flags.some((x) => x.toLowerCase().includes("solo"))
-      ? [{ type: "MEDICAL" as const, text: "Carry a first-aid kit and share live location check-ins every 4-6 hours." }]
+      ? [{ type: "MEDICAL" as const, text: rec("recommendation_solo_first_aid", { destination: locationName }, `Carry a first-aid kit on the route to ${locationName} and share live location check-ins every 4-6 hours with an emergency contact.`) }]
       : []),
     {
       type: "MEDICAL" as const,

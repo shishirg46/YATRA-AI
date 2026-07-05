@@ -4,13 +4,13 @@ import { findNearestRouteNode as spatialFindNearestRouteNode } from "@/lib/routi
 import { MinPriorityQueue } from "@/lib/binary-heap";
 import { ROUTING_COEFFICIENTS } from "@/lib/routing/routing-config";
 import { buildAdjacency, invalidateAdjacencyCache } from "@/lib/routing/adjacency";
+import type { AdjNode, AdjEdge, AdjacencyMap } from "@/lib/routing/adjacency";
 import {
   scoreEdge,
   preloadHazardData,
   preloadEdgeCache,
   batchUpsertCache,
 } from "@/lib/routing/edge-scorer";
-import type { AdjNode, AdjEdge } from "@/lib/routing/adjacency";
 import type { HazardData, CacheEntry } from "@/lib/routing/edge-scorer";
 
 export type GraphNode = AdjNode & { distanceKm?: number };
@@ -86,13 +86,14 @@ export async function findRouteNodePath(
   toNodeId: string,
   destLat?: number,
   destLon?: number,
+  graph?: AdjacencyMap,
 ): Promise<GraphNode[]> {
   if (fromNodeId === toNodeId) {
-    const { nodes } = await buildAdjacency();
+    const { nodes } = graph ?? await buildAdjacency();
     const n = nodes.get(fromNodeId);
     return n ? [n] : [];
   }
-  return findRouteNodePathWithFallback(fromNodeId, toNodeId, destLat, destLon, 1);
+  return findRouteNodePathWithFallback(fromNodeId, toNodeId, destLat, destLon, 1, graph);
 }
 
 async function findRouteNodePathWithFallback(
@@ -101,13 +102,14 @@ async function findRouteNodePathWithFallback(
   destLat?: number,
   destLon?: number,
   attempt: number = 1,
+  loadedGraph?: AdjacencyMap,
 ): Promise<GraphNode[]> {
   const profile: WeightProfile =
     attempt === 1 ? DEFAULT_PROFILE
     : attempt === 2 ? REDUCED_HAZARD_PROFILE
     : DISTANCE_ONLY_PROFILE;
 
-  const graph = await buildAdjacency();
+  const graph = loadedGraph ?? await buildAdjacency();
   const { nodes, adjacency } = graph;
 
   const fromNode = nodes.get(fromNodeId);
@@ -245,7 +247,14 @@ export async function buildGraphWaypoints(
   originNodeId?: string | null,
   destNodeId?: string | null,
 ): Promise<{ nodes: Array<{ lat: number; lon: number; name: string; locationId: string | null; routeNodeId: string }>; source: string }> {
-  const graph = await buildAdjacency();
+  const PAD = 0.75;
+  const bounds = {
+    minLat: Math.min(originLat, destLat) - PAD,
+    maxLat: Math.max(originLat, destLat) + PAD,
+    minLon: Math.min(originLon, destLon) - PAD,
+    maxLon: Math.max(originLon, destLon) + PAD,
+  };
+  const graph = await buildAdjacency(bounds);
   const { nodes } = graph;
 
   const originNode = originNodeId
@@ -260,7 +269,7 @@ export async function buildGraphWaypoints(
     return { nodes: [], source: "no-graph" };
   }
 
-  const path = await findRouteNodePath(originNode.id, destNode.id, destLat, destLon);
+  const path = await findRouteNodePath(originNode.id, destNode.id, destLat, destLon, graph);
   if (path.length < 2) {
     return { nodes: [], source: "direct-graph" };
   }

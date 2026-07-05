@@ -10,6 +10,7 @@
  *  4. Personalised altitude adjustment (home altitude vs destination)
  */
 
+import { prisma } from "@/lib/prisma";
 import { analyzeTemporalRisk } from "./temporal-risk";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
@@ -199,7 +200,7 @@ export async function assessRouteSegment(from: StopInput, to: StopInput): Promis
   const samples: Sample[] = await Promise.all(pathPoints.map(async (point) => {
     const [weatherResult, hazard] = await Promise.all([
       fetchWeather(point.lat, point.lon),
-      fetchHazard(from.district || to.district, point.lat, point.lon),
+      fetchHazard(point.lat, point.lon, prisma),
     ]);
     const weather = weatherResult ?? {
       temperature: 18,

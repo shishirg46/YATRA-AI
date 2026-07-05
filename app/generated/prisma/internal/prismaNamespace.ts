@@ -427,6 +427,11 @@ export const ModelName = {
   Notification: 'Notification',
   AuditLog: 'AuditLog',
   yatra_disaster_events: 'yatra_disaster_events',
+  Intersection: 'Intersection',
+  Hazard: 'Hazard',
+  SegmentHazard: 'SegmentHazard',
+  GraphConfig: 'GraphConfig',
+  ExplanationTemplate: 'ExplanationTemplate',
   UserPrivacy: 'UserPrivacy',
   TripPhoto: 'TripPhoto'
 } as const
@@ -444,7 +449,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userHealth" | "userPreference" | "emergencyContact" | "emergencyAlert" | "locationShareSession" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "destinationPhoto" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "savedDestination" | "routeTemplate" | "routeTemplatePoint" | "osmWay" | "roadSegment" | "roadJunction" | "adminRegion" | "hazardHex" | "edgeCache" | "routeUsageLog" | "routeIntelligenceJob" | "weatherData" | "hazardData" | "communityHazardReport" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog" | "yatra_disaster_events" | "userPrivacy" | "tripPhoto"
+    modelProps: "user" | "userHealth" | "userPreference" | "emergencyContact" | "emergencyAlert" | "locationShareSession" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "destinationPhoto" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "savedDestination" | "routeTemplate" | "routeTemplatePoint" | "osmWay" | "roadSegment" | "roadJunction" | "adminRegion" | "hazardHex" | "edgeCache" | "routeUsageLog" | "routeIntelligenceJob" | "weatherData" | "hazardData" | "communityHazardReport" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog" | "yatra_disaster_events" | "intersection" | "hazard" | "segmentHazard" | "graphConfig" | "explanationTemplate" | "userPrivacy" | "tripPhoto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -3630,6 +3635,344 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Intersection: {
+      payload: Prisma.$IntersectionPayload<ExtArgs>
+      fields: Prisma.IntersectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.IntersectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.IntersectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>
+        }
+        findFirst: {
+          args: Prisma.IntersectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.IntersectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>
+        }
+        findMany: {
+          args: Prisma.IntersectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>[]
+        }
+        delete: {
+          args: Prisma.IntersectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>
+        }
+        update: {
+          args: Prisma.IntersectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.IntersectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.IntersectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.IntersectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$IntersectionPayload>[]
+        }
+        aggregate: {
+          args: Prisma.IntersectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateIntersection>
+        }
+        groupBy: {
+          args: Prisma.IntersectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IntersectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.IntersectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.IntersectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    Hazard: {
+      payload: Prisma.$HazardPayload<ExtArgs>
+      fields: Prisma.HazardFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HazardFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HazardFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>
+        }
+        findFirst: {
+          args: Prisma.HazardFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HazardFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>
+        }
+        findMany: {
+          args: Prisma.HazardFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>[]
+        }
+        delete: {
+          args: Prisma.HazardDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>
+        }
+        update: {
+          args: Prisma.HazardUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>
+        }
+        deleteMany: {
+          args: Prisma.HazardDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HazardUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HazardUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HazardPayload>[]
+        }
+        aggregate: {
+          args: Prisma.HazardAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHazard>
+        }
+        groupBy: {
+          args: Prisma.HazardGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HazardGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HazardCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HazardCountAggregateOutputType> | number
+        }
+      }
+    }
+    SegmentHazard: {
+      payload: Prisma.$SegmentHazardPayload<ExtArgs>
+      fields: Prisma.SegmentHazardFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SegmentHazardFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SegmentHazardFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        findFirst: {
+          args: Prisma.SegmentHazardFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SegmentHazardFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        findMany: {
+          args: Prisma.SegmentHazardFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>[]
+        }
+        create: {
+          args: Prisma.SegmentHazardCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        createMany: {
+          args: Prisma.SegmentHazardCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SegmentHazardCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>[]
+        }
+        delete: {
+          args: Prisma.SegmentHazardDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        update: {
+          args: Prisma.SegmentHazardUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        deleteMany: {
+          args: Prisma.SegmentHazardDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SegmentHazardUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SegmentHazardUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>[]
+        }
+        upsert: {
+          args: Prisma.SegmentHazardUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SegmentHazardPayload>
+        }
+        aggregate: {
+          args: Prisma.SegmentHazardAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSegmentHazard>
+        }
+        groupBy: {
+          args: Prisma.SegmentHazardGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SegmentHazardGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SegmentHazardCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SegmentHazardCountAggregateOutputType> | number
+        }
+      }
+    }
+    GraphConfig: {
+      payload: Prisma.$GraphConfigPayload<ExtArgs>
+      fields: Prisma.GraphConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GraphConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GraphConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.GraphConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GraphConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        findMany: {
+          args: Prisma.GraphConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>[]
+        }
+        create: {
+          args: Prisma.GraphConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        createMany: {
+          args: Prisma.GraphConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GraphConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.GraphConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        update: {
+          args: Prisma.GraphConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.GraphConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GraphConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GraphConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.GraphConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GraphConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.GraphConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGraphConfig>
+        }
+        groupBy: {
+          args: Prisma.GraphConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GraphConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GraphConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GraphConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    ExplanationTemplate: {
+      payload: Prisma.$ExplanationTemplatePayload<ExtArgs>
+      fields: Prisma.ExplanationTemplateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExplanationTemplateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExplanationTemplateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        findFirst: {
+          args: Prisma.ExplanationTemplateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExplanationTemplateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        findMany: {
+          args: Prisma.ExplanationTemplateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>[]
+        }
+        create: {
+          args: Prisma.ExplanationTemplateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        createMany: {
+          args: Prisma.ExplanationTemplateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExplanationTemplateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>[]
+        }
+        delete: {
+          args: Prisma.ExplanationTemplateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        update: {
+          args: Prisma.ExplanationTemplateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        deleteMany: {
+          args: Prisma.ExplanationTemplateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExplanationTemplateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExplanationTemplateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>[]
+        }
+        upsert: {
+          args: Prisma.ExplanationTemplateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExplanationTemplatePayload>
+        }
+        aggregate: {
+          args: Prisma.ExplanationTemplateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExplanationTemplate>
+        }
+        groupBy: {
+          args: Prisma.ExplanationTemplateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExplanationTemplateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExplanationTemplateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExplanationTemplateCountAggregateOutputType> | number
+        }
+      }
+    }
     UserPrivacy: {
       payload: Prisma.$UserPrivacyPayload<ExtArgs>
       fields: Prisma.UserPrivacyFieldRefs
@@ -4102,9 +4445,11 @@ export const RouteNodeScalarFieldEnum = {
   sequenceIndex: 'sequenceIndex',
   roadClass: 'roadClass',
   isJunctionNode: 'isJunctionNode',
+  osmNodeId: 'osmNodeId',
   placeId: 'placeId',
   isHub: 'isHub',
   isActive: 'isActive',
+  graphVersion: 'graphVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4196,9 +4541,23 @@ export const OsmWayScalarFieldEnum = {
   id: 'id',
   name: 'name',
   roadClass: 'roadClass',
+  highway: 'highway',
+  surface: 'surface',
+  tracktype: 'tracktype',
+  smoothness: 'smoothness',
+  lanes: 'lanes',
+  width: 'width',
+  maxspeed: 'maxspeed',
+  bridge: 'bridge',
+  tunnel: 'tunnel',
+  access: 'access',
+  service: 'service',
+  junction: 'junction',
   oneWay: 'oneWay',
+  tags: 'tags',
   graphVersion: 'graphVersion',
   importBatchId: 'importBatchId',
+  sourceFile: 'sourceFile',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -4275,8 +4634,21 @@ export const EdgeCacheScalarFieldEnum = {
   toNodeId: 'toNodeId',
   distanceKm: 'distanceKm',
   gradientPct: 'gradientPct',
+  maxGradientPct: 'maxGradientPct',
+  curvatureDeg: 'curvatureDeg',
   surfaceType: 'surfaceType',
   compositeCost: 'compositeCost',
+  costFast: 'costFast',
+  costSafe: 'costSafe',
+  costEmergency: 'costEmergency',
+  costTruck: 'costTruck',
+  startDistrict: 'startDistrict',
+  endDistrict: 'endDistrict',
+  startProvince: 'startProvince',
+  endProvince: 'endProvince',
+  histLandslideCount: 'histLandslideCount',
+  histFloodCount: 'histFloodCount',
+  histRoadClosureCnt: 'histRoadClosureCnt',
   riskSnapshotId: 'riskSnapshotId',
   graphVersion: 'graphVersion',
   season: 'season',
@@ -4403,6 +4775,8 @@ export const TravelPlanScalarFieldEnum = {
   groupRiskResult: 'groupRiskResult',
   startNotifiedAt: 'startNotifiedAt',
   endNotifiedAt: 'endNotifiedAt',
+  reminded3dAt: 'reminded3dAt',
+  reminded1dAt: 'reminded1dAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -4498,6 +4872,77 @@ export const Yatra_disaster_eventsScalarFieldEnum = {
 } as const
 
 export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
+
+
+export const IntersectionScalarFieldEnum = {
+  id: 'id',
+  osmNodeId: 'osmNodeId',
+  connectedWays: 'connectedWays',
+  degree: 'degree',
+  graphVersion: 'graphVersion'
+} as const
+
+export type IntersectionScalarFieldEnum = (typeof IntersectionScalarFieldEnum)[keyof typeof IntersectionScalarFieldEnum]
+
+
+export const HazardScalarFieldEnum = {
+  id: 'id',
+  hazardType: 'hazardType',
+  severity: 'severity',
+  confidence: 'confidence',
+  source: 'source',
+  externalId: 'externalId',
+  validFrom: 'validFrom',
+  validTo: 'validTo',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HazardScalarFieldEnum = (typeof HazardScalarFieldEnum)[keyof typeof HazardScalarFieldEnum]
+
+
+export const SegmentHazardScalarFieldEnum = {
+  segmentId: 'segmentId',
+  hazardId: 'hazardId',
+  overlapLengthM: 'overlapLengthM',
+  startOffsetM: 'startOffsetM',
+  endOffsetM: 'endOffsetM',
+  affectedPercent: 'affectedPercent',
+  computedAt: 'computedAt'
+} as const
+
+export type SegmentHazardScalarFieldEnum = (typeof SegmentHazardScalarFieldEnum)[keyof typeof SegmentHazardScalarFieldEnum]
+
+
+export const GraphConfigScalarFieldEnum = {
+  id: 'id',
+  currentGraphVersion: 'currentGraphVersion',
+  previousGraphVersion: 'previousGraphVersion',
+  buildStatus: 'buildStatus',
+  publishedBy: 'publishedBy',
+  publishedAt: 'publishedAt'
+} as const
+
+export type GraphConfigScalarFieldEnum = (typeof GraphConfigScalarFieldEnum)[keyof typeof GraphConfigScalarFieldEnum]
+
+
+export const ExplanationTemplateScalarFieldEnum = {
+  id: 'id',
+  templateGroup: 'templateGroup',
+  condition: 'condition',
+  severity: 'severity',
+  audience: 'audience',
+  variant: 'variant',
+  template: 'template',
+  priority: 'priority',
+  templateVersion: 'templateVersion',
+  enabled: 'enabled',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ExplanationTemplateScalarFieldEnum = (typeof ExplanationTemplateScalarFieldEnum)[keyof typeof ExplanationTemplateScalarFieldEnum]
 
 
 export const UserPrivacyScalarFieldEnum = {
@@ -4952,6 +5397,34 @@ export type EnumMemberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
 export type ListEnumMemberStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MemberStatus[]'>
     
 
+
+/**
+ * Reference to a field of type 'ExplanationSeverity'
+ */
+export type EnumExplanationSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExplanationSeverity'>
+    
+
+
+/**
+ * Reference to a field of type 'ExplanationSeverity[]'
+ */
+export type ListEnumExplanationSeverityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExplanationSeverity[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ExplanationAudience'
+ */
+export type EnumExplanationAudienceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExplanationAudience'>
+    
+
+
+/**
+ * Reference to a field of type 'ExplanationAudience[]'
+ */
+export type ListEnumExplanationAudienceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExplanationAudience[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -5105,6 +5578,11 @@ export type GlobalOmitConfig = {
   notification?: Prisma.NotificationOmit
   auditLog?: Prisma.AuditLogOmit
   yatra_disaster_events?: Prisma.yatra_disaster_eventsOmit
+  intersection?: Prisma.IntersectionOmit
+  hazard?: Prisma.HazardOmit
+  segmentHazard?: Prisma.SegmentHazardOmit
+  graphConfig?: Prisma.GraphConfigOmit
+  explanationTemplate?: Prisma.ExplanationTemplateOmit
   userPrivacy?: Prisma.UserPrivacyOmit
   tripPhoto?: Prisma.TripPhotoOmit
 }

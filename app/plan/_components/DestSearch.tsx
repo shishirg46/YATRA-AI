@@ -47,6 +47,15 @@ export default function DestSearch({ value, onChange }: {
         <input type="text" placeholder="Search destination…" value={q}
           onChange={(e) => { setQ(e.target.value); if (value) onChange(null); }}
           onFocus={() => results.length > 0 && setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && open && results.length > 0) {
+              e.preventDefault();
+              onChange(results[0]);
+              setQ(results[0].name);
+              setOpen(false);
+              setResults([]);
+            }
+          }}
           className="plan-input w-full pl-10 pr-9 py-3 text-sm rounded-xl" required />
         {loading
           ? <Loader2 size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 animate-spin"/>

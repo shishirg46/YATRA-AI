@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      const { error: err } = await authClient.emailOtp.verifyEmail({ email, otp });
+      const { error: err } = await authClient.emailOtp.resetPassword({ email, otp, password });
       if (err) throw new Error(err.message || "Invalid or expired OTP");
       setSuccess(true);
     } catch (err) {

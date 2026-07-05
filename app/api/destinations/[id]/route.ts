@@ -149,8 +149,9 @@ async function getDestinationHandler(
       fetchWeather(location.latitude, location.longitude).catch(() => null),
 
       // Live hazard
-      fetchHazard(location.district.name, location.latitude, location.longitude).catch(() => ({
+      fetchHazard(location.latitude, location.longitude, prisma).catch(() => ({
         floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, heatIndex: 0, airQuality: 0, source: "unavailable",
+        floodCount: 0, landslideCount: 0, earthquakeCount: 0,
       })),
 
       // Weather history — last 30 data points

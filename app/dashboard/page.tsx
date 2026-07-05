@@ -39,7 +39,7 @@ import { DestinationCard }   from "./_components/DestinationCard";
 import { LocationPicker }    from "./_components/LocationPicker";
 import { ReportHazardButton }     from "./_components/ReportHazardButton";
 import { TripActionModal }        from "./_components/TripActionModal";
-import { RecommendationsCarousel } from "./_components/RecommendationsCarousel";
+import { TripReminderModal }      from "./_components/TripReminderModal";
 import { SafetyMap } from "./_components/SafetyMap";
 import { FirstRunCoachmarks } from "./_components/FirstRunCoachmarks";
 import { AppShell }            from "@/components/app-shell";
@@ -111,6 +111,8 @@ export default function DashboardPage() {
   const [notifOpen, setNotifOpen]     = useState(false);
   const [friendsOpen, setFriendsOpen] = useState(false);
   const [actionNotif, setActionNotif] = useState<HazardNotif | null>(null);
+  const [reminderNotif, setReminderNotif] = useState<HazardNotif | null>(null);
+  const reminderDismissedRef = useRef(false);
   const [search, setSearch]           = useState("");
   const [filter, setFilter]           = useState<string>("ALL");
   const [notifications, setNotifs]    = useState<HazardNotif[]>([]);
@@ -287,8 +289,10 @@ export default function DashboardPage() {
   }, [loadSavedHome]);
   useEffect(() => {
     fetchNotifications();
-    // Check for trip lifecycle triggers
-    fetch("/api/user/trips/check-status", { method: "POST", credentials: "include" }).catch(() => {});
+    // Check for trip lifecycle triggers, then re-fetch notifications for reminders
+    fetch("/api/user/trips/check-status", { method: "POST", credentials: "include" })
+      .then(() => fetchNotifications())
+      .catch(() => {});
     const iv = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(iv);
   }, []);
@@ -349,6 +353,8 @@ export default function DashboardPage() {
       setData(json);
       setUserImage(json.user.image);
       setUserData(json.user);
+
+
     } catch (err) {
       setError(`Failed to load: ${String(err)}`);
     } finally {
@@ -381,7 +387,7 @@ export default function DashboardPage() {
   // Only show important hazard notifications
   function filterHazardNotifs(notifs: HazardNotif[]): HazardNotif[] {
     return notifs.filter(n =>
-      n.type === "FLOOD" || n.type === "LANDSLIDE" || n.type === "EARTHQUAKE"
+      n.type === "FLOOD" || n.type === "LANDSLIDE" || n.type === "EARTHQUAKE" || n.type === "STORM"
     );
   }
 
@@ -391,6 +397,10 @@ export default function DashboardPage() {
       const json = await res.json();
       if (Array.isArray(json)) {
         setNotifs(filterHazardNotifs(json));
+        const reminders = json.filter((n) => n.type === "TRIP_REMINDER" && !n.read);
+        if (reminders.length > 0 && !reminderDismissedRef.current) {
+          setReminderNotif(reminders[0]);
+        }
       }
     } catch {}
   }
@@ -411,6 +421,13 @@ export default function DashboardPage() {
   function markAllRead() {
     setNotifs((p) => p.map((n) => ({ ...n, read: true })));
     fetch("/api/notifications/read-all", { method: "POST", credentials: "include" }).catch(() => {});
+  }
+  function dismissReminder() {
+    if (reminderNotif) {
+      markRead(reminderNotif.id);
+      setReminderNotif(null);
+      reminderDismissedRef.current = true;
+    }
   }
   async function handleTripAction(notif: HazardNotif, action: string, newDate?: string) {
     if (!notif.planId) return;
@@ -619,6 +636,12 @@ export default function DashboardPage() {
           onAction={(a, d) => handleTripAction(actionNotif, a, d)}
         />
       )}
+      {reminderNotif && (
+        <TripReminderModal
+          notif={reminderNotif}
+          onDismiss={dismissReminder}
+        />
+      )}
 
         {/* Welcome */}
         <div className="mb-8" style={{ animation: "fadeUp .6s ease both" }}>
@@ -770,17 +793,8 @@ export default function DashboardPage() {
         )}
 
         {/* AI-powered recommendations carousel */}
-        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && data?.recommendations && (
-          <RecommendationsCarousel
-            recommendations={data.recommendations.recommendations}
-            summary={data.recommendations.summary}
-            aiUsed={data.recommendations.aiUsed}
-            savedIds={savedIds}
-          />
-        )}
-
-        {/* Algorithmic recommendations fallback — top 3 personalized picks */}
-        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && !data?.recommendations && recommended.length > 0 && (
+        {/* Algorithmic recommendations — top 3 personalized picks */}
+        {(filter === "ALL" || filter === "RECOMMENDED") && stats.total > 0 && recommended.length > 0 && (
           <div className="mb-8" style={{ animation: "fadeUp .6s .15s ease both" }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center gap-2">

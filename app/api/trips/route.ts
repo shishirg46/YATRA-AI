@@ -83,6 +83,9 @@ async function createTripHandler(req: NextRequest) {
   if (!endDate)          return NextResponse.json({ message: "End date is required." },          { status: 400 });
   if (!stops?.length)    return NextResponse.json({ message: "At least one stop is required." }, { status: 400 });
 
+  // Collect destination IDs for popularity tracking
+  const originalDestinationIds: string[] = [];
+
   // Resolve stop location IDs — they may be Destination IDs, not Location IDs
   const resolvedStops = await Promise.all(
     stops.map(async (s) => {
@@ -91,6 +94,7 @@ async function createTripHandler(req: NextRequest) {
 
       const dest = await prisma.destination.findUnique({ where: { id: s.locationId } });
       if (dest) {
+        originalDestinationIds.push(dest.id);
         const name = `Stop: ${dest.name}`;
         let newLoc = await prisma.location.findFirst({
           where: { latitude: dest.latitude, longitude: dest.longitude },
@@ -153,6 +157,14 @@ async function createTripHandler(req: NextRequest) {
     },
     include: planInclude(),
   });
+
+  // Track popularity for each destination used as a trip stop
+  if (originalDestinationIds.length > 0) {
+    await prisma.destination.updateMany({
+      where: { id: { in: originalDestinationIds } },
+      data: { popularityScore: { increment: 0.5 } },
+    }).catch(() => {});
+  }
 
   // Send notifications to invited members
   if (invitedUsers.length > 0) {

@@ -14,6 +14,37 @@ export interface MemberAnalysis {
   score: number; level: string; topRisks: string[]; healthFlags: string[];
 }
 
+export interface StopAnalysis {
+  name: string;
+  lat: number;
+  lon: number;
+  terrain: "Flat" | "Rolling" | "Hill" | "Steep Hill" | "Mountain";
+  elevation: {
+    mean: number;
+    max: number;
+    min: number;
+    slope: number;
+  };
+  historical: {
+    landslides: number;
+    floods: number;
+    earthquakes: number;
+    latestEvent: string | null;
+  };
+  realtime: {
+    recentDisasters: number;
+    types: string[];
+  };
+  weather: {
+    rainfall: number;
+    temperature: number;
+    windSpeed: number;
+    description: string;
+  };
+  confidence: number;
+  explanation: string;
+}
+
 export interface WeatherSnapshot {
   temperature: number;
   humidity: number;
@@ -132,6 +163,8 @@ export interface PlanReport {
     level: "LOW" | "MEDIUM" | "HIGH";
     summary: string;
   }>;
+  stopAnalyses?: StopAnalysis[];
+
   routePillar?: {
     highway: string;
     breakpoints: string[];

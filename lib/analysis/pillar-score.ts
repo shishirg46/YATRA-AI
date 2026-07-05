@@ -10,6 +10,7 @@ import {
 import { generateRouteIntelligence } from "@/lib/route-intelligence";
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
+import { searchHospitalsNear } from "@/lib/routing/nominatim";
 import type { PillarEvidence, ForecastDay, PlacePoint } from "@/lib/plan/pipeline-types";
 
 type Level = "LOW" | "MEDIUM" | "HIGH";
@@ -221,6 +222,7 @@ async function fetchForecastWindow(lat: number, lon: number, startDate: string, 
 
 export async function computePillarModel(
   input: {
+    routeIntelligence?: Awaited<ReturnType<typeof generateRouteIntelligence>> | null;
     destination: {
       id?: string;
       name: string;
@@ -251,7 +253,7 @@ export async function computePillarModel(
 ): Promise<PillarModelResult> {
   const travelMonth = new Date(input.travelDate).getMonth() + 1;
 
-  const routeIntel = await generateRouteIntelligence(
+  const routeIntel = input.routeIntelligence ?? await generateRouteIntelligence(
     { lat: input.home.lat, lon: input.home.lon, name: input.home.name },
     { lat: input.destination.lat, lon: input.destination.lon, name: input.destination.name },
     input.travelDate,
@@ -296,12 +298,19 @@ export async function computePillarModel(
         fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
         fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
         fetchWeather(input.home.lat, input.home.lon).catch(() => null),
-        fetchHazard(input.destination.district, input.destination.lat, input.destination.lon).catch(() => null),
+        fetchHazard(input.destination.lat, input.destination.lon, prisma).catch(() => null),
         fetchWeather(input.destination.lat, input.destination.lon).catch(() => null),
         fetchForecastWindow(input.destination.lat, input.destination.lon, input.travelDate, input.endDate ?? input.travelDate).catch(() => []),
         loadPlaces().catch(() => [] as PlacePoint[]),
       ]);
   }
+
+  // Look up real hospitals via Nominatim
+  const nearbyHospitals = await searchHospitalsNear(
+    input.destination.lat,
+    input.destination.lon,
+    3,
+  );
 
   // i) Route historic (25)
   let routeHistoricPenalty = 0;
@@ -320,7 +329,7 @@ export async function computePillarModel(
       const sevWeight = ev.severity === "HIGH" ? 3 : ev.severity === "MEDIUM" ? 1.5 : 1;
       return sum + recentBoost * sevWeight;
     }, 0);
-    const segPenalty = (flood * 4) + (land * 5) + Math.min(3, recencyWeightedEq / 6);
+    const segPenalty = (flood * 1) + (land * 1.5) + Math.min(3, recencyWeightedEq / 6);
     routeHistoricPenalty += segPenalty;
 
     const districtFrom = seg.startPoint.name ?? nearestPlaceName(seg.startPoint.lat, seg.startPoint.lon, places) ?? "Unknown";
@@ -395,11 +404,11 @@ export async function computePillarModel(
   const histFlood = destinationHistorical?.historicalFloodRisk ?? 0;
   const histLand = destinationHistorical?.historicalLandslideRisk ?? 0;
   const histEq = destinationHistorical?.historicalEarthquakeRisk ?? 0;
-  destinationPenalty += histFlood * 4 + histLand * 4 + histEq * 2.5;
+  destinationPenalty += histFlood * 1 + histLand * 1 + histEq * 0.5;
   const liveFlood = destinationLiveHazard?.floodIndex ?? 0;
   const liveLand = destinationLiveHazard?.landslideIndex ?? 0;
   const liveEq = destinationLiveHazard?.earthquakeIndex ?? 0;
-  destinationPenalty += (liveFlood + liveLand + liveEq) * 3.5;
+  destinationPenalty += (liveFlood + liveLand + liveEq) * 1.5;
   if ((destinationLiveHazard?.airQuality ?? 0) > 0.7) destinationPenalty += 2;
   const destinationScore = Math.round(clamp(20 - destinationPenalty, 0, 20));
 
@@ -422,7 +431,11 @@ export async function computePillarModel(
   if (absTempDelta > 30) { weatherPenalty += 4; wb.push({ label: "Temperature difference >30°C", value: -4, type: "penalty" }); }
   if (altitudeDelta > 2500) { weatherPenalty += 6; wb.push({ label: "Altitude difference >2500m", value: -6, type: "penalty" }); }
   if (altitudeDelta > 3500) { weatherPenalty += 4; wb.push({ label: "Altitude difference >3500m", value: -4, type: "penalty" }); }
-  if (travelMonth >= 6 && travelMonth <= 9) { weatherPenalty += 15; wb.push({ label: "Monsoon season", value: -15, type: "penalty" }); }
+  if (travelMonth >= 6 && travelMonth <= 9) {
+    const monsoonScore = Math.min((destinationLiveWeather?.rainfall ?? 0) / 10, 8);
+    weatherPenalty += monsoonScore;
+    wb.push({ label: `Monsoon season — ${destinationLiveWeather?.rainfall ?? 0}mm now`, value: -monsoonScore, type: "penalty" });
+  }
   if ((destinationLiveWeather?.rainfall ?? 0) > 10) { weatherPenalty += 3; wb.push({ label: "Active heavy rainfall", value: -3, type: "penalty" }); }
   const effectiveWindChill = destTemp - ((destinationLiveWeather?.windSpeed ?? 0) * 1.5);
   if (effectiveWindChill < -15) { weatherPenalty += 4; wb.push({ label: "Wind chill below -15°C", value: -4, type: "penalty" }); }
@@ -602,7 +615,9 @@ export async function computePillarModel(
       soloSummary,
       guideRequired,
       emergencyPreparedness: {
-        hospital: `Nearest district hospital (estimated): ${input.destination.district} District Hospital`,
+        hospital: nearbyHospitals.length > 0
+          ? nearbyHospitals.map((h) => `${h.name} (${Math.round(h.distanceKm * 10) / 10}km)`).join("; ")
+          : `Nearest estimated facility: ${input.destination.district} District Hospital`,
         helicopter: `Nearest helicopter-capable zone: ${input.destination.name} helipad/municipal ground (verify locally)`,
         mobileCoverage: (input.destination.altitude ?? 0) > 4200 ? "Partial" : "Good",
         pavedRoadAccessHours: emergencyHours,

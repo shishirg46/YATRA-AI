@@ -46,6 +46,10 @@ async function toggleSavedDestinationHandler(req: NextRequest) {
 
   if (existing) {
     await prisma.savedDestination.delete({ where: { id: existing.id } });
+    await prisma.destination.update({
+      where: { id: destinationId },
+      data: { popularityScore: { decrement: 1 } },
+    }).catch(() => {});
     return NextResponse.json({ saved: false, message: "Destination unsaved" });
   }
 
@@ -60,6 +64,11 @@ async function toggleSavedDestinationHandler(req: NextRequest) {
       order: count,
     },
   });
+
+  await prisma.destination.update({
+    where: { id: destinationId },
+    data: { popularityScore: { increment: 1 } },
+  }).catch(() => {});
 
   return NextResponse.json({ saved: true, message: "Destination saved" });
 }

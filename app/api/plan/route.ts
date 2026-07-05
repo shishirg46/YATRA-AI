@@ -12,10 +12,15 @@ import { computeBudget } from "@/lib/plan/config";
 import { loadDestination, loadLeaderData, loadGroupMembers } from "@/lib/plan/loader";
 import { resolveOriginAndRoute, assessRoute, resolveHome } from "@/lib/plan/resolver";
 import { analyzeTravellers, computePillar, computeGroupScore, gatherRecommendations } from "@/lib/plan/scorer";
+import { tryGenerateRouteIntelligence } from "@/lib/plan/resolver";
 import { findAlternatives } from "@/lib/plan/alternatives";
-import { buildPrompt, callAiAnalysis } from "@/lib/plan/ai";
 import { computeRouteRisk } from "@/lib/scoring/route-risk";
 import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
+import { analyzeStop } from "@/lib/analysis/stop-analyzer";
+import type { StopAnalysis } from "@/lib/types/plan-report";
+import { TemplateCache } from "@/lib/explain/templates/cache";
+import { runExplanationEngine } from "@/lib/explain/mapper";
+import type { EvaluatorInput } from "@/lib/explain/types";
 
 
 async function planHandler(req: NextRequest) {
@@ -45,7 +50,7 @@ async function planHandler(req: NextRequest) {
 
     const [weatherResult, rawHazard] = await Promise.all([
       fetchWeather(destination.latitude, destination.longitude),
-      fetchHazard(destination.district.name, destination.latitude, destination.longitude),
+      fetchHazard(destination.latitude, destination.longitude, prisma),
     ]);
 
     const liveWeather = weatherResult ?? {
@@ -73,7 +78,14 @@ async function planHandler(req: NextRequest) {
       originLat, originLon, session.user.id, destination, leaderUser?.homeLocation as any, startDate,
     );
 
-    const routeRisk = await assessRoute(effectiveHome, destination as any, startDate);
+    const routeIntelligence = await tryGenerateRouteIntelligence(
+      { lat: effectiveHome?.latitude ?? destination.latitude, lon: effectiveHome?.longitude ?? destination.longitude, name: effectiveHome?.name ?? destination.name },
+      { lat: destination.latitude, lon: destination.longitude, name: destination.name },
+      startDate,
+      { destinationId: destination.id },
+    );
+
+    const routeRisk = await assessRoute(effectiveHome, destination as any, startDate, { routeIntelligence });
 
     const currentMonth = new Date(startDate).getMonth() + 1;
     const isMonsoon = currentMonth >= 6 && currentMonth <= 9;
@@ -126,6 +138,7 @@ async function planHandler(req: NextRequest) {
       tripType,
       leaderHealth ? { fitnessLevel: leaderHealth.fitnessLevel as "LOW" | "MODERATE" | "HIGH", mobilityLimited: leaderHealth.mobilityLimited, chronicConditions: leaderHealth.chronicConditions } : null,
       endDate,
+      routeIntelligence as any,
     );
 
     const { groupScore, groupLevel, groupAvgScore, conflict, mostVulnerable } = computeGroupScore(memberAnalyses, pillarModel.totalScore, tripType);
@@ -151,16 +164,131 @@ async function planHandler(req: NextRequest) {
 
     const actionableRecommendations = gatherRecommendations(pillarModel, destination.name);
 
-    const ai = await callAiAnalysis(buildPrompt(
-      destination, startDate, tripType, memberAnalyses,
-      leaderAnalysis, groupScore, groupLevel, groupAvgScore,
-      conflict, mostVulnerable, budget, sortedAlternatives,
-      { verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "",
-        healthWarning: "", budgetAdvice: "", alternativeReason: "", topTip: "" },
-    )).catch(() => ({
-      verdict: "", whyUnsafe: "", groupConflict: "", riskExplanation: "",
-      healthWarning: "", budgetAdvice: "", alternativeReason: "", topTip: "",
-    }));
+    if (!TemplateCache.instance.size) {
+      try { await TemplateCache.initialize(prisma); } catch (err) {
+        console.error("[api/plan] TemplateCache init failed:", err);
+      }
+    }
+
+    const input: EvaluatorInput = {
+      destination: {
+        id: destination.id,
+        name: destination.name,
+        district: destination.district.name,
+        province: destination.district.province.name,
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+        altitude: destination.altitude,
+      },
+      locationInfo: {
+        name: destination.name,
+        district: destination.district.name,
+        province: destination.district.province.name,
+        lat: destination.latitude,
+        lon: destination.longitude,
+        altitude: destination.altitude,
+      },
+      travelDate: startDate,
+      startDate,
+      endDate,
+      vehicle,
+      travelStyle,
+      tripType,
+      season: leaderAnalysis.riskReport.season,
+      overallScore: groupScore,
+      overallLevel: groupLevel as any,
+      baselineScore: pillarModel.baselineScore,
+      seasonalModifier: {
+        factors: pillarModel.seasonalFactors,
+        total: -pillarModel.seasonalFactors.reduce((s, f) => s + f.points, 0),
+        effectiveScore: groupScore,
+        baselineScore: pillarModel.baselineScore,
+      },
+      groupAvgScore,
+      confidence: leaderAnalysis.riskReport.confidence,
+      conflict,
+      mostVulnerableMember: conflict && mostVulnerable
+        ? { name: mostVulnerable.name, score: mostVulnerable.score, level: mostVulnerable.level, risks: mostVulnerable.topRisks }
+        : null,
+      memberAnalyses: memberAnalyses.map((m) => ({
+        userId: m.userId, name: m.name, username: m.username, isLeader: m.isLeader,
+        score: m.score, level: m.level, topRisks: m.topRisks, healthFlags: m.healthFlags,
+      })),
+      riskFactors: leaderAnalysis.riskReport.riskFactors.map((f: any) => ({
+        category: f.category ?? "", name: f.name, severity: f.severity, score: f.score ?? 0, description: f.description ?? "",
+      })),
+      healthAdvisories: leaderAnalysis.riskReport.healthAdvisories.map((h: any) => ({
+        condition: h.condition, risk: h.risk, detail: h.detail, affectedGroups: h.affectedGroups,
+      })),
+      recommendations: [
+        ...leaderAnalysis.riskReport.recommendations.map((r: any) => ({ type: r.type ?? "", text: r.text })),
+        ...actionableRecommendations.map((r: any) => ({ type: r.type ?? "", text: r.text })),
+      ],
+      notableEvents: leaderAnalysis.riskReport.notableEvents.map((e: any) => ({
+        date: e.date, type: e.type, description: e.description, severity: e.severity,
+      })),
+      seasonalContext: leaderAnalysis.riskReport.seasonalContext,
+      weatherStats: leaderAnalysis.riskReport.weatherStats as any,
+      budget,
+      alternatives: sortedAlternatives.map((a) => ({
+        id: a.id, name: a.name, district: a.district, province: a.province,
+        altitude: a.altitude, safetyScore: a.safetyScore, safetyLevel: a.safetyLevel,
+        estimatedNPR: a.estimatedNPR, budgetFeasible: a.budgetFeasible,
+        transportCost: a.transportCost, dailyCost: a.dailyCost, tripDays: a.tripDays,
+      })),
+      liveWeather,
+      liveHazard,
+      routeRisk,
+      disasterRouteRisk,
+      routeAssessment: groupLevel ? {
+        roadConditions: "MEDIUM" as const,
+        seasonalCorridorRisk: "MEDIUM" as const,
+        overall: groupLevel as any,
+      } : undefined,
+      routePlan: routePlan ? {
+        nodes: routePlan.nodes.map((n: any) => ({ name: n.name, lat: n.lat, lon: n.lon })),
+        segments: routePlan.segments.map((s: any) => ({
+          from: s.from.name, to: s.to.name,
+          distanceKm: Math.round((s.distance / 1000) * 10) / 10,
+          riskLevel: s.riskLevel,
+        })),
+        distanceKm: Math.round((routePlan.distance / 1000) * 10) / 10,
+        durationHours: Math.round((routePlan.duration / 3600) * 10) / 10,
+        corridor: routePlan.nodes.map((n: any) => n.name).join(" → "),
+        source: routePlan.source,
+        resolutionNote: originResolutionNote,
+      } : null,
+      routePillar: pillarModel.route as any,
+      segmentDetails: pillarModel.segmentDetails as any,
+      destinationPillar: pillarModel.destination as any,
+      weatherPillar: pillarModel.weather as any,
+      personalPillar: pillarModel.personal as any,
+      pillarScores: pillarModel.pillars as any,
+      stopAnalyses: undefined,
+      evidence: null,
+    };
+
+    const { output } = await runExplanationEngine(input);
+
+    let stopAnalyses: StopAnalysis[] | undefined;
+    if (routePlan?.nodes && routePlan.nodes.length > 0) {
+      const intermediateNodes = routePlan.nodes.filter(
+        (n: any) =>
+          n.name &&
+          n.lat &&
+          n.lon &&
+          n.lat !== destination.latitude &&
+          n.lon !== destination.longitude
+      );
+      stopAnalyses = await Promise.all(
+        intermediateNodes.map((n: any) =>
+          analyzeStop(n.lat, n.lon, {
+            radiusKm: 15,
+            name: n.name,
+          }).catch(() => null as unknown as StopAnalysis)
+        )
+      ).then((results) => results.filter(Boolean) as StopAnalysis[]);
+    }
 
     return NextResponse.json({
       destination: {
@@ -227,8 +355,10 @@ async function planHandler(req: NextRequest) {
       pillarScores: pillarModel.pillars,
       budget,
       alternatives: sortedAlternatives,
-      ai,
+      ai: output.ai,
+      routeAdvice: output.routeAdvice,
       analyzedAt: new Date().toISOString(),
+      stopAnalyses,
     });
   } catch (err) {
     console.error("[api/plan] Unhandled error:", err);

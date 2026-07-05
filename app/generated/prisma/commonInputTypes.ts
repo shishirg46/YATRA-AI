@@ -752,6 +752,40 @@ export type BigIntWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBigIntFilter<$PrismaModel>
 }
 
+export type EnumExplanationSeverityNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationSeverity | Prisma.EnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel> | $Enums.ExplanationSeverity | null
+}
+
+export type EnumExplanationAudienceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationAudience | Prisma.EnumExplanationAudienceFieldRefInput<$PrismaModel>
+  in?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel> | $Enums.ExplanationAudience
+}
+
+export type EnumExplanationSeverityNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationSeverity | Prisma.EnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumExplanationSeverityNullableWithAggregatesFilter<$PrismaModel> | $Enums.ExplanationSeverity | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel>
+}
+
+export type EnumExplanationAudienceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationAudience | Prisma.EnumExplanationAudienceFieldRefInput<$PrismaModel>
+  in?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumExplanationAudienceWithAggregatesFilter<$PrismaModel> | $Enums.ExplanationAudience
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1425,6 +1459,40 @@ export type NestedBigIntWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedBigIntFilter<$PrismaModel>
   _min?: Prisma.NestedBigIntFilter<$PrismaModel>
   _max?: Prisma.NestedBigIntFilter<$PrismaModel>
+}
+
+export type NestedEnumExplanationSeverityNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationSeverity | Prisma.EnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel> | $Enums.ExplanationSeverity | null
+}
+
+export type NestedEnumExplanationAudienceFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationAudience | Prisma.EnumExplanationAudienceFieldRefInput<$PrismaModel>
+  in?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel> | $Enums.ExplanationAudience
+}
+
+export type NestedEnumExplanationSeverityNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationSeverity | Prisma.EnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ExplanationSeverity[] | Prisma.ListEnumExplanationSeverityFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumExplanationSeverityNullableWithAggregatesFilter<$PrismaModel> | $Enums.ExplanationSeverity | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumExplanationSeverityNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumExplanationAudienceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ExplanationAudience | Prisma.EnumExplanationAudienceFieldRefInput<$PrismaModel>
+  in?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ExplanationAudience[] | Prisma.ListEnumExplanationAudienceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumExplanationAudienceWithAggregatesFilter<$PrismaModel> | $Enums.ExplanationAudience
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumExplanationAudienceFilter<$PrismaModel>
 }
 
 

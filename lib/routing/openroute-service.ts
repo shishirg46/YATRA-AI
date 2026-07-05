@@ -168,7 +168,7 @@ function buildCoordinateString(points: GeoPoint[]): string {
 }
 
 function buildOrsUrl(vehicle: VehicleProfile, coordinates: string, alternatives: boolean): string {
-  const profile = VEHICLE_MAP[vehicle];
+  const profile = VEHICLE_MAP[vehicle] ?? "driving-car";
   const parts = coordinates.split("|");
   let url = `${ORS_BASE}/directions/${profile}?api_key=${getApiKey()}&start=${parts[0]}&end=${parts.slice(-1)[0]}`;
 

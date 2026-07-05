@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { Loader2, Crosshair } from "lucide-react";
 
-const NOMINATIM_BASE = process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
+
 
 interface MapPickerProps {
   onSelect: (lat: number, lng: number, name: string) => void;
@@ -46,8 +46,7 @@ export default function MapPicker({ onSelect }: MapPickerProps) {
     async function reverseAt(aLat: number, aLon: number) {
       try {
         const r = await fetch(
-          `${NOMINATIM_BASE}/reverse?lat=${aLat}&lon=${aLon}&format=json&zoom=18&addressdetails=1`,
-          { headers: { Accept: "application/json", "Accept-Language": "en" } }
+          `/api/nominatim/reverse?lat=${aLat}&lon=${aLon}&zoom=18&addressdetails=1`
         );
         if (!r.ok) return null;
         const d = await r.json();

@@ -34,6 +34,7 @@ export type RouteNodeAvgAggregateOutputType = {
   connectivityRank: number | null
   monsoonVulnerability: number | null
   sequenceIndex: number | null
+  osmNodeId: number | null
 }
 
 export type RouteNodeSumAggregateOutputType = {
@@ -44,6 +45,7 @@ export type RouteNodeSumAggregateOutputType = {
   connectivityRank: number | null
   monsoonVulnerability: number | null
   sequenceIndex: number | null
+  osmNodeId: bigint | null
 }
 
 export type RouteNodeMinAggregateOutputType = {
@@ -62,9 +64,11 @@ export type RouteNodeMinAggregateOutputType = {
   sequenceIndex: number | null
   roadClass: string | null
   isJunctionNode: boolean | null
+  osmNodeId: bigint | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
+  graphVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -85,9 +89,11 @@ export type RouteNodeMaxAggregateOutputType = {
   sequenceIndex: number | null
   roadClass: string | null
   isJunctionNode: boolean | null
+  osmNodeId: bigint | null
   placeId: string | null
   isHub: boolean | null
   isActive: boolean | null
+  graphVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -108,9 +114,11 @@ export type RouteNodeCountAggregateOutputType = {
   sequenceIndex: number
   roadClass: number
   isJunctionNode: number
+  osmNodeId: number
   placeId: number
   isHub: number
   isActive: number
+  graphVersion: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -125,6 +133,7 @@ export type RouteNodeAvgAggregateInputType = {
   connectivityRank?: true
   monsoonVulnerability?: true
   sequenceIndex?: true
+  osmNodeId?: true
 }
 
 export type RouteNodeSumAggregateInputType = {
@@ -135,6 +144,7 @@ export type RouteNodeSumAggregateInputType = {
   connectivityRank?: true
   monsoonVulnerability?: true
   sequenceIndex?: true
+  osmNodeId?: true
 }
 
 export type RouteNodeMinAggregateInputType = {
@@ -153,9 +163,11 @@ export type RouteNodeMinAggregateInputType = {
   sequenceIndex?: true
   roadClass?: true
   isJunctionNode?: true
+  osmNodeId?: true
   placeId?: true
   isHub?: true
   isActive?: true
+  graphVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -176,9 +188,11 @@ export type RouteNodeMaxAggregateInputType = {
   sequenceIndex?: true
   roadClass?: true
   isJunctionNode?: true
+  osmNodeId?: true
   placeId?: true
   isHub?: true
   isActive?: true
+  graphVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -199,9 +213,11 @@ export type RouteNodeCountAggregateInputType = {
   sequenceIndex?: true
   roadClass?: true
   isJunctionNode?: true
+  osmNodeId?: true
   placeId?: true
   isHub?: true
   isActive?: true
+  graphVersion?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -309,9 +325,11 @@ export type RouteNodeGroupByOutputType = {
   sequenceIndex: number | null
   roadClass: string | null
   isJunctionNode: boolean
+  osmNodeId: bigint | null
   placeId: string | null
   isHub: boolean
   isActive: boolean
+  graphVersion: string | null
   createdAt: Date
   updatedAt: Date
   _count: RouteNodeCountAggregateOutputType | null
@@ -355,9 +373,11 @@ export type RouteNodeWhereInput = {
   sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
+  osmNodeId?: Prisma.BigIntNullableFilter<"RouteNode"> | bigint | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
+  graphVersion?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
@@ -385,9 +405,11 @@ export type RouteNodeOrderByWithRelationInput = {
   sequenceIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   roadClass?: Prisma.SortOrderInput | Prisma.SortOrder
   isJunctionNode?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrderInput | Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   edgesFrom?: Prisma.RouteEdgeOrderByRelationAggregateInput
@@ -418,9 +440,11 @@ export type RouteNodeWhereUniqueInput = Prisma.AtLeast<{
   sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
+  osmNodeId?: Prisma.BigIntNullableFilter<"RouteNode"> | bigint | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
+  graphVersion?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   edgesFrom?: Prisma.RouteEdgeListRelationFilter
@@ -448,9 +472,11 @@ export type RouteNodeOrderByWithAggregationInput = {
   sequenceIndex?: Prisma.SortOrderInput | Prisma.SortOrder
   roadClass?: Prisma.SortOrderInput | Prisma.SortOrder
   isJunctionNode?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrderInput | Prisma.SortOrder
   placeId?: Prisma.SortOrderInput | Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RouteNodeCountOrderByAggregateInput
@@ -479,9 +505,11 @@ export type RouteNodeScalarWhereWithAggregatesInput = {
   sequenceIndex?: Prisma.IntNullableWithAggregatesFilter<"RouteNode"> | number | null
   roadClass?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
   isJunctionNode?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
+  osmNodeId?: Prisma.BigIntNullableWithAggregatesFilter<"RouteNode"> | bigint | number | null
   placeId?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolWithAggregatesFilter<"RouteNode"> | boolean
+  graphVersion?: Prisma.StringNullableWithAggregatesFilter<"RouteNode"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"RouteNode"> | Date | string
 }
@@ -501,8 +529,10 @@ export type RouteNodeCreateInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -530,9 +560,11 @@ export type RouteNodeUncheckedCreateInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -557,8 +589,10 @@ export type RouteNodeUpdateInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -586,9 +620,11 @@ export type RouteNodeUncheckedUpdateInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -614,9 +650,11 @@ export type RouteNodeCreateManyInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -636,8 +674,10 @@ export type RouteNodeUpdateManyMutationInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -658,9 +698,11 @@ export type RouteNodeUncheckedUpdateManyInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -691,9 +733,11 @@ export type RouteNodeCountOrderByAggregateInput = {
   sequenceIndex?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
   isJunctionNode?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -706,6 +750,7 @@ export type RouteNodeAvgOrderByAggregateInput = {
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
   sequenceIndex?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrder
 }
 
 export type RouteNodeMaxOrderByAggregateInput = {
@@ -724,9 +769,11 @@ export type RouteNodeMaxOrderByAggregateInput = {
   sequenceIndex?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
   isJunctionNode?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -747,9 +794,11 @@ export type RouteNodeMinOrderByAggregateInput = {
   sequenceIndex?: Prisma.SortOrder
   roadClass?: Prisma.SortOrder
   isJunctionNode?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrder
   placeId?: Prisma.SortOrder
   isHub?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  graphVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -762,6 +811,7 @@ export type RouteNodeSumOrderByAggregateInput = {
   connectivityRank?: Prisma.SortOrder
   monsoonVulnerability?: Prisma.SortOrder
   sequenceIndex?: Prisma.SortOrder
+  osmNodeId?: Prisma.SortOrder
 }
 
 export type RouteNodeScalarRelationFilter = {
@@ -953,8 +1003,10 @@ export type RouteNodeCreateWithoutPlaceInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -981,8 +1033,10 @@ export type RouteNodeUncheckedCreateWithoutPlaceInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1037,9 +1091,11 @@ export type RouteNodeScalarWhereInput = {
   sequenceIndex?: Prisma.IntNullableFilter<"RouteNode"> | number | null
   roadClass?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isJunctionNode?: Prisma.BoolFilter<"RouteNode"> | boolean
+  osmNodeId?: Prisma.BigIntNullableFilter<"RouteNode"> | bigint | number | null
   placeId?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   isHub?: Prisma.BoolFilter<"RouteNode"> | boolean
   isActive?: Prisma.BoolFilter<"RouteNode"> | boolean
+  graphVersion?: Prisma.StringNullableFilter<"RouteNode"> | string | null
   createdAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"RouteNode"> | Date | string
 }
@@ -1059,8 +1115,10 @@ export type RouteNodeCreateWithoutEdgesFromInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesTo?: Prisma.RouteEdgeCreateNestedManyWithoutToNodeInput
@@ -1087,9 +1145,11 @@ export type RouteNodeUncheckedCreateWithoutEdgesFromInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesTo?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutToNodeInput
@@ -1118,8 +1178,10 @@ export type RouteNodeCreateWithoutEdgesToInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -1146,9 +1208,11 @@ export type RouteNodeUncheckedCreateWithoutEdgesToInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1188,8 +1252,10 @@ export type RouteNodeUpdateWithoutEdgesFromInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesTo?: Prisma.RouteEdgeUpdateManyWithoutToNodeNestedInput
@@ -1216,9 +1282,11 @@ export type RouteNodeUncheckedUpdateWithoutEdgesFromInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesTo?: Prisma.RouteEdgeUncheckedUpdateManyWithoutToNodeNestedInput
@@ -1253,8 +1321,10 @@ export type RouteNodeUpdateWithoutEdgesToInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1281,9 +1351,11 @@ export type RouteNodeUncheckedUpdateWithoutEdgesToInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1307,8 +1379,10 @@ export type RouteNodeCreateWithoutSavedLocationsInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -1335,9 +1409,11 @@ export type RouteNodeUncheckedCreateWithoutSavedLocationsInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1377,8 +1453,10 @@ export type RouteNodeUpdateWithoutSavedLocationsInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1405,9 +1483,11 @@ export type RouteNodeUncheckedUpdateWithoutSavedLocationsInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1431,8 +1511,10 @@ export type RouteNodeCreateWithoutOsmWayInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -1458,9 +1540,11 @@ export type RouteNodeUncheckedCreateWithoutOsmWayInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1511,8 +1595,10 @@ export type RouteNodeCreateWithoutEdgeCacheFromInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -1539,9 +1625,11 @@ export type RouteNodeUncheckedCreateWithoutEdgeCacheFromInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1570,8 +1658,10 @@ export type RouteNodeCreateWithoutEdgeCacheToInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeCreateNestedManyWithoutFromNodeInput
@@ -1598,9 +1688,11 @@ export type RouteNodeUncheckedCreateWithoutEdgeCacheToInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedCreateNestedManyWithoutFromNodeInput
@@ -1640,8 +1732,10 @@ export type RouteNodeUpdateWithoutEdgeCacheFromInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1668,9 +1762,11 @@ export type RouteNodeUncheckedUpdateWithoutEdgeCacheFromInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1705,8 +1801,10 @@ export type RouteNodeUpdateWithoutEdgeCacheToInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1733,9 +1831,11 @@ export type RouteNodeUncheckedUpdateWithoutEdgeCacheToInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1760,8 +1860,10 @@ export type RouteNodeCreateManyPlaceInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1781,8 +1883,10 @@ export type RouteNodeUpdateWithoutPlaceInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1809,8 +1913,10 @@ export type RouteNodeUncheckedUpdateWithoutPlaceInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1836,8 +1942,10 @@ export type RouteNodeUncheckedUpdateManyWithoutPlaceInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1857,9 +1965,11 @@ export type RouteNodeCreateManyOsmWayInput = {
   sequenceIndex?: number | null
   roadClass?: string | null
   isJunctionNode?: boolean
+  osmNodeId?: bigint | number | null
   placeId?: string | null
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1879,8 +1989,10 @@ export type RouteNodeUpdateWithoutOsmWayInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUpdateManyWithoutFromNodeNestedInput
@@ -1906,9 +2018,11 @@ export type RouteNodeUncheckedUpdateWithoutOsmWayInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   edgesFrom?: Prisma.RouteEdgeUncheckedUpdateManyWithoutFromNodeNestedInput
@@ -1933,9 +2047,11 @@ export type RouteNodeUncheckedUpdateManyWithoutOsmWayInput = {
   sequenceIndex?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   roadClass?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isJunctionNode?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  osmNodeId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   placeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isHub?: Prisma.BoolFieldUpdateOperationsInput | boolean
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  graphVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -2023,9 +2139,11 @@ export type RouteNodeSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   sequenceIndex?: boolean
   roadClass?: boolean
   isJunctionNode?: boolean
+  osmNodeId?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
@@ -2054,9 +2172,11 @@ export type RouteNodeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   sequenceIndex?: boolean
   roadClass?: boolean
   isJunctionNode?: boolean
+  osmNodeId?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
@@ -2079,9 +2199,11 @@ export type RouteNodeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   sequenceIndex?: boolean
   roadClass?: boolean
   isJunctionNode?: boolean
+  osmNodeId?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   osmWay?: boolean | Prisma.RouteNode$osmWayArgs<ExtArgs>
@@ -2104,14 +2226,16 @@ export type RouteNodeSelectScalar = {
   sequenceIndex?: boolean
   roadClass?: boolean
   isJunctionNode?: boolean
+  osmNodeId?: boolean
   placeId?: boolean
   isHub?: boolean
   isActive?: boolean
+  graphVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "elevationM" | "accessibilityLevel" | "strategicImportance" | "hazardExposureIndex" | "connectivityRank" | "monsoonVulnerability" | "osmWayId" | "sequenceIndex" | "roadClass" | "isJunctionNode" | "placeId" | "isHub" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
+export type RouteNodeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "type" | "latitude" | "longitude" | "elevationM" | "accessibilityLevel" | "strategicImportance" | "hazardExposureIndex" | "connectivityRank" | "monsoonVulnerability" | "osmWayId" | "sequenceIndex" | "roadClass" | "isJunctionNode" | "osmNodeId" | "placeId" | "isHub" | "isActive" | "graphVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["routeNode"]>
 export type RouteNodeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   edgesFrom?: boolean | Prisma.RouteNode$edgesFromArgs<ExtArgs>
   edgesTo?: boolean | Prisma.RouteNode$edgesToArgs<ExtArgs>
@@ -2158,9 +2282,11 @@ export type $RouteNodePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     sequenceIndex: number | null
     roadClass: string | null
     isJunctionNode: boolean
+    osmNodeId: bigint | null
     placeId: string | null
     isHub: boolean
     isActive: boolean
+    graphVersion: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["routeNode"]>
@@ -2608,9 +2734,11 @@ export interface RouteNodeFieldRefs {
   readonly sequenceIndex: Prisma.FieldRef<"RouteNode", 'Int'>
   readonly roadClass: Prisma.FieldRef<"RouteNode", 'String'>
   readonly isJunctionNode: Prisma.FieldRef<"RouteNode", 'Boolean'>
+  readonly osmNodeId: Prisma.FieldRef<"RouteNode", 'BigInt'>
   readonly placeId: Prisma.FieldRef<"RouteNode", 'String'>
   readonly isHub: Prisma.FieldRef<"RouteNode", 'Boolean'>
   readonly isActive: Prisma.FieldRef<"RouteNode", 'Boolean'>
+  readonly graphVersion: Prisma.FieldRef<"RouteNode", 'String'>
   readonly createdAt: Prisma.FieldRef<"RouteNode", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"RouteNode", 'DateTime'>
 }

@@ -174,7 +174,16 @@ async function fetchDhmWeather(lat: number, lon: number): Promise<WeatherSnapsho
         data.daily_forecast?.[0]?.precipitation_probability,
     };
   } catch (err) {
-    console.warn(`[weather] DHM fetch failed:`, err);
+    const cause = (err as any)?.cause;
+    if (cause?.code === "CERT_HAS_EXPIRED") {
+      console.warn("[weather] DHM SSL cert expired — skipping");
+    } else if (cause?.code === "ECONNREFUSED" || cause?.code === "ENOTFOUND") {
+      console.warn("[weather] DHM unreachable — skipping");
+    } else if (typeof err === "object" && (err as Error)?.name === "TimeoutError") {
+      console.warn("[weather] DHM timed out — skipping");
+    } else {
+      console.warn(`[weather] DHM fetch failed:`, err);
+    }
     return null;
   }
 }

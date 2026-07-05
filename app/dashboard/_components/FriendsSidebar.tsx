@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Friend, UserSearchResult } from "./types";
 import { Avatar } from "./ui";
+import Link from "next/link";
 
 export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [tab, setTab]                       = useState<"friends" | "requests" | "search">("friends");
@@ -149,12 +150,14 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
                 )}
                 {accepted.map((f) => (
                   <div key={f.id} className="friend-card flex items-center gap-3 p-3 rounded-xl">
-                    <Avatar image={f.image} name={f.name} size={9} />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-body text-sm font-medium text-white truncate">{f.name}</p>
-                      {f.username && <p className="font-body text-xs text-slate-500">@{f.username}</p>}
-                    </div>
-                    <button onClick={() => removeFriend(f.friendshipId)} disabled={loadingId === f.friendshipId}
+                    <Link href={`/profile/${f.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                      <Avatar image={f.image} name={f.name} size={9} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-body text-sm font-medium text-white truncate">{f.name}</p>
+                        {f.username && <p className="font-body text-xs text-slate-500">@{f.username}</p>}
+                      </div>
+                    </Link>
+                    <button onClick={e => { e.stopPropagation(); removeFriend(f.friendshipId); }} disabled={loadingId === f.friendshipId}
                       className="p-1.5 rounded-lg text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-all">
                       {loadingId === f.friendshipId ? <Loader2 size={13} className="animate-spin" /> : <UserMinus size={13} />}
                     </button>
@@ -164,13 +167,13 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
                   <>
                     <p className="font-body text-xs text-slate-600 uppercase tracking-widest pt-3 pb-1 px-1">Sent requests</p>
                     {pendingSent.map((f) => (
-                      <div key={f.id} className="friend-card flex items-center gap-3 p-3 rounded-xl opacity-60">
+                      <Link key={f.id} href={`/profile/${f.id}`} className="friend-card flex items-center gap-3 p-3 rounded-xl opacity-60">
                         <Avatar image={f.image} name={f.name} size={9} />
                         <div className="flex-1 min-w-0">
                           <p className="font-body text-sm font-medium text-white truncate">{f.name}</p>
                           <p className="font-body text-xs text-amber-400/70">Request sent</p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </>
                 )}
@@ -187,19 +190,19 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
                   </div>
                 ) : pendingIncoming.map((f) => (
                   <div key={f.id} className="friend-card p-3 rounded-xl">
-                    <div className="flex items-center gap-3 mb-3">
+                    <Link href={`/profile/${f.id}`} className="flex items-center gap-3 mb-3">
                       <Avatar image={f.image} name={f.name} size={9} />
                       <div className="flex-1 min-w-0">
                         <p className="font-body text-sm font-medium text-white truncate">{f.name}</p>
                         {f.username && <p className="font-body text-xs text-slate-500">@{f.username}</p>}
                       </div>
-                    </div>
+                    </Link>
                     <div className="flex gap-2">
-                      <button onClick={() => respondRequest(f.friendshipId, "accept")} disabled={loadingId === f.friendshipId}
+                      <button onClick={e => { e.stopPropagation(); respondRequest(f.friendshipId, "accept"); }} disabled={loadingId === f.friendshipId}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/25 text-xs font-body font-medium transition-all">
                         {loadingId === f.friendshipId ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />} Accept
                       </button>
-                      <button onClick={() => respondRequest(f.friendshipId, "decline")} disabled={loadingId === f.friendshipId}
+                      <button onClick={e => { e.stopPropagation(); respondRequest(f.friendshipId, "decline"); }} disabled={loadingId === f.friendshipId}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs font-body font-medium transition-all">
                         <X size={12} />Decline
                       </button>
@@ -228,20 +231,22 @@ export function FriendsSidebar({ open, onClose }: { open: boolean; onClose: () =
                 <div className="space-y-2">
                   {searchResults.map((u) => (
                     <div key={u.id} className="friend-card flex items-center gap-3 p-3 rounded-xl">
-                      <Avatar image={u.image} name={u.name} size={9} />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-body text-sm font-medium text-white truncate">{u.name}</p>
-                        {u.username && <p className="font-body text-xs text-slate-500">@{u.username}</p>}
-                      </div>
+                      <Link href={`/profile/${u.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                        <Avatar image={u.image} name={u.name} size={9} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-body text-sm font-medium text-white truncate">{u.name}</p>
+                          {u.username && <p className="font-body text-xs text-slate-500">@{u.username}</p>}
+                        </div>
+                      </Link>
                       {u.status === "NONE" && (
-                        <button onClick={() => sendRequest(u.id)} disabled={loadingId === u.id}
+                        <button onClick={e => { e.stopPropagation(); sendRequest(u.id); }} disabled={loadingId === u.id}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/15 border border-amber-500/25 text-amber-400 hover:bg-amber-500/25 text-xs font-body font-medium transition-all">
                           {loadingId === u.id ? <Loader2 size={12} className="animate-spin" /> : <UserPlus size={12} />} Add
                         </button>
                       )}
                       {u.status === "PENDING_SENT" && <span className="font-body text-xs text-amber-400/60 italic">Sent</span>}
                       {u.status === "PENDING_RECEIVED" && (
-                        <button onClick={() => setTab("requests")} className="font-body text-xs text-emerald-400 hover:text-emerald-300 transition-colors">Respond →</button>
+                        <button onClick={e => { e.stopPropagation(); setTab("requests"); }} className="font-body text-xs text-emerald-400 hover:text-emerald-300 transition-colors">Respond →</button>
                       )}
                       {u.status === "ACCEPTED" && (
                         <span className="font-body text-xs text-emerald-400 flex items-center gap-1"><Check size={11} />Friends</span>

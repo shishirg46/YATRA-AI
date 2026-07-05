@@ -353,7 +353,5 @@ export interface BuildRouteInput {
   perSegmentRouting?: boolean;
   dynamicOsmRouting?: boolean;
   vehicle?: VehicleProfile;
-  dorRoutingMode?: DorRoutingMode;
-  dorPreferRoad?: string;
   includeNamedPlaces?: boolean;
 }

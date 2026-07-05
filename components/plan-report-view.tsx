@@ -7,14 +7,16 @@ import {
   CheckCircle2, Heart, Package, Navigation, Clock,
   CloudRain, Wind, Thermometer, Snowflake, Wallet,
   Sparkles, RefreshCw, Users, AlertCircle, TrendingDown,
-  Calendar, MapPin, Droplets, ChevronRight,
+  Calendar, MapPin, Droplets, ChevronRight, AlertOctagon,
 } from "lucide-react";
 import ScoreRing from "@/app/plan/_components/ScoreRing";
 import {
-  PillarRadar, MemberBarChart, BudgetDonut, AlternativeComparison,
+  MemberBarChart, BudgetDonut, AlternativeComparison,
 } from "@/app/plan/_components/PlanCharts";
 import type { PlanReport } from "@/lib/types/plan-report";
 import type { EnhancedRoad } from "@/lib/routing/types";
+import StopAnalysisCard from "@/components/stop-analysis-card";
+import SegmentHazardAnalysis from "@/components/segment-hazard-analysis";
 
 const RouteMapMini = dynamic(() => import("@/components/route-map-mini"), {
   ssr: false,
@@ -45,6 +47,64 @@ const REC_ICON: Record<string, typeof Package> = {
 const REC_COLOR: Record<string, string> = {
   GEAR: "text-sky-400", TIMING: "text-amber-400", MEDICAL: "text-rose-400", ROUTE: "text-purple-400", AVOID: "text-red-400",
 };
+
+function isBoilerplateRouteRecommendation(text: string): boolean {
+  return (
+    text.includes(" section of ") &&
+    text.includes("risk") &&
+    text.includes("notable seismic events")
+  );
+}
+
+function buildManualTravelSummary(report: PlanReport, isGroup: boolean): string {
+  const levelText = LEVEL_CFG[report.overallLevel]?.label ?? "Travel assessment ready";
+  const mainRisk = report.riskFactors[0]?.name;
+  const groupText = isGroup && report.memberAnalyses.length > 0
+    ? ` for ${report.memberAnalyses.length} travellers`
+    : "";
+  const riskText = mainRisk ? ` Main watchpoint: ${mainRisk.toLowerCase()}.` : "";
+
+  return `${report.destination.name} is rated ${levelText.toLowerCase()} at ${report.overallScore}/100${groupText}.${riskText}`;
+}
+
+function buildManualTravelExplanation(report: PlanReport): string {
+  const parts: string[] = [];
+  const routeLevel = report.routeAssessment?.overall ?? report.routeRisk?.risk;
+
+  if (routeLevel) {
+    parts.push(`Route outlook is ${routeLevel.toLowerCase()}, based on current road and seasonal corridor signals.`);
+  }
+
+  if (report.liveWeather) {
+    parts.push(`Destination weather is ${report.liveWeather.temperature}°C with ${report.liveWeather.description.toLowerCase()} and ${report.liveWeather.humidity}% humidity.`);
+  }
+
+  if (report.healthAdvisories.length > 0) {
+    parts.push(`${report.healthAdvisories.length} health advisory${report.healthAdvisories.length === 1 ? "" : "ies"} should be reviewed before departure.`);
+  }
+
+  if (report.budget.specified > 0) {
+    parts.push(report.budget.feasible
+      ? `The estimated cost is within the provided NPR ${report.budget.specified.toLocaleString()} budget.`
+      : `The estimated cost exceeds the provided budget by about NPR ${report.budget.shortfall.toLocaleString()}.`);
+  }
+
+  if (parts.length === 0 && report.seasonalContext) return report.seasonalContext;
+  return parts.join(" ");
+}
+
+function buildPrimaryPlaceChain(road: EnhancedRoad): string[] {
+  const places: string[] = [];
+  for (const seg of road.segments ?? []) {
+    if (places.length === 0 || places[places.length - 1] !== seg.fromName) {
+      places.push(seg.fromName);
+    }
+    if (places[places.length - 1] !== seg.toName) {
+      places.push(seg.toName);
+    }
+  }
+  return places;
+}
 
 // ── Props ──────────────────────────────────────────────────────────────────
 
@@ -104,22 +164,19 @@ export default function PlanReportView({
 
   const placeNames = useMemo(() => {
     if (!roads || roads.length === 0) return [];
-    const names: string[] = [];
-    for (const road of roads) {
-      for (const seg of road.segments ?? []) {
-        for (const sc of seg.subCoords ?? []) {
-          if (sc.placeName && !names.includes(sc.placeName)) {
-            names.push(sc.placeName);
-          }
-        }
-      }
-    }
-    return names;
+    return buildPrimaryPlaceChain(roads[0]);
   }, [roads]);
+  const primaryRoads = useMemo(() => roads?.slice(0, 1) ?? null, [roads]);
 
   const cfg = LEVEL_CFG[report.overallLevel] ?? LEVEL_CFG.SAFE;
   const LevelIcon = cfg.icon;
   const isUnsafe = report.overallLevel === "HIGH_RISK" || report.overallLevel === "EXTREME";
+  const visibleRecommendations = useMemo(
+    () => report.recommendations.filter((r) => !isBoilerplateRouteRecommendation(r.text)),
+    [report.recommendations],
+  );
+  const travelSummary = report.ai.verdict || buildManualTravelSummary(report, isGroup);
+  const travelExplanation = report.ai.riskExplanation || buildManualTravelExplanation(report);
 
   async function handleSave(mode: "ANALYZED" | "PENDING") {
     setSaving(true);
@@ -334,12 +391,12 @@ export default function PlanReportView({
               )}
             </div>
 
-            {/* AI Verdict (summary in panel) */}
-            {report.ai.verdict && (
+            {/* Travel summary in panel */}
+            {travelSummary && (
               <div className={`plan-card rounded-2xl p-4 ${isUnsafe ? "border-red-500/20" : "border-emerald-500/20"}`}>
                 <div className="flex items-start gap-2">
-                  <Sparkles size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
-                  <p className="font-body text-xs text-slate-200 leading-relaxed line-clamp-4">{report.ai.verdict}</p>
+                  <Shield size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <p className="font-body text-xs text-slate-200 leading-relaxed line-clamp-4">{travelSummary}</p>
                 </div>
               </div>
             )}
@@ -370,23 +427,23 @@ export default function PlanReportView({
           {/* ── Right: Scrollable Data Area ───────────────────────────── */}
           <div className="flex-1 min-w-0 space-y-5">
 
-            {/* 1. AI Verdict + Analysis (merged) */}
-            {(report.ai.verdict || report.ai.riskExplanation) && (
+            {/* 1. Travel Summary + Analysis */}
+            {(travelSummary || travelExplanation) && (
               <div className={`plan-card rounded-2xl p-6 anim ${isUnsafe ? "border-red-500/20" : ""}`}
                 style={{ animationDelay: ".08s" }}>
                 <div className="flex items-start gap-3">
-                  <Sparkles size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                  <Shield size={18} className="text-amber-400 flex-shrink-0 mt-0.5" />
                   <div className="min-w-0 flex-1">
-                    {report.ai.verdict && (
+                    {travelSummary && (
                       <>
-                        <h2 className="font-display font-bold text-white text-base mb-1">AI Verdict</h2>
-                        <p className="font-body text-sm text-slate-200 leading-relaxed">{report.ai.verdict}</p>
+                        <h2 className="font-display font-bold text-white text-base mb-1">Travel Summary</h2>
+                        <p className="font-body text-sm text-slate-200 leading-relaxed">{travelSummary}</p>
                       </>
                     )}
-                    {report.ai.riskExplanation && (
+                    {travelExplanation && (
                       <div className="mt-4 p-4 rounded-xl bg-slate-800/40 border border-slate-700/50">
-                        <p className="font-body text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Detailed Reasoning</p>
-                        <p className="font-body text-sm text-slate-300 leading-relaxed">{report.ai.riskExplanation}</p>
+                        <p className="font-body text-[10px] text-slate-500 uppercase tracking-wider mb-1.5 font-semibold">Explanation</p>
+                        <p className="font-body text-sm text-slate-300 leading-relaxed">{travelExplanation}</p>
                       </div>
                     )}
                     {report.ai.alternativeReason && (
@@ -433,50 +490,6 @@ export default function PlanReportView({
                       </div>
                     );
                   })}
-                </div>
-              </div>
-            )}
-
-            {/* 4. Pillar Scores */}
-            {Array.isArray(report.pillarScores) && report.pillarScores.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 anim" style={{ animationDelay: ".2s" }}>
-                <div className="lg:col-span-2">
-                  <PillarRadar data={report.pillarScores} />
-                </div>
-                <div className="lg:col-span-2 plan-card rounded-2xl p-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Shield size={15} className="text-amber-400" />
-                    <h2 className="font-display font-bold text-white text-base">Pillar Scoring</h2>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {report.pillarScores.map((p) => (
-                      <div key={p.id} className={`rounded-xl border border-slate-700/50 bg-slate-800/40 p-4 ${p.id === "weather_safety" && report.weatherPillar?.breakdown ? "row-span-2" : ""}`}>
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <p className="font-body text-sm text-white font-semibold">{p.title}</p>
-                          <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                            p.level === "LOW" ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
-                            : p.level === "MEDIUM" ? "text-amber-300 border-amber-500/30 bg-amber-500/10"
-                            : "text-red-300 border-red-500/30 bg-red-500/10"
-                          }`}>{p.score}/{p.maxPoints}</span>
-                        </div>
-                        <p className="font-body text-xs text-slate-400 leading-relaxed">{p.summary}</p>
-                        {p.id === "weather_safety" && report.weatherPillar?.breakdown && (
-                          <div className="mt-3 pt-2 border-t border-slate-700/50 space-y-1">
-                            {report.weatherPillar.breakdown.map((b, i) => (
-                              <div key={i} className="flex items-center justify-between font-body">
-                                <span className={`text-[11px] ${b.type === "base" ? "text-slate-400 font-semibold" : b.type === "result" ? "text-white font-semibold" : "text-slate-500"}`}>
-                                  {b.label}
-                                </span>
-                                <span className={`text-[11px] font-mono ${b.type === "result" ? "text-white font-bold" : b.value < 0 ? "text-red-400" : "text-slate-400"}`}>
-                                  {b.value > 0 ? "+" : ""}{b.value}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
                 </div>
               </div>
             )}
@@ -632,13 +645,51 @@ export default function PlanReportView({
                 </div>
                 {routeLoading ? (
                   <div className="h-[208px] rounded-xl bg-slate-800/50 animate-pulse" />
-                ) : roads && roads.length > 0 ? (
-                  <RouteMapMini roads={roads} />
+                ) : primaryRoads && primaryRoads.length > 0 ? (
+                  <RouteMapMini roads={primaryRoads} />
                 ) : (
                   <div className="h-[208px] rounded-xl bg-slate-800/30 border border-slate-700/30 flex items-center justify-center">
                     <p className="font-body text-xs text-slate-500">Map unavailable</p>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* 8a. Segment Hazard Analysis */}
+            {roads && roads.length > 0 && (
+              <SegmentHazardAnalysis
+                roads={roads.map((road) => ({
+                  name: road.name,
+                  segments: (road.segments ?? []).map((seg) => ({
+                    index: seg.index,
+                    from: seg.fromName,
+                    to: seg.toName,
+                    distanceKm: Math.round((seg.distance / 1000) * 10) / 10,
+                    riskLevel: report.overallLevel === "EXTREME" ? "EXTREME" : report.overallLevel === "HIGH_RISK" ? "HIGH" : report.overallLevel === "CAUTION" ? "MEDIUM" : "LOW",
+                    riskScore: report.overallScore,
+                    fromLat: seg.fromCoord.lat,
+                    fromLon: seg.fromCoord.lon,
+                    toLat: seg.toCoord.lat,
+                    toLon: seg.toCoord.lon,
+                  })),
+                }))}
+                liveHazard={report.liveHazard}
+                liveWeather={report.liveWeather}
+              />
+            )}
+
+            {/* 8b. Stop Intelligence */}
+            {report.stopAnalyses && report.stopAnalyses.length > 0 && (
+              <div className="plan-card rounded-2xl p-6 anim" style={{ animationDelay: ".4s" }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <AlertOctagon size={15} className="text-rose-400" />
+                  <h2 className="font-display font-bold text-white text-base">Stop Intelligence ({report.stopAnalyses.length})</h2>
+                </div>
+                <div className="space-y-3">
+                  {report.stopAnalyses.map((sa, i) => (
+                    <StopAnalysisCard key={i} analysis={sa} />
+                  ))}
+                </div>
               </div>
             )}
 
@@ -669,15 +720,15 @@ export default function PlanReportView({
               </div>
             )}
 
-            {/* 10. Recommendations — all visible */}
-            {report.recommendations.length > 0 && (
+            {/* 10. Recommendations */}
+            {visibleRecommendations.length > 0 && (
               <div className="plan-card rounded-2xl p-6 anim" style={{ animationDelay: ".48s" }}>
                 <div className="flex items-center gap-2 mb-4">
                   <CheckCircle2 size={15} className="text-emerald-400" />
-                  <h2 className="font-display font-bold text-white text-base">Recommendations ({report.recommendations.length})</h2>
+                  <h2 className="font-display font-bold text-white text-base">Recommendations ({visibleRecommendations.length})</h2>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {report.recommendations.map((r, i) => {
+                  {visibleRecommendations.map((r, i) => {
                     const Icon = REC_ICON[r.type] ?? Package;
                     const color = REC_COLOR[r.type] ?? "text-slate-400";
                     return (

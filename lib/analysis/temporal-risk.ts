@@ -10,10 +10,11 @@
  *   With: overall score, level, every risk factor explained, and recommendations.
  */
 
-import { callAI } from "@/lib/ai/client";
-
 import { fetchHistoricalWeather, HistoricalWeatherStats } from "@/lib/collectors/historical-weather";
 import { fetchHistoricalHazard, HistoricalHazardStats }   from "@/lib/collectors/historical-hazard";
+import { fetchWeather, WeatherSnapshot }                   from "@/lib/collectors/weather";
+import { TemplateCache } from "@/lib/explain/templates/cache";
+import { renderTemplate } from "@/lib/explain/templates/renderer";
 
 // ── Output types ──────────────────────────────────────────────────────────────
 
@@ -38,6 +39,22 @@ export interface HealthAdvisory {
 export interface Recommendation {
   type:    "GEAR" | "TIMING" | "MEDICAL" | "ROUTE" | "AVOID";
   text:    string;
+}
+
+/**
+ * Look up a recommendation template from the DB-backed cache and render it.
+ * Falls back to `fallback` text when the cache is unavailable or has no match.
+ */
+function rec(condition: string, params: Record<string, string | number>, fallback: string): string {
+  try {
+    const templates = TemplateCache.instance.get("recommendation", condition);
+    if (templates.length > 0) {
+      return renderTemplate(templates[0].template, params);
+    }
+  } catch {
+    // Cache not initialized — use fallback
+  }
+  return fallback;
 }
 
 export interface TravelRiskReport {
@@ -104,12 +121,14 @@ export async function analyzeTemporalRisk(params: {
   const season        = getSeason(month);
 
   // ── Fetch all data in parallel (weather + hazard + AI seasonal context) ──────
-  const seasonalContextTask = precomputedSeasonalContext
-    ? Promise.resolve(precomputedSeasonalContext)
-    : generateSeasonalContext({ destinationName, district, province, altitude: altitude ?? 0, month, season });
-  const [weatherStats, hazardStats, seasonalCtx] = await Promise.all([
+  const monthName = travelDateObj.toLocaleString("en-US", { month: "long" });
+  const seasonalContextTask = Promise.resolve(
+    precomputedSeasonalContext ?? fallbackSeasonalContext(destinationName, district, altitude ?? 0, monthName, season)
+  );
+  const [weatherStats, hazardStats, currentWeather, seasonalCtx] = await Promise.all([
     fetchHistoricalWeather(lat, lon, travelDate, 5),
     fetchHistoricalHazard(district, lat, lon, travelDate, 5),
+    fetchWeather(lat, lon),
     seasonalContextTask,
   ]);
 
@@ -119,55 +138,56 @@ export async function analyzeTemporalRisk(params: {
   let totalPenalty = 0;
   let confidence   = 0.5; // base confidence
 
-  if (weatherStats) confidence += 0.2;
-  if (hazardStats)  confidence += 0.15;
+  if (weatherStats)    confidence += 0.2;
+  if (hazardStats)     confidence += 0.15;
+  if (currentWeather)  confidence += 0.1;
 
   // ── 1. Weather risk factors ──────────────────────────────────────────────────
 
   if (weatherStats) {
     // Heavy rain
     if (weatherStats.avgRainfall > 30 || weatherStats.heavyRainProbability > 0.4) {
-      const penalty = Math.min(weatherStats.avgRainfall / 3, 25);
+      const penalty = Math.min(weatherStats.avgRainfall / 3, 12);
       totalPenalty += penalty;
       riskFactors.push({
         category:    "Weather",
         name:        "Heavy rainfall",
         severity:    weatherStats.avgRainfall > 50 ? "CRITICAL" : weatherStats.avgRainfall > 25 ? "HIGH" : "MEDIUM",
         score:       round(penalty),
-        description: `Historically, this destination receives an average of ${weatherStats.avgRainfall}mm of rain during this period. ${Math.round(weatherStats.heavyRainProbability * 100)}% of days historically have heavy rain (>20mm). Maximum recorded: ${weatherStats.maxRainfall}mm.`,
-        source:      "OpenMeteo 5-year historical",
+        description: `${destinationName} in ${district} receives ${weatherStats.avgRainfall}mm of rain in ${season.toLowerCase()} — ${Math.round(weatherStats.heavyRainProbability * 100)}% of days see heavy falls (>20mm). Highest single-day record: ${weatherStats.maxRainfall}mm.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}"${currentWeather.stationDistanceKm ? ` (${currentWeather.stationDistanceKm}km)` : ""} reports ${currentWeather.rainfall}mm now.` : ""}`,
+        source:      "Nepal DHM · OpenMeteo 5-year historical",
       });
       if (weatherStats.avgRainfall > 20) {
-        recommendations.push({ type: "GEAR", text: "Pack waterproof jacket and gear. Roads may be muddy or flooded." });
+        recommendations.push({ type: "GEAR", text: `Pack waterproof jacket and gear for ${destinationName}. Roads in ${district} may be muddy or flooded during wet periods.` });
       }
     }
 
     // Freezing temperatures
     if (weatherStats.freezingProbability > 0.1 || weatherStats.avgTempMin < 5) {
-      const penalty = Math.min((0 - weatherStats.avgTempMin) * 1.5, 15);
+      const penalty = Math.min((0 - weatherStats.avgTempMin) * 1.5, 8);
       if (penalty > 0) totalPenalty += penalty;
       riskFactors.push({
         category:    "Weather",
         name:        "Cold / freezing temperatures",
         severity:    weatherStats.avgTempMin < -5 ? "CRITICAL" : weatherStats.avgTempMin < 0 ? "HIGH" : "MEDIUM",
         score:       Math.max(0, round(penalty)),
-        description: `Average minimum temperature historically: ${weatherStats.avgTempMin}°C. ${Math.round(weatherStats.freezingProbability * 100)}% of days historically drop below freezing. Lowest recorded: ${weatherStats.minTemp}°C.`,
-        source:      "OpenMeteo 5-year historical",
+        description: `${weatherStats.avgTempMin}°C is the average minimum in ${season.toLowerCase()} at ${destinationName}. ${Math.round(weatherStats.freezingProbability * 100)}% of days dip below freezing. Extreme low recorded: ${weatherStats.minTemp}°C.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" reads ${currentWeather.temperature}°C currently.` : ""}`,
+        source:      "Nepal DHM · OpenMeteo 5-year historical",
       });
       recommendations.push({ type: "GEAR", text: `Pack thermal layers. Minimum temperatures can reach ${weatherStats.minTemp}°C.` });
     }
 
     // High winds
     if (weatherStats.highWindProbability > 0.2 || weatherStats.avgWindSpeed > 8) {
-      const penalty = Math.min(weatherStats.avgWindSpeed * 0.8, 10);
+      const penalty = Math.min(weatherStats.avgWindSpeed * 0.8, 6);
       totalPenalty += penalty;
       riskFactors.push({
         category:    "Weather",
         name:        "High wind speeds",
         severity:    weatherStats.avgWindSpeed > 15 ? "HIGH" : "MEDIUM",
         score:       round(penalty),
-        description: `Average max wind speed: ${weatherStats.avgWindSpeed}m/s. ${Math.round(weatherStats.highWindProbability * 100)}% of days historically have winds above 10m/s. Maximum recorded: ${weatherStats.maxWindSpeed}m/s.`,
-        source:      "OpenMeteo 5-year historical",
+        description: `Peak winds at ${destinationName} average ${weatherStats.avgWindSpeed}m/s in ${season.toLowerCase()}. ${Math.round(weatherStats.highWindProbability * 100)}% of days exceed 10m/s. Maximum gust recorded: ${weatherStats.maxWindSpeed}m/s.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" records ${currentWeather.windSpeed}m/s now.` : ""}`,
+        source:      "Nepal DHM · OpenMeteo 5-year historical",
       });
     }
 
@@ -178,7 +198,7 @@ export async function analyzeTemporalRisk(params: {
     const isHighEnoughForSummerSnow = destinationAlt > 4500;
     const shouldShowSnowfall = (isSnowMonsoon && isHighEnoughForSummerSnow) || !isSnowMonsoon;
     if (shouldShowSnowfall && (weatherStats.snowProbability > 0.15 || weatherStats.avgSnowfall > 2)) {
-      const penalty = Math.min(weatherStats.avgSnowfall * 1.5, 15);
+      const penalty = Math.min(weatherStats.avgSnowfall * 1.5, 8);
       totalPenalty += penalty;
       const snowSeverity = isSnowWinter && weatherStats.avgSnowfall > 10 ? "HIGH"
         : isSnowWinter ? "MEDIUM"
@@ -189,11 +209,11 @@ export async function analyzeTemporalRisk(params: {
         name:        "Snowfall",
         severity:    snowSeverity,
         score:       round(penalty),
-        description: `${Math.round(weatherStats.snowProbability * 100)}% of days historically have snowfall. Average: ${weatherStats.avgSnowfall}cm. Trail access may be blocked.`,
-        source:      "OpenMeteo 5-year historical",
+        description: `${Math.round(weatherStats.snowProbability * 100)}% of days see snowfall in ${district} during this period, averaging ${weatherStats.avgSnowfall}cm. At ${altitude}m, trails and passes may close temporarily.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" reports ${currentWeather.temperature}°C currently.` : ""}`,
+        source:      "Nepal DHM · OpenMeteo 5-year historical",
       });
-      recommendations.push({ type: "GEAR",  text: "Carry microspikes or crampons. Check trail conditions before departure." });
-      recommendations.push({ type: "ROUTE", text: "Confirm passes are open. Some high-altitude routes close due to snow." });
+      recommendations.push({ type: "GEAR", text: `Carry microspikes or crampons for ${destinationName}. Check trail conditions before departure.` });
+      recommendations.push({ type: "ROUTE", text: `Confirm passes near ${destinationName} are open. Some high-altitude routes in ${district} close due to snow.` });
     }
   }
 
@@ -202,36 +222,36 @@ export async function analyzeTemporalRisk(params: {
   if (hazardStats) {
     // Historical floods
     if (hazardStats.historicalFloodRisk > 0.1) {
-      const penalty = hazardStats.historicalFloodRisk * 25;
+      const penalty = Math.min(hazardStats.historicalFloodRisk * 3, 3);
       totalPenalty += penalty;
       riskFactors.push({
         category:    "Hazard",
         name:        "Flood history",
         severity:    hazardStats.floodIncidents > 5 ? "HIGH" : hazardStats.floodIncidents > 2 ? "MEDIUM" : "LOW",
         score:       round(penalty),
-        description: `${hazardStats.floodIncidents} flood incidents recorded in ${district} during this season over the past ${hazardStats.yearsAnalysed} years.`,
-        source:      "BIPAD Nepal disaster database",
+        description: `${hazardStats.floodIncidents} flood events recorded in ${district} during ${season.toLowerCase()} over ${hazardStats.yearsAnalysed} years. This includes riverine floods affecting Terai road sections and flash floods in foothill areas.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" reports ${currentWeather.rainfall}mm now.` : ""}`,
+        source:      "BIPAD · Nepal DHM",
       });
     }
 
     // Historical landslides
     if (hazardStats.historicalLandslideRisk > 0.1) {
-      const penalty = hazardStats.historicalLandslideRisk * 25;
+      const penalty = Math.min(hazardStats.historicalLandslideRisk * 3, 3);
       totalPenalty += penalty;
       riskFactors.push({
         category:    "Hazard",
         name:        "Landslide history",
         severity:    hazardStats.landslideIncidents > 5 ? "HIGH" : hazardStats.landslideIncidents > 2 ? "MEDIUM" : "LOW",
         score:       round(penalty),
-        description: `${hazardStats.landslideIncidents} landslide incidents in ${district} during this season over the past ${hazardStats.yearsAnalysed} years. Nepal's hilly terrain is prone to landslides especially during monsoon.`,
-        source:      "BIPAD Nepal disaster database",
+        description: `${hazardStats.landslideIncidents} landslides recorded in ${district} during ${season.toLowerCase()} over ${hazardStats.yearsAnalysed} years. Hilly road sections above the Terai belt carry the highest exposure, especially during or after heavy rain.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" reports ${currentWeather.rainfall}mm — wet soil increases slide risk.` : ""}`,
+        source:      "BIPAD · Nepal DHM",
       });
-      recommendations.push({ type: "ROUTE", text: "Check for road blockages. Carry emergency contacts for DoR (Department of Roads)." });
+      recommendations.push({ type: "ROUTE", text: rec("recommendation_road_closure_alerts", { destination: destinationName, district }, `Check for road blockages en route to ${destinationName}. Carry emergency contacts for DoR (Department of Roads) for ${district}.`) });
     }
 
     // Earthquake history
     if (hazardStats.historicalEarthquakeRisk > 0.1) {
-      const penalty = hazardStats.historicalEarthquakeRisk * 20;
+      const penalty = Math.min(hazardStats.historicalEarthquakeRisk * 2, 2);
       totalPenalty += penalty;
       const eqSeverity = hazardStats.earthquakeCount > 5 && hazardStats.maxEarthquakeMag >= 6
         ? "HIGH" : hazardStats.earthquakeCount > 2 ? "MEDIUM" : "LOW";
@@ -240,7 +260,7 @@ export async function analyzeTemporalRisk(params: {
         name:        "Seismic activity",
         severity:    eqSeverity,
         score:       round(penalty),
-        description: `Nepal is a seismically active country. ${hazardStats.earthquakeCount} earthquakes (M3.5+) have occurred within 150km of this destination during this season over the past ${hazardStats.yearsAnalysed} years, which is typical for the region. Travelers should remain aware that earthquakes are possible, although this is not currently a dominant risk factor for this trip.`,
+        description: `${hazardStats.earthquakeCount} earthquakes (M3.5+) recorded within 150km of ${destinationName} in ${season.toLowerCase()} over ${hazardStats.yearsAnalysed} years (max ${hazardStats.maxEarthquakeMag}M). Seismic risk exists across all Nepal but is not elevated for this specific corridor relative to baseline.`,
         source:      "USGS Earthquake Catalog",
       });
     }
@@ -248,7 +268,7 @@ export async function analyzeTemporalRisk(params: {
 
   // ── 3. Seasonal risk factors ─────────────────────────────────────────────────
 
-  const seasonalFactors = getSeasonalRiskFactors(month, province, altitude ?? 0);
+  const seasonalFactors = getSeasonalRiskFactors(month, province, altitude ?? 0, destinationName, district, hazardStats, currentWeather);
   for (const sf of seasonalFactors) {
     totalPenalty += sf.score;
     riskFactors.push(sf);
@@ -267,19 +287,19 @@ export async function analyzeTemporalRisk(params: {
     healthAdvisories.push({
       condition:      "Altitude sickness (AMS)",
       risk:           altRisk,
-      detail:         `At ${alt}m, Acute Mountain Sickness is a real risk. Symptoms: headache, nausea, dizziness. Acclimatise properly — ascend no more than 300–500m/day above 3000m. Carry Diamox if advised by doctor.`,
+      detail:         `At ${alt}m in ${district}, Acute Mountain Sickness is a risk. Symptoms: headache, nausea, dizziness. Ascend no more than 300–500m/day above 3000m. Carry Diamox if your doctor advises it.`,
       affectedGroups: ["all travelers", "especially those from low-altitude areas"],
     });
 
-    recommendations.push({ type: "MEDICAL",  text: "Consult a doctor about Diamox (acetazolamide) before travelling above 3000m." });
-    recommendations.push({ type: "TIMING",   text: "Allow 1–2 rest days at intermediate altitude before ascending further." });
+    recommendations.push({ type: "MEDICAL",  text: rec("recommendation_high_altitude_diamox", { destination: destinationName, altitude: alt }, `Consult a doctor about Diamox (acetazolamide) before travelling to ${destinationName} at ${alt}m.`) });
+    recommendations.push({ type: "TIMING",   text: `Allow 1–2 rest days at intermediate altitude in ${district} before ascending further to ${destinationName}.` });
 
     if (userHealth?.homeAltitude !== undefined && userHealth.homeAltitude < 500 && alt > 3000) {
       const altDiff = alt - userHealth.homeAltitude;
       healthAdvisories.push({
         condition:      "Altitude acclimatisation — elevated risk",
         risk:           "HIGH",
-        detail:         `You are travelling from ${userHealth.homeAltitude}m to ${alt}m — a difference of ${altDiff}m. This is a significant change. Your body needs additional time to acclimatise. Risk of AMS is higher for travelers from lowlands.`,
+        detail:         `You are travelling from ${userHealth.homeAltitude}m (home) to ${alt}m (${district}) — a ${altDiff}m gain. This significant increase requires extra acclimatisation time. AMS risk is higher for lowland residents.`,
         affectedGroups: ["lowland residents"],
       });
       totalPenalty += 10;
@@ -291,7 +311,7 @@ export async function analyzeTemporalRisk(params: {
     healthAdvisories.push({
       condition:      "Cold exposure / hypothermia risk",
       risk:           weatherStats.avgTempMin < 0 ? "HIGH" : "MEDIUM",
-      detail:         `Temperature regularly drops to ${weatherStats.avgTempMin}°C. Risk of hypothermia if unprepared. Ensure proper layering: base layer → insulation → waterproof outer layer.`,
+      detail:         `Temperature at ${destinationName} drops to ${weatherStats.avgTempMin}°C in ${season.toLowerCase()}. Hypothermia risk if unprepared. Layer: base → insulation → waterproof outer.${currentWeather?.stationName ? ` DHM station "${currentWeather.stationName}" reads ${currentWeather.temperature}°C currently.` : ""}`,
       affectedGroups: ["elderly", "children", "those with heart conditions"],
     });
   }
@@ -304,10 +324,10 @@ export async function analyzeTemporalRisk(params: {
       healthAdvisories.push({
         condition:      "Heart condition at altitude",
         risk:           "HIGH",
-        detail:         `At ${alt}m, reduced oxygen levels increase cardiac workload. People with heart conditions face significantly higher risk of cardiac events at altitude. Medical consultation is strongly advised before this trip.`,
+        detail:         `At ${alt}m (${district}), reduced oxygen increases cardiac workload. Heart conditions carry higher cardiac event risk at this altitude. Medical clearance is strongly advised before this trip.`,
         affectedGroups: ["heart condition"],
       });
-      recommendations.push({ type: "MEDICAL", text: "Mandatory cardiology clearance before travelling above 2000m with a heart condition." });
+      recommendations.push({ type: "MEDICAL", text: `Mandatory cardiology clearance before travelling to ${destinationName} at ${alt}m with a heart condition.` });
     }
 
     if (userHealth.chronicConditions.includes("asthma") && weatherStats && weatherStats.avgRainfall > 15) {
@@ -315,7 +335,7 @@ export async function analyzeTemporalRisk(params: {
       healthAdvisories.push({
         condition:      "Asthma — cold + damp conditions",
         risk:           "MEDIUM",
-        detail:         `Cold, damp conditions during this season can trigger asthma attacks. Carry rescue inhaler (salbutamol). Avoid early morning outdoor activity when temperatures are lowest.`,
+        detail:         `${season} conditions at ${destinationName} — cold and damp — can trigger asthma attacks. Carry salbutamol inhaler. Avoid early mornings when temperatures are lowest.`,
         affectedGroups: ["asthma"],
       });
     }
@@ -324,7 +344,7 @@ export async function analyzeTemporalRisk(params: {
       healthAdvisories.push({
         condition:      "Diabetes management at altitude/cold",
         risk:           "MEDIUM",
-        detail:         `Altitude and cold both affect insulin absorption and blood sugar regulation. Monitor more frequently. Insulin can freeze — keep it close to your body. Carry extra snacks for hypoglycaemia.`,
+        detail:         `Altitude (${alt}m) and cold in ${district} affect insulin absorption and blood sugar. Monitor more frequently. Keep insulin close to your body to prevent freezing. Carry extra snacks for hypoglycaemia.`,
         affectedGroups: ["diabetes"],
       });
     }
@@ -334,7 +354,7 @@ export async function analyzeTemporalRisk(params: {
       healthAdvisories.push({
         condition:      "Mobility — difficult terrain risk",
         risk:           "HIGH",
-        detail:         `This destination has a history of landslides during this season. Uneven, debris-covered, or washed-out roads significantly increase risk for those with mobility limitations.`,
+        detail:         `${district} has a history of landslides in ${season.toLowerCase()}. Debris-covered or washed-out roads in the corridor increase difficulty for those with mobility limitations.`,
         affectedGroups: ["mobility limited"],
       });
     }
@@ -344,7 +364,7 @@ export async function analyzeTemporalRisk(params: {
       healthAdvisories.push({
         condition:      "Low fitness — high altitude exertion",
         risk:           "MEDIUM",
-        detail:         `At ${alt}m, even moderate walking becomes strenuous due to reduced oxygen. Low fitness increases exhaustion risk. Consider shorter daily distances and build in more rest days.`,
+        detail:         `At ${alt}m in ${district}, moderate walking is strenuous due to lower oxygen. Low fitness raises exhaustion risk. Plan shorter daily distances and include rest days.`,
         affectedGroups: ["low fitness"],
       });
     }
@@ -357,16 +377,16 @@ export async function analyzeTemporalRisk(params: {
         name:        "Solo travel",
         severity:    "LOW",
         score:       5,
-        description: "Solo travel increases risk in remote areas. No one to assist in emergencies. Share itinerary with someone before departure.",
+        description: `Travelling solo in ${district} — no backup if an incident occurs along the corridor. Register your itinerary with Nepal Tourism Board and share live location with a contact.`,
         source:      "Safety guidelines",
       });
-      recommendations.push({ type: "MEDICAL", text: "Register your trek with Nepal Tourism Board. Share itinerary with emergency contact." });
+      recommendations.push({ type: "MEDICAL", text: rec("recommendation_solo_trek_registration", { destination: destinationName }, `Register your trek to ${destinationName} with Nepal Tourism Board. Share your itinerary with an emergency contact.`) });
     }
   }
 
   // ── 5. Disease / health seasonal risks ──────────────────────────────────────
 
-  const diseaseRisks = getDiseaseSeasonal(month, province, alt);
+  const diseaseRisks = getDiseaseSeasonal(month, province, alt, destinationName, district);
   healthAdvisories.push(...diseaseRisks.advisories);
   totalPenalty += diseaseRisks.penalty;
   recommendations.push(...diseaseRisks.recommendations);
@@ -415,51 +435,7 @@ function getSeason(month: number): string {
   return "Post-monsoon (Autumn)";
 }
 
-// ── AI seasonal context generator ────────────────────────────────────────────
-
-function fallbackIsSpecific(altitude: number, season: string): boolean {
-  const isVHigh = altitude > 4000;
-  const isHigh  = altitude > 2500;
-
-  if (season === "Monsoon")                return true;
-  if (season === "Post-monsoon (Autumn)")  return true;
-  if (season === "Winter" && isVHigh)      return true;
-  if (season === "Pre-monsoon (Spring)" && isHigh) return true;
-
-  return false;
-}
-
-export async function generateSeasonalContext(params: {
-  destinationName: string;
-  district:        string;
-  province:        string;
-  altitude:        number;
-  month:           number;
-  season:          string;
-}): Promise<string> {
-  const { destinationName, district, province, altitude, month, season } = params;
-
-  const monthNames = ["","January","February","March","April","May","June",
-                       "July","August","September","October","November","December"];
-  const monthName  = monthNames[month];
-
-  if (fallbackIsSpecific(altitude, season)) {
-    return fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
-  }
-
-  const prompt = `Write 2-3 sentences describing what it is like to travel to "${destinationName}" in ${district}, ${province} Province, Nepal in ${monthName} (${season} season). Altitude: ${altitude > 0 ? `${altitude.toLocaleString()}m` : "lowland"}.
-
-Be specific to this exact destination — mention its altitude, what the weather is like there in ${monthName}, any specific risks or benefits of visiting at this time, and one practical note for travellers. Do not use generic Nepal-wide statements. Do not mention other destinations like Everest or Annapurna unless this IS one of those. Keep it factual and under 60 words.`;
-
-  const text = await callAI(prompt, {
-    system: "You are a Nepal travel expert. Write factual, destination-specific travel context. Plain text only, no bullet points, no markdown.",
-    maxTokens: 150,
-  });
-
-  return text?.trim() || fallbackSeasonalContext(destinationName, district, altitude, monthName, season);
-}
-
-// Fallback if Claude is unavailable
+// ── Seasonal context generator ────────────────────────────────────────────────
 function fallbackSeasonalContext(
   name:      string,
   district:  string,
@@ -471,7 +447,7 @@ function fallbackSeasonalContext(
   const isHigh  = altitude > 2500;
 
   if (season === "Monsoon") {
-    return `${monthName} brings heavy monsoon rainfall to ${name} (${district}). Landslide and flooding risk is elevated. ${isHigh ? "High trails become slippery and dangerous." : "Roads may be cut off."}`;
+    return `${monthName} brings heavy monsoon rainfall to ${name} in ${district}. Landslide and river-flooding risk is elevated along the corridor. ${isHigh ? "High trails become slick and hazardous." : "Low-lying roads may be cut off during heavy downpours."}`;
   }
   if (season === "Winter" && isVHigh) {
     return `${name} at ${altitude.toLocaleString()}m is extremely cold in ${monthName}. Temperatures drop below freezing at night. Snow may block trails and passes. Full winter gear is essential.`;
@@ -485,49 +461,91 @@ function fallbackSeasonalContext(
   return `${name} in ${district} in ${monthName} (${season}). Check local conditions before travel.`;
 }
 
-function getSeasonalRiskFactors(month: number, province: string, altitude: number): RiskFactor[] {
+function getSeasonalRiskFactors(
+  month: number, province: string, altitude: number,
+  destinationName: string, district: string,
+  hazardStats?: HistoricalHazardStats | null,
+  currentWeather?: WeatherSnapshot | null,
+): RiskFactor[] {
   const factors: RiskFactor[] = [];
 
-  // Monsoon season baseline risk
-  if (month >= 6 && month <= 9) {
+  // Monsoon — only show if BIPAD has recorded actual flood/landslide incidents in this district
+  if (month >= 6 && month <= 9 && hazardStats && (hazardStats.floodIncidents > 0 || hazardStats.landslideIncidents > 0)) {
+    const notable = hazardStats.notableEvents?.find((e) => e.severity === "HIGH" || e.severity === "MEDIUM");
+    const dhmInfo = currentWeather?.stationName
+      ? ` DHM station "${currentWeather.stationName}"${currentWeather.stationDistanceKm ? ` (${currentWeather.stationDistanceKm}km)` : ""} reports ${currentWeather.rainfall}mm, ${currentWeather.temperature}°C.`
+      : "";
+    const bipadInfo = `${hazardStats.floodIncidents} flood events, ${hazardStats.landslideIncidents} landslides in ${district} during monsoon over ${hazardStats.yearsAnalysed} years (BIPAD).`;
+    const notableInfo = notable ? ` Notable past event: ${notable.description}.` : "";
+    const monsoonScore = Math.min(
+      (currentWeather?.rainfall ?? 0) / 10 +
+        hazardStats.floodIncidents * 0.3 +
+        hazardStats.landslideIncidents * 0.3,
+      8,
+    );
     factors.push({
       category:    "Seasonal",
       name:        "Active monsoon season",
-      severity:    "HIGH",
-      score:       15,
-      description: "Nepal's monsoon (June–September) brings intense rainfall, active landslides, flooding of rivers, and road closures. This is the highest-risk season for travel to hilly and mountainous regions.",
-      source:      "Nepal meteorological seasonal data",
+      severity:    monsoonScore > 5 ? "HIGH" : monsoonScore > 2 ? "MEDIUM" : "LOW",
+      score:       round(monsoonScore),
+      description: `${destinationName} in ${district} is in monsoon season (June–September).${dhmInfo} ${bipadInfo}${notableInfo} ${(altitude ?? 0) > 1000 ? "Higher trails become slick and hazardous." : "Low-lying routes face waterlogging and river flooding."}`,
+      source:      "Nepal DHM · BIPAD Nepal disaster database",
     });
   }
 
   // Pre-monsoon thunderstorms at altitude
   if ((month === 4 || month === 5) && altitude > 3500) {
+    const dhmPre = currentWeather?.stationName
+      ? ` DHM station "${currentWeather.stationName}"${currentWeather.stationDistanceKm ? ` (${currentWeather.stationDistanceKm}km)` : ""}: ${currentWeather.rainfall}mm rain, ${currentWeather.windSpeed}m/s wind, ${currentWeather.temperature}°C.`
+      : "";
+    const hazardPre = hazardStats
+      ? ` ${hazardStats.floodIncidents} flood events, ${hazardStats.landslideIncidents} landslides in ${district} during pre-monsoon over ${hazardStats.yearsAnalysed} years (BIPAD).`
+      : "";
+    const preScore = Math.min(
+      (currentWeather?.rainfall ?? 0) / 10 + (currentWeather?.windSpeed ?? 0) / 3,
+      4,
+    );
     factors.push({
       category:    "Seasonal",
       name:        "Pre-monsoon afternoon thunderstorms",
-      severity:    "MEDIUM",
-      score:       8,
-      description: "April–May sees frequent afternoon thunderstorms above 3500m. Start treks early and aim to reach camp before 1pm. Lightning risk on exposed ridges.",
-      source:      "Nepal trekking seasonal guidelines",
+      severity:    preScore > 3 ? "HIGH" : preScore > 1 ? "MEDIUM" : "LOW",
+      score:       round(preScore),
+      description: `${destinationName} (${altitude}m) sees frequent afternoon thunderstorms April–May.${dhmPre}${hazardPre} Start treks early and reach camp before 1pm. Lightning risk on exposed ridges.`,
+      source:      "Nepal DHM · BIPAD · trekking guidelines",
     });
   }
 
   // Winter snow at altitude
   if ((month === 12 || month <= 2) && altitude > 3500) {
+    const dhmWinter = currentWeather?.stationName
+      ? ` DHM station "${currentWeather.stationName}"${currentWeather.stationDistanceKm ? ` (${currentWeather.stationDistanceKm}km)` : ""}: ${currentWeather.temperature}°C, ${currentWeather.rainfall}mm precipitation.`
+      : "";
+    const hazardWinter = hazardStats
+      ? ` ${hazardStats.landslideIncidents} landslides recorded in ${district} over ${hazardStats.yearsAnalysed} years — frozen ground can trigger slides during thaws (BIPAD).`
+      : "";
+    const winterScore = Math.min(
+      (currentWeather?.temperature !== undefined && currentWeather.temperature < 0
+        ? (0 - currentWeather.temperature) * 0.5
+        : 0) + (altitude > 4500 ? 1.5 : 0),
+      4,
+    );
     factors.push({
       category:    "Seasonal",
       name:        "Winter snow — pass closures",
-      severity:    altitude > 4500 ? "HIGH" : "MEDIUM",
-      score:       altitude > 4500 ? 12 : 6,
-      description: `Winter snowfall above ${altitude}m can close passes for days or weeks. Check pass conditions before departure. Some routes are officially closed December–March.`,
-      source:      "TAAN Nepal seasonal closure data",
+      severity:    winterScore > 3 ? "HIGH" : winterScore > 1 ? "MEDIUM" : "LOW",
+      score:       round(winterScore),
+        description: `Winter snowfall at ${destinationName} (${altitude}m) can close passes in ${district} for days or weeks.${dhmWinter}${hazardWinter} Several high routes in this region are officially closed December–March. Check pass conditions with TAAN before departure.`,
+      source:      "Nepal DHM · BIPAD · TAAN",
     });
   }
 
   return factors;
 }
 
-function getDiseaseSeasonal(month: number, province: string, altitude: number): {
+function getDiseaseSeasonal(
+  month: number, province: string, altitude: number,
+  destinationName: string, district: string,
+): {
   advisories:      HealthAdvisory[];
   penalty:         number;
   recommendations: Recommendation[];
@@ -543,10 +561,10 @@ function getDiseaseSeasonal(month: number, province: string, altitude: number): 
     advisories.push({
       condition:      "Mosquito-borne diseases (Malaria, Dengue)",
       risk:           "MEDIUM",
-      detail:         "Terai lowlands during monsoon and post-monsoon have elevated mosquito activity. Risk of malaria and dengue. Use DEET insect repellent, sleep under mosquito nets, wear long sleeves at dusk.",
+      detail:         `Lowland ${district} near ${destinationName} has elevated mosquito activity during monsoon and post-monsoon. Risk of malaria and dengue. Use DEET repellent, sleep under nets, cover skin at dusk.`,
       affectedGroups: ["all travelers to lowland areas"],
     });
-    recommendations.push({ type: "MEDICAL", text: "Consider antimalarials for Terai travel. Use DEET repellent. Cover skin at dusk." });
+    recommendations.push({ type: "MEDICAL", text: rec("recommendation_malaria_prevention", { district }, "Consider antimalarials for Terai travel. Use DEET repellent. Cover skin at dusk.") });
   }
 
   // Waterborne diseases — monsoon everywhere
@@ -554,11 +572,11 @@ function getDiseaseSeasonal(month: number, province: string, altitude: number): 
     advisories.push({
       condition:      "Waterborne diseases (Typhoid, Cholera, Giardia)",
       risk:           "MEDIUM",
-      detail:         "Monsoon season contaminates water sources. Drink only bottled or purified water. Avoid salads, raw vegetables, and street food. Ensure typhoid and hepatitis A vaccinations are current.",
+      detail:         `Monsoon rains in ${district} contaminate water sources. Drink only bottled or purified water at ${destinationName}. Avoid salads, raw vegetables, and street food. Ensure typhoid and hepatitis A vaccinations are current.`,
       affectedGroups: ["all travelers"],
     });
-    recommendations.push({ type: "MEDICAL", text: "Carry water purification tablets or filter. Avoid tap water and uncooked foods." });
-    recommendations.push({ type: "MEDICAL", text: "Ensure Typhoid, Hepatitis A vaccinations are current before travel." });
+    recommendations.push({ type: "MEDICAL", text: rec("recommendation_water_safety", { destination: destinationName }, "Carry water purification tablets or filter. Avoid tap water and uncooked foods.") });
+    recommendations.push({ type: "MEDICAL", text: rec("recommendation_vaccinations", { destination: destinationName }, "Ensure Typhoid, Hepatitis A vaccinations are current before travel.") });
   }
 
   // Respiratory in Kathmandu Valley
@@ -566,10 +584,10 @@ function getDiseaseSeasonal(month: number, province: string, altitude: number): 
     advisories.push({
       condition:      "Air pollution — Kathmandu Valley",
       risk:           "MEDIUM",
-      detail:         "Winter temperature inversions trap particulate matter in the Kathmandu Valley. PM2.5 levels regularly exceed WHO safe limits. Wear N95 mask in urban areas.",
+      detail:         `Winter temperature inversions in the Kathmandu Valley (${district}) trap particulate matter. PM2.5 near ${destinationName} regularly exceeds WHO safe limits. Wear N95 mask in urban areas.`,
       affectedGroups: ["asthma", "elderly", "children", "heart condition"],
     });
-    recommendations.push({ type: "GEAR", text: "Carry N95 masks for Kathmandu Valley. Check real-time AQI at aqi.in before outdoor activity." });
+    recommendations.push({ type: "GEAR", text: rec("recommendation_air_quality", { destination: destinationName }, "Carry N95 masks for Kathmandu Valley. Check real-time AQI at aqi.in before outdoor activity.") });
   }
 
   return { advisories, penalty, recommendations };

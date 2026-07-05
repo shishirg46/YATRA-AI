@@ -44,13 +44,26 @@ function coordKey(lat: number, lon: number): string {
  *  - Junction nodes at the same coordinate are connected across different ways
  *  - Topology is determined ONLY by OsmWay node ordering — never by spatial proximity
  */
-export async function buildAdjacency(): Promise<AdjacencyMap> {
-  if (cache && cache.expiresAt > Date.now()) {
+export async function buildAdjacency(
+  bounds?: { minLat: number; maxLat: number; minLon: number; maxLon: number }
+): Promise<AdjacencyMap> {
+  if (!bounds && cache && cache.expiresAt > Date.now()) {
     return cache.map;
   }
 
   const ways = await prisma.osmWay.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      ...(bounds && {
+        nodes: {
+          some: {
+            isActive: true,
+            latitude: { gte: bounds.minLat, lte: bounds.maxLat },
+            longitude: { gte: bounds.minLon, lte: bounds.maxLon },
+          },
+        },
+      }),
+    },
     select: {
       id: true,
       oneWay: true,
@@ -78,7 +91,7 @@ export async function buildAdjacency(): Promise<AdjacencyMap> {
 
   // Phase 1: Build same-way adjacency
   for (const way of ways) {
-    graphVersion = way.graphVersion;
+    if (way.graphVersion) graphVersion = way.graphVersion;
     const ordered = way.nodes;
 
     for (let i = 0; i < ordered.length; i++) {
@@ -262,10 +275,12 @@ export async function buildAdjacency(): Promise<AdjacencyMap> {
 
   const map: AdjacencyMap = { nodes, adjacency, graphVersion };
 
-  cache = {
-    map,
-    expiresAt: Date.now() + 10 * 60 * 1000,
-  };
+  if (!bounds) {
+    cache = {
+      map,
+      expiresAt: Date.now() + 10 * 60 * 1000,
+    };
+  }
 
   return map;
 }

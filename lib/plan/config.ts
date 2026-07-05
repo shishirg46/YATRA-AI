@@ -169,10 +169,14 @@ export async function computeBudget(input: {
   const dailyCost = computeLivingCost(input.destinationName, input.altitude, input.travelStyle);
 
   let transportCost = 0;
-  if (input.origin) {
+  if (input.origin && Number.isFinite(input.origin.lat) && Number.isFinite(input.origin.lon) && (Math.abs(input.origin.lat) > 0.001 || Math.abs(input.origin.lon) > 0.001)) {
     const dest: GeoPoint = { lat: input.destinationLat, lon: input.destinationLon };
-    const result = await computeTransportCost(input.origin, dest, input.vehicle, input.signal);
-    transportCost = result.oneWayCost;
+    try {
+      const result = await computeTransportCost(input.origin, dest, input.vehicle, input.signal);
+      transportCost = result.oneWayCost;
+    } catch (err) {
+      console.error(`[config] computeTransportCost failed for ${input.destinationName}:`, (err as Error)?.message);
+    }
   }
 
   return computeBudgetSummary({

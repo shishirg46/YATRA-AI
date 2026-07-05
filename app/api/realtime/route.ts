@@ -53,7 +53,7 @@ async function realtimeHandler(req: NextRequest) {
   } catch (error) {
     if (isPlanLimitReachedError(error)) {
       return Response.json(
-        { error: "Database unavailable: provider account limit reached (planLimitReached)." },
+        { message: "Database unavailable: provider account limit reached (planLimitReached)." },
         { status: 503 }
       );
     }
@@ -216,7 +216,7 @@ async function realtimeHandler(req: NextRequest) {
               batch.map(async (loc) => {
                 assertAlive();
                 const weatherP  = fetchWeather(loc.latitude, loc.longitude);
-                const hazardP   = fetchHazard(loc.district.name, loc.latitude, loc.longitude, tickAbort.signal);
+                const hazardP   = fetchHazard(loc.latitude, loc.longitude, prisma, tickAbort.signal);
                 const [weather, hazardRaw] = await Promise.allSettled([weatherP, hazardP]);
 
                 const weatherVal = weather.status === "fulfilled" ? weather.value : null;

@@ -3,12 +3,11 @@
  * LOCATION: /app/api/notifications/route.ts
  * PURPOSE: Returns notifications for the logged-in user
  *
- * TWO SOURCES:
+ * THREE SOURCES:
  *  1. DB Notification rows — HAZARD (from assess job / alert poller),
  *                            TRIP_INVITE, TRIP_RESPONSE
- *  2. Live BIPAD feed — fetched in real-time for the user's home district
- *     so incidents like "Flood warning at Gaurishankar-9, Dolakha" appear
- *     immediately without waiting for the alert poller to run
+ *  2. Live BIPAD feed — fetched in real-time via shared bipad-alerts module
+ *  3. Fresh DB re-fetch if new live incidents were persisted
  *
  * DEDUPLICATION: Live BIPAD incidents that already have a DB row are skipped
  */
@@ -20,11 +19,12 @@ import { auth }         from "@/lib/auth";
 import { headers }      from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/rate-limit";
+import { fetchRecentBipadIncidents } from "@/lib/bipad-alerts";
 
-type NotifType = "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO" | "TRIP_START" | "TRIP_END";
+type NotifType = "FLOOD" | "LANDSLIDE" | "EARTHQUAKE" | "FIRE" | "STORM" | "INFO" | "TRIP_START" | "TRIP_END" | "TRIP_REMINDER";
 type Severity  = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
-interface Notification {
+interface FlatNotification {
   id:       string;
   type:     NotifType;
   title:    string;
@@ -38,93 +38,10 @@ interface Notification {
   action?:  { type: string; planId: string };
 }
 
-// ── BIPAD live fetch ──────────────────────────────────────────────────────────
-
-const HAZARD_TYPE_MAP: Record<string, NotifType> = {
-  flood: "FLOOD", inundation: "FLOOD", "बाढी": "FLOOD",
-  landslide: "LANDSLIDE", debris: "LANDSLIDE", "पहिरो": "LANDSLIDE",
-  earthquake: "EARTHQUAKE", "भूकम्प": "EARTHQUAKE",
-  fire: "FIRE", "आगलागी": "FIRE",
-  storm: "STORM", hailstorm: "STORM",
-};
-
-function getHazardType(s: string): NotifType {
-  const lower = s.toLowerCase();
-  for (const [k, v] of Object.entries(HAZARD_TYPE_MAP)) {
-    if (lower.includes(k)) return v;
-  }
-  return "INFO";
-}
-
-function getSeverity(type: string, deaths: number, injured: number): Severity {
-  if (deaths > 5 || type === "EARTHQUAKE") return "CRITICAL";
-  if (deaths > 0 || injured > 5)           return "HIGH";
-  if (injured > 0 || type === "FLOOD")     return "MEDIUM";
-  return "LOW";
-}
-
-async function fetchLiveBipad(districtName: string): Promise<Notification[]> {
-  if (!districtName) return [];
-  try {
-    const from = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString().split("T")[0];
-    const url  = `https://bipadportal.gov.np/api/v1/incident/?district__title_en=${encodeURIComponent(districtName)}&date_of_incident__gte=${from}&format=json&limit=20&ordering=-date_of_incident`;
-
-    const res = await fetch(url, {
-      signal:  AbortSignal.timeout(8_000),
-      headers: { Accept: "application/json" },
-      cache:   "no-store",
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json() as {
-      results?: {
-        id:              number;
-        title?:          string;
-        incident_type?:  { title?: string };
-        hazard?:         { title?: string };
-        district?:       { title?: string };
-        local_level?:    { title?: string };
-        date_of_incident?: string;
-        loss?:           { death?: number; injured?: number };
-        description?:    string;
-      }[]
-    };
-
-    const ALLOWED_TYPES = new Set(["FLOOD", "LANDSLIDE", "EARTHQUAKE"]);
-
-    return (data.results ?? []).map((inc) => {
-      const typeStr    = inc.incident_type?.title ?? inc.hazard?.title ?? "";
-      const hazardType = getHazardType(typeStr);
-      const deaths     = inc.loss?.death   ?? 0;
-      const injured    = inc.loss?.injured ?? 0;
-      const district   = inc.district?.title ?? districtName;
-      const localLevel = inc.local_level?.title;
-      const location   = localLevel ? `${localLevel}, ${district}` : district;
-
-      return {
-        id:       `bipad-${inc.id}`,
-        type:     hazardType,
-        title:    inc.title ?? `${typeStr || "Incident"} in ${district}`,
-        body:     inc.description
-          ?? `${typeStr} reported in ${location}.${deaths > 0 ? ` Deaths: ${deaths}.` : ""}${injured > 0 ? ` Injured: ${injured}.` : ""}`,
-        location,
-        severity: getSeverity(hazardType, deaths, injured),
-        time:     inc.date_of_incident
-          ? new Date(inc.date_of_incident).toISOString()
-          : new Date().toISOString(),
-        read:     false,
-        source:   "BIPAD",
-      };
-    }).filter((n) => ALLOWED_TYPES.has(n.type));
-  } catch {
-    return [];
-  }
-}
 
 // ── Parse a DB notification row into Notification shape ──────────────────────
 
-function parseDbRow(row: { id: string; isRead: boolean; createdAt: Date }, data: Record<string, unknown>): Notification | null {
+function parseDbRow(row: { id: string; isRead: boolean; createdAt: Date }, data: Record<string, unknown>): FlatNotification | null {
   if (data._type === "PROFILE") return null;
 
   if (data._type === "HAZARD") {
@@ -171,10 +88,10 @@ function parseDbRow(row: { id: string; isRead: boolean; createdAt: Date }, data:
     };
   }
 
-  if (data._type === "TRIP_START" || data._type === "TRIP_END") {
+  if (data._type === "TRIP_START" || data._type === "TRIP_END" || data._type === "TRIP_REMINDER") {
     return {
       id:       row.id,
-      type:     data._type as "TRIP_START" | "TRIP_END",
+      type:     data._type as "TRIP_START" | "TRIP_END" | "TRIP_REMINDER",
       title:    (data.title  ?? "Trip update") as string,
       body:     (data.body   ?? "") as string,
       location: "Trip update",
@@ -195,20 +112,8 @@ async function getNotificationsHandler() {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) return NextResponse.json([], { status: 401 });
 
-  // Load user's home district for BIPAD live query
-  const user = await prisma.user.findUnique({
-    where:   { id: session.user.id },
-    select: {
-      homeLocation: {
-        select: { district: { select: { name: true } } },
-      },
-    },
-  });
-
-  const homeDistrict = user?.homeLocation?.district?.name ?? "";
-
   // Fetch DB notifications + live BIPAD in parallel
-  const [dbRows, liveIncidents] = await Promise.all([
+  const [dbRows, liveAlerts] = await Promise.all([
     prisma.notification.findMany({
       where:   {
         userId:  session.user.id,
@@ -217,11 +122,11 @@ async function getNotificationsHandler() {
       orderBy: { createdAt: "desc" },
       take:    50,
     }),
-    fetchLiveBipad(homeDistrict),
+    fetchRecentBipadIncidents(48),
   ]);
 
   // Parse DB notifications using shared helper
-  const dbNotifications: Notification[] = dbRows.flatMap((row) => {
+  const dbNotifications: FlatNotification[] = dbRows.flatMap((row) => {
     try {
       const data = JSON.parse(row.message);
       const parsed = parseDbRow(row, data);
@@ -237,13 +142,25 @@ async function getNotificationsHandler() {
       .map((id) => `bipad-${id}`)
   );
 
-  // Filter live incidents — skip ones already written to DB
-  const newLiveIncidents = liveIncidents.filter((n) => !dbBipadIds.has(n.id));
+  // Include all live incidents across Nepal, skip ones already in DB
+  const liveIncidents: FlatNotification[] = liveAlerts
+    .filter((a) => !dbBipadIds.has(a.id))
+    .map((a) => ({
+      id: a.id,
+      type: a.type as NotifType,
+      title: a.title,
+      body: a.body,
+      location: a.location,
+      severity: a.severity as Severity,
+      time: new Date(a.date).toISOString(),
+      read: false,
+      source: "BIPAD",
+    }));
 
   // Persist new BIPAD incidents to DB so read state survives refresh
-  if (newLiveIncidents.length > 0) {
+  if (liveIncidents.length > 0) {
     await prisma.notification.createMany({
-      data: newLiveIncidents.map((n) => ({
+      data: liveIncidents.map((n) => ({
         userId:  session.user.id,
         message: JSON.stringify({
           _type:      "HAZARD",
@@ -271,13 +188,13 @@ async function getNotificationsHandler() {
       take:    50,
     });
 
-    const allNotifications: Notification[] = updatedRows.flatMap((row) => {
+    const allNotifications: FlatNotification[] = updatedRows.flatMap((row) => {
       try {
         const data = JSON.parse(row.message);
         if (data._type === "PROFILE") return [];
         return [parseDbRow(row, data)];
       } catch { return []; }
-    }).filter(Boolean) as Notification[];
+    }).filter(Boolean) as FlatNotification[];
 
     return NextResponse.json(
       allNotifications.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())

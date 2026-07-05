@@ -461,10 +461,10 @@ export default function NewTripPage() {
                     const alreadyAdded = members.some((m) => m.userId === u.id);
                     return (
                       <div key={u.id} className="flex items-center justify-between px-3 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                        <div>
+                        <Link href={`/profile/${u.id}`} className="flex-1 min-w-0">
                           <p className="font-body text-sm text-white">{u.name}</p>
                           {u.username && <p className="font-body text-xs text-slate-500">@{u.username}</p>}
-                        </div>
+                        </Link>
                         <button type="button" onClick={() => addMember(u)} disabled={alreadyAdded || !u.username}
                           className={`flex items-center gap-1 px-3 py-1.5 rounded-lg border text-xs font-body font-medium transition-all ${alreadyAdded ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-400 cursor-default" : "border-amber-500/25 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20"}`}>
                           {alreadyAdded ? <><Check size={11} /> Added</> : <><UserPlus size={11} /> Add</>}

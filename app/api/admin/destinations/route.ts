@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAdmin, handleAdminError } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { withRateLimit } from "@/lib/rate-limit";
+import { validateCoordinates } from "@/lib/destinations/validation";
 
 async function getDestinationsHandler(req: NextRequest) {
   try {
@@ -82,6 +83,13 @@ async function createDestinationHandler(req: NextRequest) {
       return NextResponse.json({ message: "Missing required fields." }, { status: 400 });
     }
 
+    const parsedLat = parseFloat(latitude);
+    const parsedLon = parseFloat(longitude);
+    const coordCheck = validateCoordinates(parsedLat, parsedLon);
+    if (!coordCheck.valid) {
+      return NextResponse.json({ message: `Invalid coordinates: ${coordCheck.reason}` }, { status: 400 });
+    }
+
     // Normalize name
     const normalizedName = name
       .toLowerCase()
@@ -120,8 +128,8 @@ async function createDestinationHandler(req: NextRequest) {
         district: district.trim(),
         province: province.trim(),
         municipality: municipality ? municipality.trim() : null,
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
+        latitude: parsedLat,
+        longitude: parsedLon,
         altitude: altitude ? parseFloat(altitude) : null,
         category,
         description: description || null,

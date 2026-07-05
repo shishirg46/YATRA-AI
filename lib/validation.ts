@@ -107,6 +107,39 @@ export const assessRequestSchema = z.object({
   force: z.boolean().optional().default(false),
 });
 
+export function validatePlanBusinessRules(
+  data: z.infer<typeof planRequestSchema>
+): { ok: true } | { ok: false; message: string; status: number } {
+  const start = new Date(data.startDate);
+  const end = new Date(data.endDate);
+
+  if (start >= end) {
+    return { ok: false, message: "Start date must be before end date", status: 400 };
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (start < today) {
+    return { ok: false, message: "Start date cannot be in the past", status: 400 };
+  }
+
+  if (data.budgetNPR <= 0) {
+    return { ok: false, message: "Budget must be greater than 0", status: 400 };
+  }
+
+  if (data.tripType === "GROUP" && data.memberUsernames.length === 0) {
+    return { ok: false, message: "Group trips require at least one member", status: 400 };
+  }
+
+  const hasOriginLat = data.originLat != null;
+  const hasOriginLon = data.originLon != null;
+  if (hasOriginLat !== hasOriginLon) {
+    return { ok: false, message: "Both origin coordinates must be provided or neither", status: 400 };
+  }
+
+  return { ok: true };
+}
+
 /**
  * Validates request body against a Zod schema.
  * Returns `{ success: true, data }` or `{ success: false, error: string }`.

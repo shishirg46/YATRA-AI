@@ -7,6 +7,7 @@
 import type { Metadata } from "next";
 import { DM_Sans, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
+import { ErrorBoundary } from "@/lib/components/error-boundary";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -66,7 +67,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${dmSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
         <Toaster theme="dark" position="top-center" richColors closeButton />
       </body>
     </html>

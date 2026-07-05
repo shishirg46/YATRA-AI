@@ -82,6 +82,31 @@ PostgreSQL with PostGIS extension. Key models:
 - `TravelPlan`, `TravelStop`, `TravelGroup` — Trip management
 - `EmergencyAlert`, `EmergencyContact` — SOS system
 
+### Seed Script Order
+
+Run in this sequence to populate demo data:
+
+```bash
+# 1. Base geography — provinces, districts, route nodes/edges
+npm run seed:nepal-routing
+
+# 2. Destinations — 643 places from Wikipedia + OpenStreetMap
+npm run seed:wikipedia-osm
+
+# 3. Weather + hazard baselines per location
+npm run seed:route-baseline
+
+# 4. Route intelligence — corridor seeding (for route graph)
+npx tsx scripts/seed-corridors.ts
+npm run seed:route-templates
+
+# 5. Enrich nodes and edges with elevation, hazard exposure, surface type
+npx tsx scripts/seed-node-intelligence.ts
+npx tsx scripts/seed-edge-intelligence.ts
+
+# 6. Disaster data ingestion (requires API keys)
+npm run ingest:disasters:historical
+
 ---
 
 ## Environment Variables

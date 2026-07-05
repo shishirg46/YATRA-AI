@@ -94,6 +94,11 @@ export const ModelName = {
   Notification: 'Notification',
   AuditLog: 'AuditLog',
   yatra_disaster_events: 'yatra_disaster_events',
+  Intersection: 'Intersection',
+  Hazard: 'Hazard',
+  SegmentHazard: 'SegmentHazard',
+  GraphConfig: 'GraphConfig',
+  ExplanationTemplate: 'ExplanationTemplate',
   UserPrivacy: 'UserPrivacy',
   TripPhoto: 'TripPhoto'
 } as const
@@ -399,9 +404,11 @@ export const RouteNodeScalarFieldEnum = {
   sequenceIndex: 'sequenceIndex',
   roadClass: 'roadClass',
   isJunctionNode: 'isJunctionNode',
+  osmNodeId: 'osmNodeId',
   placeId: 'placeId',
   isHub: 'isHub',
   isActive: 'isActive',
+  graphVersion: 'graphVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -493,9 +500,23 @@ export const OsmWayScalarFieldEnum = {
   id: 'id',
   name: 'name',
   roadClass: 'roadClass',
+  highway: 'highway',
+  surface: 'surface',
+  tracktype: 'tracktype',
+  smoothness: 'smoothness',
+  lanes: 'lanes',
+  width: 'width',
+  maxspeed: 'maxspeed',
+  bridge: 'bridge',
+  tunnel: 'tunnel',
+  access: 'access',
+  service: 'service',
+  junction: 'junction',
   oneWay: 'oneWay',
+  tags: 'tags',
   graphVersion: 'graphVersion',
   importBatchId: 'importBatchId',
+  sourceFile: 'sourceFile',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -572,8 +593,21 @@ export const EdgeCacheScalarFieldEnum = {
   toNodeId: 'toNodeId',
   distanceKm: 'distanceKm',
   gradientPct: 'gradientPct',
+  maxGradientPct: 'maxGradientPct',
+  curvatureDeg: 'curvatureDeg',
   surfaceType: 'surfaceType',
   compositeCost: 'compositeCost',
+  costFast: 'costFast',
+  costSafe: 'costSafe',
+  costEmergency: 'costEmergency',
+  costTruck: 'costTruck',
+  startDistrict: 'startDistrict',
+  endDistrict: 'endDistrict',
+  startProvince: 'startProvince',
+  endProvince: 'endProvince',
+  histLandslideCount: 'histLandslideCount',
+  histFloodCount: 'histFloodCount',
+  histRoadClosureCnt: 'histRoadClosureCnt',
   riskSnapshotId: 'riskSnapshotId',
   graphVersion: 'graphVersion',
   season: 'season',
@@ -700,6 +734,8 @@ export const TravelPlanScalarFieldEnum = {
   groupRiskResult: 'groupRiskResult',
   startNotifiedAt: 'startNotifiedAt',
   endNotifiedAt: 'endNotifiedAt',
+  reminded3dAt: 'reminded3dAt',
+  reminded1dAt: 'reminded1dAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -795,6 +831,77 @@ export const Yatra_disaster_eventsScalarFieldEnum = {
 } as const
 
 export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
+
+
+export const IntersectionScalarFieldEnum = {
+  id: 'id',
+  osmNodeId: 'osmNodeId',
+  connectedWays: 'connectedWays',
+  degree: 'degree',
+  graphVersion: 'graphVersion'
+} as const
+
+export type IntersectionScalarFieldEnum = (typeof IntersectionScalarFieldEnum)[keyof typeof IntersectionScalarFieldEnum]
+
+
+export const HazardScalarFieldEnum = {
+  id: 'id',
+  hazardType: 'hazardType',
+  severity: 'severity',
+  confidence: 'confidence',
+  source: 'source',
+  externalId: 'externalId',
+  validFrom: 'validFrom',
+  validTo: 'validTo',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type HazardScalarFieldEnum = (typeof HazardScalarFieldEnum)[keyof typeof HazardScalarFieldEnum]
+
+
+export const SegmentHazardScalarFieldEnum = {
+  segmentId: 'segmentId',
+  hazardId: 'hazardId',
+  overlapLengthM: 'overlapLengthM',
+  startOffsetM: 'startOffsetM',
+  endOffsetM: 'endOffsetM',
+  affectedPercent: 'affectedPercent',
+  computedAt: 'computedAt'
+} as const
+
+export type SegmentHazardScalarFieldEnum = (typeof SegmentHazardScalarFieldEnum)[keyof typeof SegmentHazardScalarFieldEnum]
+
+
+export const GraphConfigScalarFieldEnum = {
+  id: 'id',
+  currentGraphVersion: 'currentGraphVersion',
+  previousGraphVersion: 'previousGraphVersion',
+  buildStatus: 'buildStatus',
+  publishedBy: 'publishedBy',
+  publishedAt: 'publishedAt'
+} as const
+
+export type GraphConfigScalarFieldEnum = (typeof GraphConfigScalarFieldEnum)[keyof typeof GraphConfigScalarFieldEnum]
+
+
+export const ExplanationTemplateScalarFieldEnum = {
+  id: 'id',
+  templateGroup: 'templateGroup',
+  condition: 'condition',
+  severity: 'severity',
+  audience: 'audience',
+  variant: 'variant',
+  template: 'template',
+  priority: 'priority',
+  templateVersion: 'templateVersion',
+  enabled: 'enabled',
+  archivedAt: 'archivedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ExplanationTemplateScalarFieldEnum = (typeof ExplanationTemplateScalarFieldEnum)[keyof typeof ExplanationTemplateScalarFieldEnum]
 
 
 export const UserPrivacyScalarFieldEnum = {

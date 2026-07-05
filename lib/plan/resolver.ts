@@ -73,10 +73,25 @@ export async function resolveOriginAndRoute(
   return { effectiveHome, routePlan, originResolutionNote };
 }
 
+export async function tryGenerateRouteIntelligence(
+  origin: { lat: number; lon: number; name: string },
+  destination: { lat: number; lon: number; name: string },
+  travelDate: string,
+  options?: { destinationId?: string },
+): Promise<Awaited<ReturnType<typeof generateRouteIntelligence>> | null> {
+  try {
+    return await generateRouteIntelligence(origin, destination, travelDate, { destinationId: options?.destinationId });
+  } catch (error) {
+    console.warn("[plan] route intelligence generation failed, continuing without route-specific analysis", error);
+    return null;
+  }
+}
+
 export async function assessRoute(
   effectiveHome: OriginLocation | null,
   location: { id: string; name: string; latitude: number; longitude: number; altitude: number | null; district: { name: string; province: { name: string } } },
   travelDate: string,
+  options?: { routeIntelligence?: Awaited<ReturnType<typeof generateRouteIntelligence>> | null },
 ) {
   if (!effectiveHome || Math.abs(effectiveHome.latitude) < 0.001) return null;
 
@@ -85,7 +100,7 @@ export async function assessRoute(
   if (latDiff * latDiff + lonDiff * lonDiff < 1e-10) return null;
 
   try {
-    const result = await generateRouteIntelligence(
+    const result = options?.routeIntelligence ?? await generateRouteIntelligence(
       { lat: effectiveHome.latitude, lon: effectiveHome.longitude, name: effectiveHome.name },
       { lat: location.latitude, lon: location.longitude, name: location.name },
       travelDate,
@@ -94,16 +109,53 @@ export async function assessRoute(
 
     if (!result.bestRoute) return null;
 
-    const highRiskSegments = result.bestRoute.segments.filter(
+    const segments = result.bestRoute.segments;
+    const highRiskSegments = segments.filter(
       (s) => s.riskLevel === "HIGH" || s.riskLevel === "EXTREME"
     );
-    const segmentAlerts = highRiskSegments
-      .map((s) => s.hazards.join(", "))
-      .filter(Boolean);
+    const totalKm = Math.round(result.bestRoute.distance);
+    const durationH = Math.round(result.bestRoute.duration);
+    const corridorLabel = `${effectiveHome.name} → ${location.name}`;
 
-    const reason = segmentAlerts.length > 0
-      ? `Road hazards detected on ${highRiskSegments.length} of ${result.bestRoute.segments.length} segments: ${segmentAlerts.join("; ")}`
-      : `Road conditions on all ${result.bestRoute.segments.length} segments appear favorable based on route data.`;
+    const terrainTypes = [...new Set(segments.map(s => {
+      if (s.elevationStart != null && s.elevationEnd != null) {
+        const avg = (s.elevationStart + s.elevationEnd) / 2;
+        if (avg > 3000) return "high mountain";
+        if (avg > 1000) return "hilly";
+      }
+      return null;
+    }).filter(Boolean))] as string[];
+    const terrainDesc = terrainTypes.length > 0 ? terrainTypes.join(" and ") : null;
+
+    const parts: string[] = [];
+    parts.push(`Corridor ${corridorLabel} spans ${totalKm} km (~${durationH}h)`);
+    if (terrainDesc) parts.push(`through ${terrainDesc} terrain`);
+
+    if (highRiskSegments.length > 0) {
+      const details = highRiskSegments.map(s => {
+        const loc = `${s.startPoint.name} → ${s.endPoint.name}`;
+        const codes = [s.roadCode, s.roadName].filter(Boolean).join(" / ");
+        const withRoad = codes ? ` (${codes})` : "";
+        const hazards = s.hazards.length > 0 ? s.hazards.join(", ") : "hazards detected";
+        const rt = s.realtime;
+        const realtimeNote = rt && (rt.floodIndex > 0 || rt.landslideIndex > 0)
+          ? ` [flood:${(rt.floodIndex * 100).toFixed(0)}% land:${(rt.landslideIndex * 100).toFixed(0)}%]`
+          : "";
+        return `${loc}${withRoad} — ${hazards}${realtimeNote}`;
+      });
+      parts.push(`with ${highRiskSegments.length} concern segment${highRiskSegments.length > 1 ? "s" : ""}: ${details.join("; ")}`);
+    } else {
+      const moderateCount = segments.filter(s => s.riskLevel === "MEDIUM").length;
+      if (moderateCount > 0) {
+        parts.push(`all ${segments.length} segments are manageable (${moderateCount} with moderate caution)`);
+      } else {
+        const roadCodes = [...new Set(segments.map(s => s.roadCode).filter(Boolean))] as string[];
+        parts.push(`all ${segments.length} segments appear favorable`);
+        if (roadCodes.length > 0) parts.push(`via ${roadCodes.join(", ")}`);
+      }
+    }
+
+    const reason = parts.join(". ") + ".";
 
     const first = result.bestRoute.segments[0];
     const last = result.bestRoute.segments[result.bestRoute.segments.length - 1];

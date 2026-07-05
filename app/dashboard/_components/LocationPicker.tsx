@@ -24,7 +24,6 @@ interface LocationPickerProps {
 type Tab = "search" | "map";
 
 const NEPAL_CENTER: [number, number] = [28.2, 84.0];
-const NOMINATIM_BASE = process.env.NEXT_PUBLIC_NOMINATIM_URL || "https://nominatim.openstreetmap.org";
 
 const MapPickerInner = dynamic(
   () => import("./MapPicker"),
@@ -67,35 +66,24 @@ export function LocationPicker({ onSelect, onClose, initialQuery = "" }: Locatio
       setLoading(true);
       const combined: LocationResult[] = [];
       try {
-        const destRes = await fetch(`/api/destinations/search?q=${encodeURIComponent(query)}`);
-        if (destRes.ok) {
-          const data = await destRes.json();
-          if (Array.isArray(data)) {
-            combined.push(...data);
-          }
-        }
-      } catch {}
-      try {
-        if (combined.length < 5) {
-          const nomRes = await fetch(
-            `${NOMINATIM_BASE}/search?q=${encodeURIComponent(query + ", Nepal")}&format=json&limit=5&countrycodes=np`
-          );
-          if (nomRes.ok) {
-            const data = await nomRes.json();
-            for (const item of data) {
-              const lat = parseFloat(item.lat);
-              const lon = parseFloat(item.lon);
-              if (!isFinite(lat) || !isFinite(lon)) continue;
-              const addr = item.address || {};
-              combined.push({
-                id: `nominatim-${item.osm_id || lat}-${lon}`,
-                name: item.display_name?.split(",")[0] || item.name || query,
-                district: addr.county || addr.state_district || addr.state || "Nepal",
-                province: addr.state || "Nepal",
-                latitude: lat,
-                longitude: lon,
-              });
-            }
+        const nomRes = await fetch(
+          `/api/nominatim/search?q=${encodeURIComponent(query)}&limit=5&countrycodes=np`
+        );
+        if (nomRes.ok) {
+          const data = await nomRes.json();
+          for (const item of data) {
+            const lat = parseFloat(item.lat);
+            const lon = parseFloat(item.lon);
+            if (!isFinite(lat) || !isFinite(lon)) continue;
+            const addr = item.address || {};
+            combined.push({
+              id: `nominatim-${item.osm_id || lat}-${lon}`,
+              name: addr.village || addr.town || addr.city || item.display_name?.split(",")[0] || item.name || query,
+              district: addr.county || addr.municipality || addr.city_district || addr.state_district || addr.state || "Nepal",
+              province: addr.state || "Nepal",
+              latitude: lat,
+              longitude: lon,
+            });
           }
         }
       } catch {}

@@ -1,4 +1,4 @@
-import { isPointInNepal } from "@/lib/routing/geo";
+import { haversineKm, isPointInNepal } from "@/lib/routing/geo";
 
 export interface NominatimResult {
   displayName: string;
@@ -98,6 +98,78 @@ export async function reverseGeocodeNepal(
     shortName,
     address: addr,
   };
+}
+
+export interface HospitalResult {
+  name: string;
+  lat: number;
+  lon: number;
+  distanceKm: number;
+  osmId?: string;
+  osmType?: string;
+}
+
+/**
+ * Search for hospitals near a location in Nepal using Nominatim.
+ * Returns up to `limit` hospitals sorted by relevance.
+ */
+export async function searchHospitalsNear(
+  lat: number,
+  lon: number,
+  limit = 3,
+): Promise<HospitalResult[]> {
+  if (!isPointInNepal(lat, lon)) return [];
+
+  const viewbox = `${lon - 0.15},${lat - 0.15},${lon + 0.15},${lat + 0.15}`;
+  const url = new URL(`${NOMINATIM_BASE}/search`);
+  url.searchParams.set("format", "json");
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("q", "hospital");
+  url.searchParams.set("countrycodes", "np");
+  url.searchParams.set("lat", String(lat));
+  url.searchParams.set("lon", String(lon));
+  url.searchParams.set("bounded", "1");
+  url.searchParams.set("viewbox", viewbox);
+  url.searchParams.set("extratags", "1");
+  url.searchParams.set("accept-language", "en");
+
+  const data = await fetchNominatimJson<
+    {
+      display_name?: string;
+      lat?: string;
+      lon?: string;
+      type?: string;
+      osm_id?: string;
+      osm_type?: string;
+      distance?: string;
+      class?: string;
+      extratags?: Record<string, string>;
+    }[]
+  >(url.toString());
+
+  if (!data || !Array.isArray(data)) return [];
+
+  const results: HospitalResult[] = [];
+  for (const hit of data) {
+    const hLat = parseFloat(hit.lat ?? "");
+    const hLon = parseFloat(hit.lon ?? "");
+    if (!Number.isFinite(hLat) || !Number.isFinite(hLon)) continue;
+
+    const name = hit.display_name?.split(",")[0]?.trim();
+    if (!name) continue;
+
+    results.push({
+      name,
+      lat: hLat,
+      lon: hLon,
+      distanceKm: haversineKm(lat, lon, hLat, hLon),
+      osmId: hit.osm_id,
+      osmType: hit.osm_type,
+    });
+  }
+
+  results.sort((a, b) => a.distanceKm - b.distanceKm);
+  return results.slice(0, limit);
 }
 
 /** Search a place name within Nepal (used for validation, not UI search). */

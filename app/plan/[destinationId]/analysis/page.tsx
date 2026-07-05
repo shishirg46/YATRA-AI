@@ -18,7 +18,8 @@ function AnalysisInner() {
   const startDate = searchParams.get("startDate") ?? "";
   const endDate = searchParams.get("endDate") ?? "";
   const tripType = (searchParams.get("type") as "SOLO" | "GROUP" | null) ?? "SOLO";
-  const vehicle = searchParams.get("vehicle") ?? "car";
+  const rawVehicle = searchParams.get("vehicle");
+  const vehicle = rawVehicle && ["car", "motorcycle", "jeep", "bus"].includes(rawVehicle) ? rawVehicle : "car";
   const travelStyle = searchParams.get("style") ?? "standard";
   const qOriginLat = searchParams.get("originLat");
   const qOriginLon = searchParams.get("originLon");

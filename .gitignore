@@ -46,3 +46,8 @@ scripts/data/raw-edges.json
 
 nominatim/
 *.osrm*
+
+# Generated graph build artifacts
+builds/
+
+.opencodekathmandu-test.osm.pbf

@@ -1,4 +1,5 @@
 import type { NamedPlace, NamedRoute } from "@/lib/routing/types";
+import { haversineM } from "@/lib/routing/geo";
 import { simplifyPolyline, type LatLon } from "@/lib/routing/polyline-simplify";
 import { reverseGeocodeNepal } from "@/lib/routing/nominatim";
 import { fetchOsrmRouteThroughNodes } from "@/lib/routing/osrm-client";
@@ -55,6 +56,7 @@ function normalizeSettlementName(name: string): string | null {
   const normalized = name
     .replace(/\bward\s*(no\.?|number)?\s*\d+\b/gi, "")
     .replace(/\bmunicipality\b/gi, "")
+    .replace(/\bcity\b/gi, "")
     .replace(/\bsub-?metropolitan\b/gi, "")
     .replace(/\bmetropolitan\b/gi, "")
     .replace(/\brural\b/gi, "")
@@ -65,6 +67,60 @@ function normalizeSettlementName(name: string): string | null {
     .trim();
 
   return normalized.length > 0 ? normalized : null;
+}
+
+function inRoadCorridor(
+  lat: number, lon: number,
+  placeLat: number, placeLon: number,
+  samples: LatLon[],
+  index: number,
+  alongMeters: number,
+  crossMeters: number,
+): boolean {
+  const prev = index > 0 ? samples[index - 1] : null;
+  const next = index < samples.length - 1 ? samples[index + 1] : null;
+
+  let dlat: number, dlng: number;
+  if (prev && next) {
+    dlat = next.lat - prev.lat;
+    dlng = next.lon - prev.lon;
+  } else if (prev) {
+    dlat = lat - prev.lat;
+    dlng = lon - prev.lon;
+  } else if (next) {
+    dlat = next.lat - lat;
+    dlng = next.lon - lon;
+  } else {
+    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
+  }
+
+  const dirLen = Math.hypot(dlat, dlng);
+  if (dirLen < 1e-12) {
+    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
+  }
+
+  const ux = dlng / dirLen;
+  const uy = dlat / dirLen;
+
+  const cosLat = Math.cos(lat * Math.PI / 180);
+  const dx = (placeLon - lon) * (111320 * cosLat);
+  const dy = (placeLat - lat) * 111320;
+
+  const uxm = ux * (111320 * cosLat);
+  const uym = uy * 111320;
+  const umag = Math.hypot(uxm, uym);
+  if (umag < 1e-12) return true;
+
+  const uxn = uxm / umag;
+  const uyn = uym / umag;
+
+  const vxn = -uyn;
+  const vyn = uxn;
+
+  const along = dx * uxn + dy * uyn;
+  const cross = Math.abs(dx * vxn + dy * vyn);
+
+  return Math.abs(along) <= alongMeters && cross <= crossMeters;
 }
 
 export async function extractRouteNames(
@@ -92,20 +148,26 @@ export async function extractRouteNames(
   const sampled = simplifyPolyline(coordinates, 1.0);
 
   const results = await Promise.all(
-    sampled.map((p) => reverseGeocodeNepal(p.lat, p.lon)),
+    sampled.map(async (p, idx) => ({
+      coord: p,
+      result: await reverseGeocodeNepal(p.lat, p.lon),
+      index: idx,
+    })),
   );
 
   const namedPlaces: NamedPlace[] = [];
-  for (const r of results) {
+  const seen = new Set<string>();
+  for (const { coord, result: r, index: idx } of results) {
     if (!r) continue;
+    if (!inRoadCorridor(coord.lat, coord.lon, r.lat, r.lon, sampled, idx, 500, 250)) continue;
     if (!isSettlement(r.address)) continue;
 
     const name = getSettlementName(r.address);
     const label = getSettlementLabel(r.address);
     if (!name || !label) continue;
 
-    const last = namedPlaces[namedPlaces.length - 1];
-    if (last && last.name === name) continue;
+    if (seen.has(name)) continue;
+    seen.add(name);
 
     namedPlaces.push({
       name,

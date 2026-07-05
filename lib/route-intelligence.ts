@@ -5,8 +5,8 @@ import { ensureRecentRealtimeData, calculateIndependentHazardScores } from "@/li
 import type { IndependentHazardScores } from "@/lib/disaster-pipeline";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
-import { buildSegmentedRoute, buildRouteAlternatives } from "@/lib/routing/route-service";
-import { roadCodeName } from "@/lib/routing/route-abstraction";
+import { buildSegmentedRoute } from "@/lib/routing/route-service";
+
 import { resolveDestination } from "@/lib/routing/place-resolver";
 import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
 import { createRouteBuffer } from "@/lib/routing/route-buffer";
@@ -146,23 +146,22 @@ export interface RouteIntelligenceResult {
   generatedAt: string;
 }
 
-/**
- * Ultra-fast route builder — the routing kernel.
- *
- * Returns structural route data (waypoints, geometry, polyline, turn-by-turn)
- * with NO hazard analysis, NO place enrichment, NO DB writes.
- *
- * Target: <3s.  This is the ONLY synchronous path exposed to the API handler.
- *
- * Design rules:
- *   - A* + ORS geometry only
- *   - NO createRouteBuffer / findPlacesAlongRoute / rankPlacesForRoute
- *   - NO saveRouteTemplate
- *   - NO ensureRecentRealtimeData
- *   - NO fallback chain (stored routes, ORS alternatives, snap-to-road)
- *   - DOR alternatives via buildRouteAlternatives (synchronous, sub-100ms)
- *   - If A* fails → return empty (handler decides next step)
- */
+  /**
+   * Ultra-fast route builder — the routing kernel.
+   *
+   * Returns structural route data (waypoints, geometry, polyline, turn-by-turn)
+   * with NO hazard analysis, NO place enrichment, NO DB writes.
+   *
+   * Target: <3s.  This is the ONLY synchronous path exposed to the API handler.
+   *
+   * Design rules:
+   *   - A* + ORS geometry only
+   *   - NO createRouteBuffer / findPlacesAlongRoute / rankPlacesForRoute
+   *   - NO saveRouteTemplate
+   *   - NO ensureRecentRealtimeData
+   *   - NO fallback chain (stored routes, ORS alternatives, snap-to-road)
+   *   - If A* fails → return empty (handler decides next step)
+   */
 export async function buildRouteUltraFast(
   origin: GeoPoint,
   destination: GeoPoint,
@@ -199,41 +198,20 @@ export async function buildRouteUltraFast(
   let routes: Route[] = [];
 
   try {
-    // Try DOR first for semantic route structure; fall back to OSRM if unavailable
-    let built: BuiltRoute;
-    try {
-      built = await withTimeout(
-        buildSegmentedRoute({
-          originLat: origin.lat,
-          originLon: origin.lon,
-          originName: origin.name,
-          destinationLat: resolvedDest.lat,
-          destinationLon: resolvedDest.lon,
-          destinationName: resolvedDest.name ?? destination.name,
-          destinationId: options?.destinationId,
-          vehicle,
-          dorRoutingMode: "balanced",
-        }),
-        10_000,
-      );
-      if (built.provenance?.validationStatus === "empty") throw new Error("DOR empty");
-    } catch {
-      built = await withTimeout(
-        buildSegmentedRoute({
-          originLat: origin.lat,
-          originLon: origin.lon,
-          originName: origin.name,
-          destinationLat: resolvedDest.lat,
-          destinationLon: resolvedDest.lon,
-          destinationName: resolvedDest.name ?? destination.name,
-          destinationId: options?.destinationId,
-          vehicle,
-        }),
-        10_000,
-      );
-    }
+    const built = await withTimeout(
+      buildSegmentedRoute({
+        originLat: origin.lat,
+        originLon: origin.lon,
+        originName: origin.name,
+        destinationLat: resolvedDest.lat,
+        destinationLon: resolvedDest.lon,
+        destinationName: resolvedDest.name ?? destination.name,
+        destinationId: options?.destinationId,
+        vehicle,
+      }),
+      10_000,
+    );
 
-    // ORS geometry: cached hit is instant, miss adds ~1-3s
     let roadRoute: Awaited<ReturnType<typeof fetchRouteGeometry>> | undefined;
     try {
       roadRoute = await withTimeout(
@@ -241,8 +219,8 @@ export async function buildRouteUltraFast(
           { lat: origin.lat, lon: origin.lon, name: origin.name },
           { lat: resolvedDest.lat, lon: resolvedDest.lon, name: resolvedDest.name },
           vehicle,
-          undefined, // waypoints
-          signal,    // hard cancellation for ORS HTTP
+          undefined,
+          signal,
         ),
         10_000,
       );
@@ -250,8 +228,6 @@ export async function buildRouteUltraFast(
       // ORS failure is non-fatal — fall back to A*-only polyline
     }
 
-    // Compute display segments from ground-truth ORS geometry
-    // (display-only — never feeds back into routing inputs)
     let displayChain: RouteNode[] | undefined;
     if (roadRoute?.coordinates?.length) {
       try {
@@ -273,34 +249,12 @@ export async function buildRouteUltraFast(
       { ...origin, name: origin.name ?? built.origin.name },
       { ...resolvedDest, name: resolvedDest.name ?? built.destination.name },
       roadRoute,
-      undefined,  // no placesAlongRoute (ultra-fast)
-      undefined,  // no rankedStops (ultra-fast)
+      undefined,
+      undefined,
       displayChain,
     );
 
-    // Generate diverse alternatives via DOR with different preferRoad values
-    try {
-      const extras = buildRouteAlternatives(
-        origin.lat, origin.lon,
-        resolvedDest.lat, resolvedDest.lon,
-        origin.name ?? "Origin",
-        resolvedDest.name ?? destination.name ?? "Destination",
-        undefined,
-      );
-      const primaryChain = built.abstraction?.roadChain?.join("|") ?? "";
-      const altRoutes: Route[] = [];
-      for (let i = 0; i < extras.length; i++) {
-        const altChain = extras[i].abstraction.roadChain.join("|");
-        if (altChain === primaryChain) continue; // dedup with primary
-        if (altRoutes.some((r) => r.name === extras[i].label)) continue; // dedup among alts
-        altRoutes.push(
-          alternativeToRoute(extras[i], i + 1, origin, resolvedDest, roadRoute),
-        );
-      }
-      routes = [primaryRoute, ...altRoutes];
-    } catch {
-      routes = [primaryRoute];
-    }
+    routes = [primaryRoute];
   } catch (err) {
     console.warn("[route-ultrafast] A* build failed:", err);
   }
@@ -867,7 +821,7 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
       const district = getDistrictFromCoords(centerLat, centerLon);
 
       const [currentHazard, historicalHazard, weather] = await Promise.all([
-        withTimeout(fetchHazard(district, centerLat, centerLon), 6000).catch(() => null),
+        withTimeout(fetchHazard(centerLat, centerLon, prisma), 6000).catch(() => null),
         withTimeout(fetchHistoricalHazard(district, centerLat, centerLon, departureDate, 5), 6000).catch(() => null),
         withTimeout(
           fetchWeather(centerLat, centerLon),
@@ -1296,75 +1250,6 @@ function buildSegmentsFromDisplayChain(chain: RouteNode[]): RouteSegment[] {
   return segments;
 }
 
-/**
- * Convert a RouteAlternative (from buildRouteAlternatives) into a Route.
- * Used to surface multiple routing options in the UI.
- */
-function alternativeToRoute(
-  alt: import("@/lib/routing/types").RouteAlternative,
-  index: number,
-  origin: GeoPoint,
-  destination: GeoPoint,
-  primaryPolyline?: { coordinates: RouteCoordinate[]; encodedPolyline?: string },
-): Route {
-  const hs = alt.abstraction.highwaySegments;
-
-  // Build waypoints from highway segment endpoints
-  const waypoints: RouteWaypoint[] = [];
-  let distAcc = 0;
-  for (let i = 0; i < hs.length; i++) {
-    const seg = hs[i];
-    if (i === 0) {
-      waypoints.push({
-        lat: seg.fromLat,
-        lon: seg.fromLon,
-        name: seg.fromPlace,
-        distanceFromStart: 0,
-      });
-    }
-    waypoints.push({
-      lat: seg.toLat,
-      lon: seg.toLon,
-      name: seg.toPlace,
-      distanceFromStart: Math.round((distAcc + seg.distanceKm * 1000)),
-    });
-    distAcc += seg.distanceKm * 1000;
-  }
-  if (waypoints.length === 0) {
-    waypoints.push(
-      { lat: origin.lat, lon: origin.lon, name: origin.name, distanceFromStart: 0 },
-      { lat: destination.lat, lon: destination.lon, name: destination.name, distanceFromStart: Math.round(alt.abstraction.totalDistanceKm * 1000) },
-    );
-  }
-
-  const segments: RouteSegment[] = hs.map((s, i) => ({
-    index: i,
-    startPoint: { lat: s.fromLat, lon: s.fromLon, name: s.fromPlace },
-    endPoint: { lat: s.toLat, lon: s.toLon, name: s.toPlace },
-    distance: Math.round(s.distanceKm * 1000),
-    riskScore: 0,
-    riskLevel: "MEDIUM" as const,
-    hazards: [],
-    roadCode: s.roadCode,
-    roadName: roadCodeName(s.roadCode),
-  }));
-
-  return {
-    id: `alternative-${index + 1}`,
-    name: alt.label,
-    description: alt.description ?? `${index + 1} alternative route option`,
-    waypoints,
-    distance: Math.round(alt.abstraction.totalDistanceKm * 1000),
-    duration: Math.round((alt.abstraction.totalDistanceKm / 50) * 3600 * 1000),
-    riskScore: 0.5,
-    riskLevel: "MEDIUM",
-    hazards: { landslideZones: [], floodZones: [], activeAlerts: [], weatherRisk: "unknown", historicalRisk: 0.5 },
-    segments,
-    source: "dor-alternative",
-    encodedPolyline: primaryPolyline?.encodedPolyline,
-  };
-}
-
 function builtRouteToIntelligenceRoute(
   built: BuiltRoute,
   origin: GeoPoint,
@@ -1393,31 +1278,19 @@ function builtRouteToIntelligenceRoute(
       }))
     : nodeWaypoints;
 
-  // Build segments from abstraction (DOR priority), displayChain (ORS), or raw built.segments
+  // Build segments from displayChain (ORS projection) or raw built.segments
   const segments: RouteSegment[] =
-    built.abstraction?.highwaySegments?.length && built.provenance?.engine === "dor"
-      ? built.abstraction.highwaySegments.map((hs, i) => ({
-          index: i,
-          startPoint: { lat: hs.fromLat, lon: hs.fromLon, name: hs.fromPlace },
-          endPoint: { lat: hs.toLat, lon: hs.toLon, name: hs.toPlace },
-          distance: Math.round(hs.distanceKm * 1000),
+    displayChain
+      ? buildSegmentsFromDisplayChain(displayChain)
+      : built.segments.map((s) => ({
+          index: s.index,
+          startPoint: { lat: s.from.lat, lon: s.from.lon, name: s.from.name },
+          endPoint: { lat: s.to.lat, lon: s.to.lon, name: s.to.name },
+          distance: s.distance,
           riskScore: 0,
-          riskLevel: "MEDIUM" as RouteSegment["riskLevel"],
-          hazards: [],
-          roadCode: hs.roadCode,
-          roadName: roadCodeName(hs.roadCode),
-        }))
-      : displayChain
-        ? buildSegmentsFromDisplayChain(displayChain)
-        : built.segments.map((s) => ({
-            index: s.index,
-            startPoint: { lat: s.from.lat, lon: s.from.lon, name: s.from.name },
-            endPoint: { lat: s.to.lat, lon: s.to.lon, name: s.to.name },
-            distance: s.distance,
-            riskScore: 0,
-            riskLevel: (s.riskLevel ?? "MEDIUM") as RouteSegment["riskLevel"],
-            hazards: s.hazards ?? [],
-          }));
+          riskLevel: (s.riskLevel ?? "MEDIUM") as RouteSegment["riskLevel"],
+          hazards: s.hazards ?? [],
+        }));
 
   const highwayLabel = built.abstraction?.highwaySegments?.length
     ? built.abstraction.highwaySegments.map((hs) => `${hs.roadCode}: ${hs.fromPlace}→${hs.toPlace}`).join(" → ")

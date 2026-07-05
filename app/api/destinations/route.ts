@@ -32,7 +32,7 @@ async function getDestinationsHandler(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[destinations]", err);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
