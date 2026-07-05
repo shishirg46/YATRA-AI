@@ -151,9 +151,8 @@ export function computeSafetyScore(
   // ── A. STATIC LOCATION FACTORS ────────────────────────────────────────────
 
   // 1. Altitude penalty — the higher the destination, the higher the baseline risk
-  //    regardless of current weather. Reduced from v1 to avoid hard-filtering
-  //    legitimate trekking destinations (they should reach "CAUTION" not "HIGH_RISK").
-  if (alt >= 5000) {
+  //    regardless of current weather.
+  if (alt >= 5500) {
     penalties.altitude = 12;
     reasoning.push(`Extreme altitude (${alt.toLocaleString()}m) — severe hypoxia risk, requires professional guide`);
   } else if (alt >= 4500) {
@@ -177,14 +176,14 @@ export function computeSafetyScore(
     "tsum valley", "manaslu", "kanchenjunga",
   ].some((r) => name.includes(r));
 
-  if (isRemote && alt > 4000) {
-    penalties.remoteness = 10;
+  if (isRemote && alt >= 4000) {
+    penalties.remoteness = 5;
     reasoning.push("Very remote — no road access, nearest hospital hours away by helicopter");
   } else if (isRemote && alt > 3000) {
-    penalties.remoteness = 6;
+    penalties.remoteness = 3;
     reasoning.push("Remote area — limited medical facilities, emergency evacuation difficult");
   } else if (isRemote) {
-    penalties.remoteness = 3;
+    penalties.remoteness = 1;
   } else {
     penalties.remoteness = 0;
   }
@@ -205,7 +204,7 @@ export function computeSafetyScore(
     penalties.airBaseline = 8;
     reasoning.push("Kathmandu Valley has chronically poor air quality (PM2.5 frequently exceeds WHO limits)");
   } else if (MODERATE_POLLUTION_DISTRICTS.has(district)) {
-    penalties.airBaseline = 3;
+    penalties.airBaseline = 4;
   } else {
     penalties.airBaseline = 0;
   }
@@ -220,10 +219,10 @@ export function computeSafetyScore(
 
   // Temperature extremes
   if (weather.temperature < 0) {
-    penalties.temperature = Math.min(Math.abs(weather.temperature) / 20 * 10, 10);
+    penalties.temperature = Math.min(Math.abs(weather.temperature) / 20 * 10, 5);
     reasoning.push(`Sub-zero temperature (${weather.temperature}°C) — hypothermia risk`);
   } else if (weather.temperature > 38) {
-    penalties.temperature = Math.min((weather.temperature - 38) / 10 * 10, 10);
+    penalties.temperature = Math.min((weather.temperature - 38) / 10 * 10, 5);
     reasoning.push(`Extreme heat (${weather.temperature}°C) — heat stroke risk`);
   } else {
     penalties.temperature = 0;
@@ -231,9 +230,9 @@ export function computeSafetyScore(
 
   // ── C. REAL-TIME HAZARD ───────────────────────────────────────────────────
 
-  penalties.flood      = hazard.floodIndex     * 25;
-  penalties.landslide  = hazard.landslideIndex * 25;
-  penalties.earthquake = hazard.earthquakeIndex * 20;
+  penalties.flood      = hazard.floodIndex     * 15;
+  penalties.landslide  = hazard.landslideIndex * 5;
+  penalties.earthquake = hazard.earthquakeIndex * 4;
   penalties.heatIndex  = hazard.heatIndex      * 5;
   penalties.airQuality = hazard.airQuality     * 5;
 
