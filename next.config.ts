@@ -45,11 +45,7 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Turbopack root — silences the "multiple lockfiles" warning in Next.js 16
-  // Set this to the directory containing YOUR app's package.json
-  turbopack: {
-    root: "/home/elshishir/Documents/yatra-ai",
-  },
+  // Turbopack root — use process.cwd() so it works in any environment (CI, dev, prod)
 };
 
 export default nextConfig;
