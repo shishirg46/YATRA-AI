@@ -93,15 +93,31 @@ function buildManualTravelExplanation(report: PlanReport): string {
   return parts.join(" ");
 }
 
-function buildPrimaryPlaceChain(road: EnhancedRoad): string[] {
+function buildPrimaryPlaceChain(road: EnhancedRoad, destinationName?: string): string[] {
+  const stripWardSuffix = (name: string) => name.replace(/[-–—]\s*\d+\s*$/, "").trim();
   const places: string[] = [];
+  const seen = new Set<string>();
   for (const seg of road.segments ?? []) {
-    if (places.length === 0 || places[places.length - 1] !== seg.fromName) {
+    const fromNorm = stripWardSuffix(seg.fromName).toLowerCase();
+    if (places.length === 0 || !seen.has(fromNorm)) {
       places.push(seg.fromName);
+      seen.add(fromNorm);
     }
-    if (places[places.length - 1] !== seg.toName) {
+    const toNorm = stripWardSuffix(seg.toName).toLowerCase();
+    if (!seen.has(toNorm)) {
       places.push(seg.toName);
+      seen.add(toNorm);
     }
+  }
+  if (destinationName && places.length > 0) {
+    const destNorm = stripWardSuffix(destinationName).toLowerCase();
+    const filtered = places.filter((p, i) =>
+      i === places.length - 1 ||
+      (!stripWardSuffix(p).toLowerCase().includes(destNorm) &&
+        !destNorm.includes(stripWardSuffix(p).toLowerCase()))
+    );
+    filtered[filtered.length - 1] = destinationName;
+    return filtered;
   }
   return places;
 }
@@ -164,7 +180,7 @@ export default function PlanReportView({
 
   const placeNames = useMemo(() => {
     if (!roads || roads.length === 0) return [];
-    return buildPrimaryPlaceChain(roads[0]);
+    return buildPrimaryPlaceChain(roads[0], report.destination.name);
   }, [roads]);
   const primaryRoads = useMemo(() => roads?.slice(0, 1) ?? null, [roads]);
 
@@ -294,7 +310,7 @@ export default function PlanReportView({
               <div className="plan-card rounded-2xl p-4">
                 <div className="flex items-center gap-1.5 mb-2.5">
                   <AlertTriangle size={12} className="text-orange-400" />
-                  <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Hazard Indices</span>
+                  <span className="font-body text-[10px] text-slate-500 uppercase tracking-wider">Destination Hazard (realtime)</span>
                 </div>
                 <div className="space-y-2">
                   {[
@@ -481,7 +497,6 @@ export default function PlanReportView({
                             <span className="font-body font-semibold text-sm text-white truncate">{f.name}</span>
                             <span className={`px-1.5 py-0.5 rounded border text-[10px] font-body font-bold uppercase shrink-0 ${SEVERITY_COLOR[f.severity] ?? SEVERITY_COLOR.LOW}`}>{f.severity}</span>
                           </div>
-                          <span className="font-body text-[11px] text-slate-500 font-mono shrink-0">-{f.score}pts</span>
                         </div>
                         <div className="w-full h-1.5 rounded-full bg-slate-700/60 mb-1.5 overflow-hidden">
                           <div className={`h-full rounded-full ${barColor} transition-all`} style={{ width: `${severityPct}%` }} />

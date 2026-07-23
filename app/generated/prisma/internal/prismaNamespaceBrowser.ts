@@ -64,6 +64,7 @@ export const ModelName = {
   Verification: 'Verification',
   Destination: 'Destination',
   DestinationPhoto: 'DestinationPhoto',
+  DestinationEmbedding: 'DestinationEmbedding',
   Province: 'Province',
   District: 'District',
   Location: 'Location',
@@ -335,6 +336,16 @@ export const DestinationPhotoScalarFieldEnum = {
 } as const
 
 export type DestinationPhotoScalarFieldEnum = (typeof DestinationPhotoScalarFieldEnum)[keyof typeof DestinationPhotoScalarFieldEnum]
+
+
+export const DestinationEmbeddingScalarFieldEnum = {
+  destinationId: 'destinationId',
+  vector: 'vector',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DestinationEmbeddingScalarFieldEnum = (typeof DestinationEmbeddingScalarFieldEnum)[keyof typeof DestinationEmbeddingScalarFieldEnum]
 
 
 export const ProvinceScalarFieldEnum = {
@@ -826,8 +837,10 @@ export const Yatra_disaster_eventsScalarFieldEnum = {
   date: 'date',
   severity: 'severity',
   source: 'source',
+  district: 'district',
   metadata: 'metadata',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
 export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]

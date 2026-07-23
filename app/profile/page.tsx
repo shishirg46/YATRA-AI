@@ -6,10 +6,15 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft, MapPin, Calendar, Mountain, Loader2, Camera, X, Check,
-  Plus, ImageIcon,
+  Plus, ImageIcon, Trash2,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PhotoUpload } from "@/app/dashboard/_components/ui";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+  DialogFooter, DialogClose,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 type CompletedTrip = {
   id: string; title: string; startDate: string; endDate: string;
@@ -44,6 +49,7 @@ export default function ProfilePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [deletingPhoto, setDeletingPhoto] = useState<{ id: string } | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -103,6 +109,22 @@ export default function ProfilePage() {
     } catch {
       alert("Upload failed.");
     } finally { setUploading(false); }
+  }
+
+  function handleDeletePhoto(photoId: string) {
+    setDeletingPhoto({ id: photoId });
+  }
+
+  async function confirmDelete() {
+    if (!deletingPhoto) return;
+    try {
+      const res = await fetch(`/api/user/photos/${deletingPhoto.id}`, { method: "DELETE", credentials: "include" });
+      if (!res.ok) { alert("Failed to delete photo."); return; }
+      setPhotos((prev) => prev.filter((p) => p.id !== deletingPhoto.id));
+      setDeletingPhoto(null);
+    } catch {
+      alert("Failed to delete photo.");
+    }
   }
 
   if (loading) return (
@@ -267,6 +289,10 @@ export default function ProfilePage() {
                   <div key={photo.id} className="break-inside-avoid rounded-xl overflow-hidden border border-slate-700/50 bg-slate-800/60 group relative">
                     <Image src={photo.imageUrl} alt={photo.caption ?? "Trip photo"} width={600} height={400}
                       className="w-full h-auto object-cover" unoptimized />
+                    <button onClick={() => handleDeletePhoto(photo.id)}
+                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <Trash2 size={14} />
+                    </button>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-0 left-0 right-0 p-3">
                         {photo.caption && <p className="font-body text-sm text-white">{photo.caption}</p>}
@@ -285,6 +311,19 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!deletingPhoto} onOpenChange={(open) => !open && setDeletingPhoto(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete photo?</DialogTitle>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose render={<Button variant="outline">Cancel</Button>} />
+            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

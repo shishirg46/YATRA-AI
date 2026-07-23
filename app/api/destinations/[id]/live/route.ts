@@ -30,8 +30,8 @@ async function getLiveHandler(
     const result = await externalApiCache.getOrFetch(
       cacheKey,
       5 * 60_000,
-      () => computeDestinationLive(id, session.user.id),
-      { timeoutMs: 25_000, negativeTtlMs: 30_000 },
+      () => computeDestinationLive(id, session.user.id, _req.signal),
+      { timeoutMs: 25_000, negativeTtlMs: 30_000, signal: _req.signal },
     );
 
     if (!result) {

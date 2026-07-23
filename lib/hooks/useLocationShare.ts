@@ -6,6 +6,7 @@ interface ShareSession {
   shareLink: string;
   shareUrl: string;
   expiresAt: string;
+  friendCount?: number;
 }
 
 interface UseLocationShareOptions {
@@ -37,14 +38,14 @@ export function useLocationShare(options: UseLocationShareOptions = {}) {
     }
   }, []);
 
-  const startSharing = useCallback(async () => {
+  const startSharing = useCallback(async (friendIds?: string[]) => {
     setError(null);
     try {
       const res = await fetch("/api/location/share", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tripId ? { tripId } : {}),
+        body: JSON.stringify({ tripId, friendIds }),
       });
       if (!res.ok) {
         const msg = await res.json().catch(() => ({}));

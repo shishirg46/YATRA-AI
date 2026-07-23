@@ -1,0 +1,8 @@
+{
+  "overallRisk": "MEDIUM",
+  "corridorFrom": "Origin",
+  "corridorTo": "Destination",
+  "distanceKm": 0,
+  "durationH": 0,
+  "segments": []
+}

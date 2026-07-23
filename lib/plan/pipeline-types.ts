@@ -10,7 +10,7 @@ import type {
 } from "@/lib/types/plan-report";
 import type { HistoricalHazardStats } from "@/lib/collectors/historical-hazard";
 import type { HistoricalWeatherStats } from "@/lib/collectors/historical-weather";
-import type { DisasterType } from "@/lib/disaster-pipeline";
+import type { DisasterType } from "@/lib/disaster/types";
 
 export const ANALYSIS_PIPELINE_VERSION = 2;
 
@@ -208,6 +208,11 @@ export interface AiDiagnostics {
   model: string;
   durationMs: number;
   fallbackUsed: boolean;
+  cacheHit?: boolean;
+  promptVersion?: string;
   tokensPrompt?: number;
   tokensCompletion?: number;
+  totalTokens?: number;
+  finishReason?: string;
+  errors?: Array<{ provider: string; code: string }>;
 }

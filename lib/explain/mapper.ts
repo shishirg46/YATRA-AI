@@ -2,6 +2,7 @@ import type { AiResult } from "@/lib/plan/pipeline-types";
 import type { ExplanationReport, EvaluatorInput } from "./types";
 import { ExplanationEngine } from "./engine";
 import { TemplateCache } from "./templates/cache";
+import { formatRouteExplanation, mergeRouteExplanation, buildFormatterInput } from "@/lib/explain/formatters/route-explanation";
 
 export interface MappedAiOutput {
   ai: AiResult;
@@ -115,6 +116,35 @@ export async function runExplanationEngine(
     : undefined;
 
   const output = explanationToAiResult(report, hasAlternatives, topAlt);
+
+  if (
+    process.env.NEW_ROUTE_FORMATTER === "1" &&
+    input.routePlan &&
+    Array.isArray(input.segmentDetails)
+  ) {
+    const legacyRiskExplanation = output.ai.riskExplanation;
+    const legacyRouteAdvice = output.routeAdvice;
+
+    const routeData = buildFormatterInput(
+      input.routePlan,
+      input.segmentDetails,
+      input.routeRisk,
+    );
+
+    const formatted = formatRouteExplanation(routeData);
+    output.ai.riskExplanation = mergeRouteExplanation(report, formatted);
+    output.routeAdvice = formatted.routeAdvice;
+
+    if (process.env.FORMATTER_DEBUG === "1") {
+      console.debug("[route-formatter]", {
+        corridor: input.routePlan.corridor,
+        legacyRiskExplanation,
+        formatterRiskExplanation: output.ai.riskExplanation,
+        legacyRouteAdvice,
+        formatterRouteAdvice: output.routeAdvice,
+      });
+    }
+  }
 
   return { report, output };
 }

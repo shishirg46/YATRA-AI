@@ -72,6 +72,18 @@ export function isPointInNepal(lat: number, lon: number): boolean {
   return lat >= 26.3 && lat <= 30.5 && lon >= 80.0 && lon <= 88.2;
 }
 
+/**
+ * Thrown when a routing request is outside the supported Nepal region.
+ * Used to prevent routing fallbacks that cannot succeed.
+ */
+export class UnsupportedRegionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnsupportedRegionError";
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
 /** Approximate cross-track distance from point P to segment AB (km). */
 export function distanceToSegmentKm(
   pLat: number,

@@ -1,0 +1,30 @@
+{
+  "overallRisk": "HIGH",
+  "corridorFrom": "Pokhara",
+  "corridorTo": "Butwal",
+  "distanceKm": 280,
+  "durationH": 7,
+  "segments": [
+    {
+      "from": "Pokhara",
+      "to": "Syangja",
+      "riskLevel": "MEDIUM",
+      "riskScore": 55,
+      "hazards": [
+        "Landslide-prone zone",
+        "Heavy rain detected"
+      ]
+    },
+    {
+      "from": "Syangja",
+      "to": "Butwal",
+      "riskLevel": "HIGH",
+      "riskScore": 72,
+      "hazards": [
+        "Flood-prone Terai belt",
+        "Rain: 15mm/h",
+        "3 notable seismic events nearby"
+      ]
+    }
+  ]
+}

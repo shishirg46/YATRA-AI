@@ -6,7 +6,7 @@ import type { TravelStyle } from "./trip-types";
 import type { Alternative } from "@/lib/types/plan-report";
 
 export function shouldRunAlternativeAnalysis(level: string): boolean {
-  return level === "CAUTION" || level === "HIGH_RISK" || level === "EXTREME";
+  return level === "HIGH_RISK" || level === "EXTREME";
 }
 
 export async function findAlternatives(

@@ -47,7 +47,9 @@ export type Yatra_disaster_eventsMinAggregateOutputType = {
   date: Date | null
   severity: string | null
   source: string | null
+  district: string | null
   created_at: Date | null
+  updated_at: Date | null
 }
 
 export type Yatra_disaster_eventsMaxAggregateOutputType = {
@@ -59,7 +61,9 @@ export type Yatra_disaster_eventsMaxAggregateOutputType = {
   date: Date | null
   severity: string | null
   source: string | null
+  district: string | null
   created_at: Date | null
+  updated_at: Date | null
 }
 
 export type Yatra_disaster_eventsCountAggregateOutputType = {
@@ -71,8 +75,10 @@ export type Yatra_disaster_eventsCountAggregateOutputType = {
   date: number
   severity: number
   source: number
+  district: number
   metadata: number
   created_at: number
+  updated_at: number
   _all: number
 }
 
@@ -98,7 +104,9 @@ export type Yatra_disaster_eventsMinAggregateInputType = {
   date?: true
   severity?: true
   source?: true
+  district?: true
   created_at?: true
+  updated_at?: true
 }
 
 export type Yatra_disaster_eventsMaxAggregateInputType = {
@@ -110,7 +118,9 @@ export type Yatra_disaster_eventsMaxAggregateInputType = {
   date?: true
   severity?: true
   source?: true
+  district?: true
   created_at?: true
+  updated_at?: true
 }
 
 export type Yatra_disaster_eventsCountAggregateInputType = {
@@ -122,8 +132,10 @@ export type Yatra_disaster_eventsCountAggregateInputType = {
   date?: true
   severity?: true
   source?: true
+  district?: true
   metadata?: true
   created_at?: true
+  updated_at?: true
   _all?: true
 }
 
@@ -222,8 +234,10 @@ export type Yatra_disaster_eventsGroupByOutputType = {
   date: Date
   severity: string
   source: string
+  district: string | null
   metadata: runtime.JsonValue | null
   created_at: Date
+  updated_at: Date
   _count: Yatra_disaster_eventsCountAggregateOutputType | null
   _avg: Yatra_disaster_eventsAvgAggregateOutputType | null
   _sum: Yatra_disaster_eventsSumAggregateOutputType | null
@@ -258,8 +272,10 @@ export type yatra_disaster_eventsWhereInput = {
   date?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
   severity?: Prisma.StringFilter<"yatra_disaster_events"> | string
   source?: Prisma.StringFilter<"yatra_disaster_events"> | string
+  district?: Prisma.StringNullableFilter<"yatra_disaster_events"> | string | null
   metadata?: Prisma.JsonNullableFilter<"yatra_disaster_events">
   created_at?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
 }
 
 export type yatra_disaster_eventsOrderByWithRelationInput = {
@@ -271,8 +287,10 @@ export type yatra_disaster_eventsOrderByWithRelationInput = {
   date?: Prisma.SortOrder
   severity?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type yatra_disaster_eventsWhereUniqueInput = Prisma.AtLeast<{
@@ -288,8 +306,10 @@ export type yatra_disaster_eventsWhereUniqueInput = Prisma.AtLeast<{
   date?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
   severity?: Prisma.StringFilter<"yatra_disaster_events"> | string
   source?: Prisma.StringFilter<"yatra_disaster_events"> | string
+  district?: Prisma.StringNullableFilter<"yatra_disaster_events"> | string | null
   metadata?: Prisma.JsonNullableFilter<"yatra_disaster_events">
   created_at?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
+  updated_at?: Prisma.DateTimeFilter<"yatra_disaster_events"> | Date | string
 }, "id" | "source_external_id">
 
 export type yatra_disaster_eventsOrderByWithAggregationInput = {
@@ -301,8 +321,10 @@ export type yatra_disaster_eventsOrderByWithAggregationInput = {
   date?: Prisma.SortOrder
   severity?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  district?: Prisma.SortOrderInput | Prisma.SortOrder
   metadata?: Prisma.SortOrderInput | Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
   _count?: Prisma.yatra_disaster_eventsCountOrderByAggregateInput
   _avg?: Prisma.yatra_disaster_eventsAvgOrderByAggregateInput
   _max?: Prisma.yatra_disaster_eventsMaxOrderByAggregateInput
@@ -322,8 +344,10 @@ export type yatra_disaster_eventsScalarWhereWithAggregatesInput = {
   date?: Prisma.DateTimeWithAggregatesFilter<"yatra_disaster_events"> | Date | string
   severity?: Prisma.StringWithAggregatesFilter<"yatra_disaster_events"> | string
   source?: Prisma.StringWithAggregatesFilter<"yatra_disaster_events"> | string
+  district?: Prisma.StringNullableWithAggregatesFilter<"yatra_disaster_events"> | string | null
   metadata?: Prisma.JsonNullableWithAggregatesFilter<"yatra_disaster_events">
   created_at?: Prisma.DateTimeWithAggregatesFilter<"yatra_disaster_events"> | Date | string
+  updated_at?: Prisma.DateTimeWithAggregatesFilter<"yatra_disaster_events"> | Date | string
 }
 
 export type yatra_disaster_eventsCreateInput = {
@@ -335,8 +359,10 @@ export type yatra_disaster_eventsCreateInput = {
   date: Date | string
   severity: string
   source: string
+  district?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type yatra_disaster_eventsUncheckedCreateInput = {
@@ -348,8 +374,10 @@ export type yatra_disaster_eventsUncheckedCreateInput = {
   date: Date | string
   severity: string
   source: string
+  district?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type yatra_disaster_eventsUpdateInput = {
@@ -361,8 +389,10 @@ export type yatra_disaster_eventsUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   severity?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type yatra_disaster_eventsUncheckedUpdateInput = {
@@ -374,8 +404,10 @@ export type yatra_disaster_eventsUncheckedUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   severity?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type yatra_disaster_eventsCreateManyInput = {
@@ -387,8 +419,10 @@ export type yatra_disaster_eventsCreateManyInput = {
   date: Date | string
   severity: string
   source: string
+  district?: string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Date | string
+  updated_at?: Date | string
 }
 
 export type yatra_disaster_eventsUpdateManyMutationInput = {
@@ -400,8 +434,10 @@ export type yatra_disaster_eventsUpdateManyMutationInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   severity?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type yatra_disaster_eventsUncheckedUpdateManyInput = {
@@ -413,8 +449,10 @@ export type yatra_disaster_eventsUncheckedUpdateManyInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   severity?: Prisma.StringFieldUpdateOperationsInput | string
   source?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   created_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updated_at?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type yatra_disaster_eventsSourceExternal_idCompoundUniqueInput = {
@@ -431,8 +469,10 @@ export type yatra_disaster_eventsCountOrderByAggregateInput = {
   date?: Prisma.SortOrder
   severity?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   metadata?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type yatra_disaster_eventsAvgOrderByAggregateInput = {
@@ -450,7 +490,9 @@ export type yatra_disaster_eventsMaxOrderByAggregateInput = {
   date?: Prisma.SortOrder
   severity?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type yatra_disaster_eventsMinOrderByAggregateInput = {
@@ -462,7 +504,9 @@ export type yatra_disaster_eventsMinOrderByAggregateInput = {
   date?: Prisma.SortOrder
   severity?: Prisma.SortOrder
   source?: Prisma.SortOrder
+  district?: Prisma.SortOrder
   created_at?: Prisma.SortOrder
+  updated_at?: Prisma.SortOrder
 }
 
 export type yatra_disaster_eventsSumOrderByAggregateInput = {
@@ -490,8 +534,10 @@ export type yatra_disaster_eventsSelect<ExtArgs extends runtime.Types.Extensions
   date?: boolean
   severity?: boolean
   source?: boolean
+  district?: boolean
   metadata?: boolean
   created_at?: boolean
+  updated_at?: boolean
 }, ExtArgs["result"]["yatra_disaster_events"]>
 
 export type yatra_disaster_eventsSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -503,8 +549,10 @@ export type yatra_disaster_eventsSelectCreateManyAndReturn<ExtArgs extends runti
   date?: boolean
   severity?: boolean
   source?: boolean
+  district?: boolean
   metadata?: boolean
   created_at?: boolean
+  updated_at?: boolean
 }, ExtArgs["result"]["yatra_disaster_events"]>
 
 export type yatra_disaster_eventsSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -516,8 +564,10 @@ export type yatra_disaster_eventsSelectUpdateManyAndReturn<ExtArgs extends runti
   date?: boolean
   severity?: boolean
   source?: boolean
+  district?: boolean
   metadata?: boolean
   created_at?: boolean
+  updated_at?: boolean
 }, ExtArgs["result"]["yatra_disaster_events"]>
 
 export type yatra_disaster_eventsSelectScalar = {
@@ -529,11 +579,13 @@ export type yatra_disaster_eventsSelectScalar = {
   date?: boolean
   severity?: boolean
   source?: boolean
+  district?: boolean
   metadata?: boolean
   created_at?: boolean
+  updated_at?: boolean
 }
 
-export type yatra_disaster_eventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "external_id" | "type" | "lat" | "lon" | "date" | "severity" | "source" | "metadata" | "created_at", ExtArgs["result"]["yatra_disaster_events"]>
+export type yatra_disaster_eventsOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "external_id" | "type" | "lat" | "lon" | "date" | "severity" | "source" | "district" | "metadata" | "created_at" | "updated_at", ExtArgs["result"]["yatra_disaster_events"]>
 
 export type $yatra_disaster_eventsPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "yatra_disaster_events"
@@ -547,8 +599,10 @@ export type $yatra_disaster_eventsPayload<ExtArgs extends runtime.Types.Extensio
     date: Date
     severity: string
     source: string
+    district: string | null
     metadata: runtime.JsonValue | null
     created_at: Date
+    updated_at: Date
   }, ExtArgs["result"]["yatra_disaster_events"]>
   composites: {}
 }
@@ -980,8 +1034,10 @@ export interface yatra_disaster_eventsFieldRefs {
   readonly date: Prisma.FieldRef<"yatra_disaster_events", 'DateTime'>
   readonly severity: Prisma.FieldRef<"yatra_disaster_events", 'String'>
   readonly source: Prisma.FieldRef<"yatra_disaster_events", 'String'>
+  readonly district: Prisma.FieldRef<"yatra_disaster_events", 'String'>
   readonly metadata: Prisma.FieldRef<"yatra_disaster_events", 'Json'>
   readonly created_at: Prisma.FieldRef<"yatra_disaster_events", 'DateTime'>
+  readonly updated_at: Prisma.FieldRef<"yatra_disaster_events", 'DateTime'>
 }
     
 

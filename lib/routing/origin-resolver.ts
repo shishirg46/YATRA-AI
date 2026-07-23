@@ -174,7 +174,7 @@ export async function resolveTravelOrigin(
   if (!placeName || accuracyMeters == null || accuracyMeters > GPS_ACCURACY_GOOD_M) {
     const geo = await reverseGeocodeNepal(lat!, lon!);
     if (geo) {
-      placeName = geo.displayName.split(",")[0].trim();
+      placeName = geo.shortName;
       geocodedLat = geo.lat;
       geocodedLon = geo.lon;
     }

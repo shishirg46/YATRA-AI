@@ -1,4 +1,4 @@
-import { haversineKm, isPointInNepal } from "@/lib/routing/geo";
+import { haversineKm, isPointInNepal, UnsupportedRegionError } from "@/lib/routing/geo";
 import { prepareMapPolyline } from "@/lib/routing/polyline-simplify";
 import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
 import { createRouteBuffer } from "@/lib/routing/route-buffer";
@@ -293,10 +293,10 @@ async function ensureMultiStopChain(
 
 export async function buildSegmentedRoute(input: BuildRouteInput): Promise<BuiltRoute> {
   if (!isPointInNepal(input.originLat, input.originLon)) {
-    throw new Error("Origin is outside Nepal. This service is only available for locations within Nepal.");
+    throw new UnsupportedRegionError("Origin is outside Nepal. This service is only available for locations within Nepal.");
   }
   if (input.destinationLat !== undefined && input.destinationLon !== undefined && !isPointInNepal(input.destinationLat, input.destinationLon)) {
-    throw new Error("Destination is outside Nepal. This service is only available for locations within Nepal.");
+    throw new UnsupportedRegionError("Destination is outside Nepal. This service is only available for locations within Nepal.");
   }
 
   const vehicle: VehicleProfile = input.vehicle ?? "car";

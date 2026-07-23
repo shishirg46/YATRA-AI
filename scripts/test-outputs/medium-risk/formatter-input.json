@@ -1,0 +1,28 @@
+{
+  "overallRisk": "MEDIUM",
+  "corridorFrom": "Kathmandu",
+  "corridorTo": "Pokhara",
+  "distanceKm": 200,
+  "durationH": 6,
+  "segments": [
+    {
+      "from": "Kathmandu",
+      "to": "Mugling",
+      "riskLevel": "MEDIUM",
+      "riskScore": 45,
+      "hazards": [
+        "Landslide-prone zone",
+        "Narrow road"
+      ]
+    },
+    {
+      "from": "Mugling",
+      "to": "Pokhara",
+      "riskLevel": "MEDIUM",
+      "riskScore": 50,
+      "hazards": [
+        "Recent Landslide activity detected"
+      ]
+    }
+  ]
+}

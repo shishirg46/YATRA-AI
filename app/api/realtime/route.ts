@@ -160,7 +160,7 @@ async function realtimeHandler(req: NextRequest) {
 
             const weatherResults = await Promise.allSettled(
               batch.map(async (loc) => {
-                const w = await fetchWeather(loc.latitude, loc.longitude);
+                const w = await fetchWeather(loc.latitude, loc.longitude, req.signal);
                 if (!w) return null;
 
                 await withTimeout(
@@ -215,7 +215,7 @@ async function realtimeHandler(req: NextRequest) {
             const hazardResults = await Promise.allSettled(
               batch.map(async (loc) => {
                 assertAlive();
-                const weatherP  = fetchWeather(loc.latitude, loc.longitude);
+                const weatherP  = fetchWeather(loc.latitude, loc.longitude, req.signal);
                 const hazardP   = fetchHazard(loc.latitude, loc.longitude, prisma, tickAbort.signal);
                 const [weather, hazardRaw] = await Promise.allSettled([weatherP, hazardP]);
 
@@ -228,7 +228,7 @@ async function realtimeHandler(req: NextRequest) {
 
                 const score = computeSafetyScore(
                   { temperature: weatherVal.temperature, humidity: weatherVal.humidity, rainfall: weatherVal.rainfall, windSpeed: weatherVal.windSpeed, pressure: weatherVal.pressure ?? 1013 },
-                  { floodIndex: hazard.floodIndex, landslideIndex: hazard.landslideIndex, earthquakeIndex: hazard.earthquakeIndex ?? 0, heatIndex, airQuality: hazard.airQuality },
+                  { floodIndex: hazard.floodIndex, landslideIndex: hazard.landslideIndex, earthquakeIndex: hazard.earthquakeIndex ?? 0, stormIndex: hazard.stormIndex ?? 0, accidentIndex: hazard.accidentIndex ?? 0, heatIndex, airQuality: hazard.airQuality },
                   healthFlags,
                   "SOLO",
                   weatherVal.source,

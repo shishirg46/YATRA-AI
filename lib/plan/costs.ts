@@ -1,5 +1,6 @@
 import type { GeoPoint, RoadRoute, VehicleProfile } from "@/lib/routing/types";
 import { fetchRoadRoute } from "@/lib/routing/openroute-service";
+import { snapToNearestRoad } from "@/lib/routing/osrm-nearest";
 import { VEHICLE_RATES } from "./trip-types";
 import type { VehicleType } from "./trip-types";
 
@@ -25,14 +26,26 @@ export async function computeTransportCost(
   signal?: AbortSignal,
 ): Promise<TransportCostResult> {
   const routingVehicle = ROUTING_VEHICLE[vehicle] ?? "car";
+
+  async function tryRoute(o: GeoPoint, d: GeoPoint): Promise<RoadRoute[]> {
+    return fetchRoadRoute(o, d, routingVehicle, undefined, signal);
+  }
+
   let routes: RoadRoute[];
   try {
-    routes = await fetchRoadRoute(origin, destination, routingVehicle, undefined, signal);
-  } catch (err) {
-    console.error(`[costs] fetchRoadRoute failed:`, (err as Error)?.message);
-    console.error(`[costs] origin: ${origin.lat},${origin.lon} dest: ${destination.lat},${destination.lon} vehicle: ${routingVehicle}`);
-    throw err;
+    routes = await tryRoute(origin, destination);
+  } catch {
+    const [snappedOrigin, snappedDest] = await Promise.all([
+      snapToNearestRoad(origin.lat, origin.lon),
+      snapToNearestRoad(destination.lat, destination.lon),
+    ]);
+    const effectiveOrigin = snappedOrigin && snappedOrigin.distance <= 5000
+      ? { lat: snappedOrigin.lat, lon: snappedOrigin.lon } : origin;
+    const effectiveDest = snappedDest && snappedDest.distance <= 5000
+      ? { lat: snappedDest.lat, lon: snappedDest.lon } : destination;
+    routes = await tryRoute(effectiveOrigin, effectiveDest);
   }
+
   const best = routes[0];
   if (!best) throw new Error("No route found");
 

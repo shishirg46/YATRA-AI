@@ -1,0 +1,23 @@
+{
+  "overallRisk": "LOW",
+  "corridorFrom": "Kathmandu",
+  "corridorTo": "Bhaktapur",
+  "distanceKm": 15,
+  "durationH": 0.8,
+  "segments": [
+    {
+      "from": "Kathmandu",
+      "to": "Thimi",
+      "riskLevel": "LOW",
+      "riskScore": 25,
+      "hazards": []
+    },
+    {
+      "from": "Thimi",
+      "to": "Bhaktapur",
+      "riskLevel": "LOW",
+      "riskScore": 20,
+      "hazards": []
+    }
+  ]
+}

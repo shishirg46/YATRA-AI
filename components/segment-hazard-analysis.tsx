@@ -90,7 +90,7 @@ function SegmentCard({
     <div className="rounded-xl border border-slate-700/50 bg-slate-800/40 overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/[0.02] transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/2 transition-colors text-left"
       >
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="font-body text-xs text-slate-500 w-5 shrink-0">
@@ -431,7 +431,7 @@ export default function SegmentHazardAnalysis({
       )}
 
       <p className="font-body text-[10px] text-slate-600 mt-3">
-        Data source: BIPAD disaster records 2020–2026 · Live hazard sensors
+        Data source: DHM weather forecasts · BIPAD disaster records 2020–2026 · live hazard/air-quality sensors
       </p>
     </div>
   );

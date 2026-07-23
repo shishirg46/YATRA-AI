@@ -16,6 +16,7 @@ import { SafetyMap } from "@/app/dashboard/_components/SafetyMap";
 import { LocationPicker } from "@/app/dashboard/_components/LocationPicker";
 import type { DashboardData, Destination, UserProfile } from "@/app/dashboard/_components/types";
 import { useResolvedOrigin } from "@/lib/hooks/use-resolved-origin";
+import { getCurrentLocation, LocationError } from "@/lib/location/getCurrentLocation";
 
 const PAGE_SIZE = 12;
 
@@ -80,6 +81,8 @@ export default function ExplorePage() {
     resolveFromGps,
     resolveFromManual,
     loadSavedHome,
+    setOrigin,
+    clearOrigin,
   } = useResolvedOrigin();
 
   const userLocation = resolvedOrigin
@@ -143,41 +146,27 @@ export default function ExplorePage() {
     }
   }
 
-  function requestUserLocation() {
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported in this browser.");
-      return;
-    }
+  async function requestUserLocation() {
+    clearOrigin();
+    try { await fetch("/api/user/location", { method: "DELETE", credentials: "include" }); } catch {}
 
     setLocating(true);
     setLocationError(null);
 
-    const handleSuccess = async (pos: GeolocationPosition) => {
+    try {
+      const pos = await getCurrentLocation({ timeout: 15000 });
       setLocating(false);
-      const resolved = await resolveFromGps(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+      const resolved = await resolveFromGps(pos.lat, pos.lon, pos.accuracy);
       if (!resolved) {
         setLocationError("Could not resolve your location. Please try again or set your location manually.");
       }
-    };
-
-    const handleError = (err: GeolocationPositionError) => {
+    } catch (err) {
       setLocating(false);
-      if (err.code === err.PERMISSION_DENIED) {
-        setLocationError("Permission denied. Please allow location access in browser settings.");
-      } else if (err.code === err.POSITION_UNAVAILABLE) {
-        setLocationError("Location unavailable. Please try again in an open area.");
-      } else if (err.code === err.TIMEOUT) {
-        setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
-      } else {
-        setLocationError(err.message || "Failed to get location.");
-      }
-    };
-
-    navigator.geolocation.getCurrentPosition(handleSuccess, handleError, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 15000,
-    });
+      const msg = err instanceof LocationError
+        ? err.message
+        : "Failed to get location.";
+      setLocationError(msg);
+    }
   }
 
   // ── Derived data ────────────────────────────────────────────────────────

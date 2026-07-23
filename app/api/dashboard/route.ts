@@ -165,6 +165,8 @@ async function getDashboardHandler(request?: NextRequest) {
       floodIndex: isMonsoon ? 0.15 : 0,
       landslideIndex: 0,
       earthquakeIndex: 0,
+      stormIndex: 0,
+      accidentIndex: 0,
       heatIndex: 0,
       airQuality: 0,
     };
@@ -207,7 +209,7 @@ async function getDashboardHandler(request?: NextRequest) {
     if (originDistrict && homeLat && homeLon) {
       try {
         const result = await Promise.race([
-          fetchHazard(homeLat, homeLon, prisma),
+          fetchHazard(homeLat, homeLon, prisma, request?.signal),
           new Promise<null>((_, reject) =>
             setTimeout(() => reject(new Error("hazard fetch timeout")), 6000)
           ),
@@ -219,7 +221,7 @@ async function getDashboardHandler(request?: NextRequest) {
     }
 
     // Query DB for cached hazard data per destination district (from latest assessment run)
-    const latestHazardByDistrict = new Map<string, { floodIndex: number; landslideIndex: number; earthquakeIndex: number; heatIndex: number; airQuality: number }>();
+    const latestHazardByDistrict = new Map<string, { floodIndex: number; landslideIndex: number; earthquakeIndex: number; stormIndex: number; accidentIndex: number; heatIndex: number; airQuality: number }>();
     try {
       const hazardRows = await prisma.$queryRaw<Array<{
         district: string;
@@ -244,6 +246,8 @@ async function getDashboardHandler(request?: NextRequest) {
             floodIndex: row.floodIndex ?? 0,
             landslideIndex: row.landslideIndex ?? 0,
             earthquakeIndex: 0,
+            stormIndex: 0,
+            accidentIndex: 0,
             heatIndex: 0,
             airQuality: row.airQuality ?? 0,
           });

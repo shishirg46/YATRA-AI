@@ -82,5 +82,21 @@ async function saveLocationHandler(req: NextRequest) {
   }
 }
 
+async function deleteLocationHandler() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  await prisma.userSavedLocation.deleteMany({ where: { userId: session.user.id } });
+  await prisma.userPreference.updateMany({
+    where: { userId: session.user.id },
+    data: { locationLat: null, locationLng: null },
+  });
+
+  return NextResponse.json({ success: true });
+}
+
 export const GET = withRateLimit(getLocationHandler, { max: 30, windowSeconds: 60 });
 export const POST = withRateLimit(saveLocationHandler, { max: 30, windowSeconds: 60 });
+export const DELETE = withRateLimit(deleteLocationHandler, { max: 10, windowSeconds: 60 });

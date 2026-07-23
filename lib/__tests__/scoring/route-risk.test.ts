@@ -87,7 +87,7 @@ describe("computeRouteRisk", () => {
   });
 
   it("incorporates real-time hazard data", () => {
-    const hazard = { floodIndex: 0.8, landslideIndex: 0.7, earthquakeIndex: 0.3, heatIndex: 0, airQuality: 0 };
+    const hazard = { floodIndex: 0.8, landslideIndex: 0.7, earthquakeIndex: 0.3, stormIndex: 0, accidentIndex: 0, heatIndex: 0, airQuality: 0 };
     const result = computeRouteRisk({ ...baseParams, originHazard: hazard });
     expect(result.routeRiskScore).toBeLessThan(100);
   });

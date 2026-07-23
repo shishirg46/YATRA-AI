@@ -110,11 +110,25 @@ export async function assessRoute(
     if (!result.bestRoute) return null;
 
     const segments = result.bestRoute.segments;
+    const hasAnyHighConcern = segments.some((s) => s.riskLevel === "HIGH" || s.riskLevel === "EXTREME");
+    if (!hasAnyHighConcern && segments.length <= 4) {
+      return {
+        from: result.bestRoute.segments[0]?.startPoint.name || effectiveHome.name,
+        to: result.bestRoute.segments[result.bestRoute.segments.length - 1]?.endPoint.name || location.name,
+        date: travelDate,
+        risk: result.bestRoute.riskLevel === "EXTREME" ? "HIGH" : result.bestRoute.riskLevel as "LOW" | "MEDIUM" | "HIGH",
+        reason: `Route appears favorable across ${segments.length} short segments.`,
+        segments: [],
+        totalDistanceKm: Math.round(result.bestRoute.distance / 1000),
+        totalDurationHours: Math.round(result.bestRoute.duration / 3600),
+        sources: ["bipad", "usgs", "openstreetmap", "openweather"],
+      };
+    }
     const highRiskSegments = segments.filter(
       (s) => s.riskLevel === "HIGH" || s.riskLevel === "EXTREME"
     );
-    const totalKm = Math.round(result.bestRoute.distance);
-    const durationH = Math.round(result.bestRoute.duration);
+    const totalKm = Math.round(result.bestRoute.distance / 1000);
+    const durationH = Math.round(result.bestRoute.duration / 3600);
     const corridorLabel = `${effectiveHome.name} → ${location.name}`;
 
     const terrainTypes = [...new Set(segments.map(s => {

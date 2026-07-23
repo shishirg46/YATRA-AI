@@ -50,4 +50,4 @@ nominatim/
 # Generated graph build artifacts
 builds/
 
-.opencodekathmandu-test.osm.pbf
+*.osm.pbf

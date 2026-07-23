@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f4c81"/>
+      <stop offset="100%" stop-color="#1a8a3c"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8f5e9"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="200" cy="200" r="195" fill="url(#sky)"/>
+
+  <!-- Nepal map silhouette (simplified) -->
+  <path d="M140 60 L170 90 L195 80 L210 95 L230 85 L260 110 
+           L280 130 L295 160 L310 200 L320 240 L330 280 
+           L335 310 L320 330 L290 345 L250 355 L200 360 
+           L150 355 L110 345 L80 330 L65 310 L70 280 
+           L75 240 L80 200 L85 160 L95 130 L110 110 
+           L120 90 Z" 
+        fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.6"/>
+
+  <!-- Mount Everest peak -->
+  <polygon points="195,95 210,55 225,95" fill="#ffffff" opacity="0.8"/>
+  <polygon points="210,55 220,60 225,95" fill="#e0e0e0" opacity="0.6"/>
+
+  <!-- Route path (A* pathfinding visual) -->
+  <path d="M90 310 L120 290 L140 260 L170 230 L200 200 L230 170 L250 140 L260 110" 
+        fill="none" stroke="#ff6b35" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" 
+        stroke-dasharray="8,4" opacity="0.9" filter="url(#shadow)"/>
+
+  <!-- Start point -->
+  <circle cx="90" cy="310" r="7" fill="#ffd700" stroke="#fff" stroke-width="2"/>
+  <text x="90" y="310" text-anchor="middle" dominant-baseline="central" 
+        font-family="sans-serif" font-size="9" font-weight="bold" fill="#333">A</text>
+
+  <!-- End point -->
+  <circle cx="260" cy="120" r="7" fill="#ff4444" stroke="#fff" stroke-width="2"/>
+  <text x="260" y="120" text-anchor="middle" dominant-baseline="central" 
+        font-family="sans-serif" font-size="9" font-weight="bold" fill="#fff">B</text>
+
+  <!-- Shield overlay -->
+  <g transform="translate(200, 300)">
+    <path d="M-45,-35 L45,-35 L45,15 L0,45 L-45,15 Z" 
+          fill="url(#shieldGrad)" stroke="#0f346c" stroke-width="2.5" filter="url(#shadow)"/>
+    <text x="0" y="-10" text-anchor="middle" font-family="sans-serif" 
+          font-size="14" font-weight="bold" fill="#0f346c">SAFE</text>
+    <text x="0" y="12" text-anchor="middle" font-family="sans-serif" 
+          font-size="14" font-weight="bold" fill="#1a8a3c">85</text>
+  </g>
+
+  <!-- Text: YATRA AI -->
+  <text x="200" y="205" text-anchor="middle" font-family="sans-serif" 
+        font-size="28" font-weight="bold" fill="#ffffff" letter-spacing="3">
+    YATRA
+  </text>
+  <text x="200" y="232" text-anchor="middle" font-family="sans-serif" 
+        font-size="14" fill="#90caf9" letter-spacing="4">
+    AI
+  </text>
+
+  <!-- Small decorative dots (waypoints) -->
+  <circle cx="120" cy="260" r="3" fill="#ffd700" opacity="0.7"/>
+  <circle cx="140" cy="240" r="3" fill="#ffd700" opacity="0.7"/>
+  <circle cx="170" cy="240" r="3" fill="#ffd700" opacity="0.7"/>
+  <circle cx="200" cy="210" r="3" fill="#ffd700" opacity="0.7"/>
+
+  <!-- Subtle tagline -->
+  <text x="200" y="375" text-anchor="middle" font-family="sans-serif" 
+        font-size="10" fill="#a0d8b8" letter-spacing="2" opacity="0.8">
+    RULE-BASED ROUTE INTELLIGENCE
+  </text>
+</svg>

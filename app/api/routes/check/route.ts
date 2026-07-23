@@ -140,15 +140,17 @@ async function checkRouteHandler(req: NextRequest) {
       const pointData = await Promise.all(
         sampled.map(async (point) => {
           const [weather, hazard, histWeather, histHazard] = await Promise.all([
-            fetchWeather(point.lat, point.lon).catch(() => null),
-            fetchHazard(point.lat, point.lon, prisma).catch(() => null),
+            fetchWeather(point.lat, point.lon, req.signal).catch(() => null),
+            fetchHazard(point.lat, point.lon, prisma, req.signal).catch(() => null),
             fetchHistoricalWeather(point.lat, point.lon, travelDate, 5).catch(() => null),
             fetchHistoricalHazard(
               destination.district || "",
               point.lat,
               point.lon,
               travelDate,
-              5
+              5,
+              150,
+              req.signal
             ).catch(() => null),
           ]);
           return { point, weather, hazard, histWeather, histHazard };

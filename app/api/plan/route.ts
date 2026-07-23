@@ -18,9 +18,8 @@ import { computeRouteRisk } from "@/lib/scoring/route-risk";
 import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
 import { analyzeStop } from "@/lib/analysis/stop-analyzer";
 import type { StopAnalysis } from "@/lib/types/plan-report";
-import { TemplateCache } from "@/lib/explain/templates/cache";
-import { runExplanationEngine } from "@/lib/explain/mapper";
 import type { EvaluatorInput } from "@/lib/explain/types";
+import { generateAiNarrative } from "@/lib/explain/narrative-service";
 
 
 async function planHandler(req: NextRequest) {
@@ -49,8 +48,8 @@ async function planHandler(req: NextRequest) {
     const { health: leaderHealth, user: leaderUser } = await loadLeaderData(session.user.id);
 
     const [weatherResult, rawHazard] = await Promise.all([
-      fetchWeather(destination.latitude, destination.longitude),
-      fetchHazard(destination.latitude, destination.longitude, prisma),
+      fetchWeather(destination.latitude, destination.longitude, req.signal),
+      fetchHazard(destination.latitude, destination.longitude, prisma, req.signal),
     ]);
 
     const liveWeather = weatherResult ?? {
@@ -164,12 +163,6 @@ async function planHandler(req: NextRequest) {
 
     const actionableRecommendations = gatherRecommendations(pillarModel, destination.name);
 
-    if (!TemplateCache.instance.size) {
-      try { await TemplateCache.initialize(prisma); } catch (err) {
-        console.error("[api/plan] TemplateCache init failed:", err);
-      }
-    }
-
     const input: EvaluatorInput = {
       destination: {
         id: destination.id,
@@ -252,6 +245,8 @@ async function planHandler(req: NextRequest) {
           distanceKm: Math.round((s.distance / 1000) * 10) / 10,
           riskLevel: s.riskLevel,
         })),
+        from: routePlan.nodes[0]?.name ?? "",
+        to: routePlan.nodes[routePlan.nodes.length - 1]?.name ?? "",
         distanceKm: Math.round((routePlan.distance / 1000) * 10) / 10,
         durationHours: Math.round((routePlan.duration / 3600) * 10) / 10,
         corridor: routePlan.nodes.map((n: any) => n.name).join(" → "),
@@ -268,7 +263,7 @@ async function planHandler(req: NextRequest) {
       evidence: null,
     };
 
-    const { output } = await runExplanationEngine(input);
+    const { result: ai } = await generateAiNarrative(input, { signal: req.signal });
 
     let stopAnalyses: StopAnalysis[] | undefined;
     if (routePlan?.nodes && routePlan.nodes.length > 0) {
@@ -355,8 +350,8 @@ async function planHandler(req: NextRequest) {
       pillarScores: pillarModel.pillars,
       budget,
       alternatives: sortedAlternatives,
-      ai: output.ai,
-      routeAdvice: output.routeAdvice,
+      ai,
+      routeAdvice: "",
       analyzedAt: new Date().toISOString(),
       stopAnalyses,
     });

@@ -235,6 +235,7 @@ model Destination {
   sourceLastFetch    DateTime?
   savedByUsers       SavedDestination[]
   photos             DestinationPhoto[]
+  embeddings         DestinationEmbedding?
 
   @@unique([name, district, province])
   @@index([normalizedName])
@@ -264,6 +265,16 @@ model DestinationPhoto {
   @@unique([destinationId, index])
   @@index([destinationId])
   @@map("destination_photo")
+}
+
+model DestinationEmbedding {
+  destinationId String      @id
+  vector        Json
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@map("destination_embedding")
 }
 
 model Province {
@@ -839,21 +850,24 @@ model AuditLog {
 }
 
 model yatra_disaster_events {
-  id          BigInt   @id @default(autoincrement())
+  id          BigInt    @id @default(autoincrement())
   external_id String
   type        String
   lat         Float
   lon         Float
-  date        DateTime @db.Timestamptz(6)
+  date        DateTime  @db.Timestamptz(6)
   severity    String
   source      String
+  district    String?
   metadata    Json?
-  created_at  DateTime @default(now()) @db.Timestamptz(6)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime  @default(now()) @db.Timestamptz(6)
 
   @@unique([source, external_id])
   @@index([date], map: "idx_disaster_events_date")
   @@index([lat, lon], map: "idx_disaster_events_lat_lon")
   @@index([type], map: "idx_disaster_events_type")
+  @@index([district], map: "idx_de_district")
 }
 
 model Intersection {

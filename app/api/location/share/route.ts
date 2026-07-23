@@ -13,7 +13,7 @@ async function startSharingHandler(req: NextRequest) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await req.json()) as { tripId?: string } | undefined;
+  const body = (await req.json()) as { tripId?: string; friendIds?: string[] } | undefined;
 
   // Deactivate any existing active sessions
   await prisma.locationShareSession.updateMany({
@@ -98,10 +98,51 @@ async function startSharingHandler(req: NextRequest) {
     });
   }
 
+  // Notify selected friends (fire-and-forget)
+  if (body?.friendIds?.length && emailTransporter) {
+    const friends = await prisma.user.findMany({
+      where: { id: { in: body.friendIds } },
+      select: { id: true, name: true, email: true },
+    });
+
+    for (const friend of friends) {
+      // Create in-app notification
+      const notifMsg = JSON.stringify({
+        _type: "LOCATION_SHARE",
+        fromId: session.user.id,
+        fromName: session.user.name || "Someone",
+        shareLink,
+        shareUrl,
+        title: "Live Location Shared",
+        body: `${session.user.name || "Someone"} is sharing their live location with you.`,
+      });
+      prisma.notification
+        .create({ data: { userId: friend.id, message: notifMsg } })
+        .catch(() => {});
+
+      // Send email
+      if (friend.email) {
+        emailTransporter!
+          .sendMail({
+            from: `YatraAI <${process.env.GMAIL_USER ?? "noreply@yatraai.com"}>`,
+            to: friend.email,
+            subject: `${session.user.name ?? "Someone"} shared their live location with you`,
+            html: buildFriendShareEmailHtml({
+              sharerName: session.user.name ?? "Someone",
+              shareUrl,
+            }),
+          })
+          .then((info) => console.log("[location-share] Friend email sent to", friend.email, info.messageId))
+          .catch((err) => console.warn("[location-share] Failed to email friend", friend.email, err));
+      }
+    }
+  }
+
   return NextResponse.json({
     shareLink: share.shareLink,
     shareUrl,
     expiresAt: share.expiresAt,
+    friendCount: body?.friendIds?.length ?? 0,
   }, { status: 201 });
 }
 
@@ -169,6 +210,51 @@ function buildShareEmailHtml({
           </table>
           <p style="margin:0;font-size:12px;color:#94a3b8;word-break:break-all;">${shareUrl}</p>
           <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;">This link will expire when the trip ends. Shared via YatraAI.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildFriendShareEmailHtml({
+  sharerName,
+  shareUrl,
+}: {
+  sharerName: string;
+  shareUrl: string;
+}) {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;">
+        <tr>
+          <td style="padding:28px;text-align:center;border-radius:16px 16px 0 0;border-bottom:1px solid #e2e8f0;">
+            <span style="font-size:32px;">📍</span>
+            <h1 style="margin:8px 0 0;font-size:18px;color:#f59e0b;">${sharerName} shared their live location</h1>
+          </td>
+        </tr>
+        <tr><td style="padding:32px;">
+          <p style="margin:0 0 16px;font-size:15px;color:#1e293b;line-height:1.6;">
+            <strong>${sharerName}</strong> is sharing their live location with you.
+          </p>
+          <p style="margin:0 0 24px;font-size:13px;color:#64748b;">
+            Click the button below to view their location in real time.
+          </p>
+          <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+            <tr>
+              <td style="background:#f59e0b;border-radius:10px;text-align:center;">
+                <a href="${shareUrl}" style="display:inline-block;padding:14px 32px;color:#fff;text-decoration:none;font-size:15px;font-weight:700;border-radius:10px;">
+                  View Live Location
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:24px 0 0;font-size:12px;color:#94a3b8;">Shared via YatraAI.</p>
         </td></tr>
       </table>
     </td></tr>

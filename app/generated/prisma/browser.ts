@@ -83,6 +83,11 @@ export type Destination = Prisma.DestinationModel
  */
 export type DestinationPhoto = Prisma.DestinationPhotoModel
 /**
+ * Model DestinationEmbedding
+ * 
+ */
+export type DestinationEmbedding = Prisma.DestinationEmbeddingModel
+/**
  * Model Province
  * 
  */

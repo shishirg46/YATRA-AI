@@ -54,6 +54,11 @@ export function useResolvedOrigin() {
     saveToStorage(resolved);
   }, []);
 
+  const clearOrigin = useCallback(() => {
+    setOrigin(null);
+    clearStorage();
+  }, []);
+
   const resolveFromGps = useCallback(
     async (lat: number, lon: number, accuracy?: number, name?: string) => {
       setResolving(true);
@@ -198,6 +203,7 @@ export function useResolvedOrigin() {
     resolving,
     error,
     setOrigin: saveOrigin,
+    clearOrigin,
     resolveFromGps,
     resolveFromManual,
     loadSavedHome,

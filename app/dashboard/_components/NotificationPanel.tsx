@@ -35,15 +35,10 @@ export function NotificationPanel({ open, onClose, notifications, onMarkRead, on
   return (
     <OverlayPortal>
       <div
-        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div
         role="dialog"
         aria-modal="true"
         aria-label="Hazard alerts"
-        className="fixed top-16 right-4 left-4 sm:left-auto z-[110] sm:w-full max-w-sm notif-panel"
+        className="fixed top-16 right-4 left-4 sm:left-auto z-[210] sm:w-full max-w-sm notif-panel max-h-[85vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800">
           <div className="flex items-center gap-2">
@@ -63,7 +58,7 @@ export function NotificationPanel({ open, onClose, notifications, onMarkRead, on
           </div>
         </div>
 
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div className="overflow-y-auto">
           {notifications.length === 0 ? (
             <div className="py-12 text-center">
               <Bell size={28} className="text-slate-700 mx-auto mb-3" />

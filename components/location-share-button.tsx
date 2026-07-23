@@ -1,11 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
-  MapPin, Share2, Copy, CheckCircle2, X, Loader2,
-  Navigation, Clock, StopCircle,
+  Share2, X, Loader2,
+  Clock, StopCircle, Search, Check,
 } from "lucide-react";
 import { useLocationShare } from "@/lib/hooks/useLocationShare";
+import { OverlayPortal } from "@/components/overlay-portal";
+
+interface Friend {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+}
 
 export function LocationShareButton({ tripId, className = "" }: { tripId?: string; className?: string }) {
   const {
@@ -18,16 +26,53 @@ export function LocationShareButton({ tripId, className = "" }: { tripId?: strin
     stopSharing,
   } = useLocationShare({ tripId });
 
-  const [copied, setCopied] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [loadingFriends, setLoadingFriends] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+  const [sharingStarted, setSharingStarted] = useState(false);
 
-  const copyShareUrl = () => {
-    if (!shareSession?.shareUrl) return;
-    navigator.clipboard.writeText(shareSession.shareUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
+  const openPicker = useCallback(async () => {
+    setShowPicker(true);
+    setLoadingFriends(true);
+    try {
+      const res = await fetch("/api/friends", { credentials: "include" });
+      if (res.ok) {
+        const all = await res.json();
+        setFriends(all.filter((f: any) => f.status === "ACCEPTED"));
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setLoadingFriends(false);
+    }
+  }, []);
+
+  const toggleFriend = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   };
 
+  const handleShare = async () => {
+    setSharingStarted(true);
+    try {
+      await startSharing(Array.from(selectedIds));
+      setShowPicker(false);
+    } catch {
+      setSharingStarted(false);
+    }
+  };
+
+  const filtered = search.trim()
+    ? friends.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
+    : friends;
+
+  // Sharing active — show live card with stop button, no URL
   if (isSharing && shareSession) {
     return (
       <div className={`rounded-xl border border-emerald-500/25 bg-emerald-500/5 p-4 ${className}`}>
@@ -53,28 +98,11 @@ export function LocationShareButton({ tripId, className = "" }: { tripId?: strin
             Stop
           </button>
         </div>
-        {gpsWeak && (
-          <p className="text-[11px] text-amber-400/80 font-body mb-2 flex items-center gap-1">
-            <Navigation size={11} />
-            GPS signal is weak — location may be inaccurate
-          </p>
-        )}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0 bg-slate-900/60 rounded-lg border border-slate-700/50 px-3 py-2 truncate">
-            <span className="font-body text-xs text-slate-300 truncate block">{shareSession.shareUrl}</span>
-          </div>
-          <button
-            onClick={copyShareUrl}
-            className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 transition-all text-xs font-body font-semibold"
-          >
-            {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
-            {copied ? "Copied!" : "Copy"}
-          </button>
         </div>
-      </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className={`rounded-xl border border-red-500/20 bg-red-500/5 p-4 ${className}`}>
@@ -84,7 +112,7 @@ export function LocationShareButton({ tripId, className = "" }: { tripId?: strin
             <p className="font-body text-sm text-red-300">{error}</p>
           </div>
           <button
-            onClick={() => startSharing().catch(() => {})}
+            onClick={() => openPicker()}
             className="shrink-0 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/25 text-red-400 hover:bg-red-500/20 transition-all text-xs font-body font-medium"
           >
             Retry
@@ -95,12 +123,99 @@ export function LocationShareButton({ tripId, className = "" }: { tripId?: strin
   }
 
   return (
-    <button
-      onClick={() => startSharing().catch(() => {})}
-      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-amber-400 transition-all font-body text-sm font-medium ${className}`}
-    >
-      <Share2 size={15} />
-      Share Live Location
-    </button>
+    <>
+      <button
+        onClick={openPicker}
+        className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-amber-500/25 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/40 text-amber-400 transition-all font-body text-sm font-medium ${className}`}
+      >
+        <Share2 size={15} />
+        Share Live Location
+      </button>
+
+      {/* Friend picker modal */}
+      {showPicker && (
+        <OverlayPortal>
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => !sharingStarted && setShowPicker(false)} />
+            <div className="relative w-full max-w-sm mx-4 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
+              <h3 className="font-display font-semibold text-white text-sm">Share Live Location</h3>
+              <button
+                onClick={() => { if (!sharingStarted) setShowPicker(false); }}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+              >
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="p-4">
+              <div className="relative mb-3">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search friends..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 text-xs rounded-lg bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-500/50 font-body"
+                />
+              </div>
+
+              {loadingFriends ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 size={18} className="animate-spin text-slate-500" />
+                </div>
+              ) : filtered.length === 0 ? (
+                <p className="text-center py-8 text-xs text-slate-500 font-body">
+                  {search ? "No friends match your search" : "No friends yet"}
+                </p>
+              ) : (
+                <div className="max-h-60 overflow-y-auto space-y-1">
+                  {filtered.map((friend) => (
+                    <div
+                      key={friend.id}
+                      onClick={() => toggleFriend(friend.id)}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800/60 cursor-pointer transition-colors"
+                    >
+                      <div
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
+                          selectedIds.has(friend.id)
+                            ? "bg-amber-500 border-amber-500"
+                            : "border-slate-600 bg-slate-800"
+                        }`}
+                      >
+                        {selectedIds.has(friend.id) && <Check size={10} className="text-slate-900" />}
+                      </div>
+                      <span className="font-body text-sm text-white">{friend.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-3 border-t border-slate-700">
+              <button
+                onClick={() => setShowPicker(false)}
+                disabled={sharingStarted}
+                className="flex-1 px-3 py-2 rounded-lg border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition-all text-xs font-body font-medium disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleShare}
+                disabled={selectedIds.size === 0 || sharingStarted}
+                className="flex-1 px-3 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 transition-all text-xs font-body font-semibold disabled:opacity-50 flex items-center justify-center gap-1"
+              >
+                {sharingStarted ? (
+                  <><Loader2 size={12} className="animate-spin" /> Starting...</>
+                ) : (
+                  `Share with ${selectedIds.size}`
+                )}
+              </button>
+            </div>
+          </div>
+          </div>
+        </OverlayPortal>
+      )}
+    </>
   );
 }

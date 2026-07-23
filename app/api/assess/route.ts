@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
   for (const loc of locations) {
     try {
       // ── Step 1: Fetch weather from DHM API ──────────────────────────
-      const weather = await fetchWeather(loc.latitude, loc.longitude);
+      const weather = await fetchWeather(loc.latitude, loc.longitude, req.signal);
       if (!weather) {
         results.push({ location: loc.name, score: 0, level: "UNKNOWN", error: "Weather fetch failed" });
         continue;
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
       // ── Step 2: Fetch hazard data from multiple sources ───────────────────
       // Pass lat/lon so USGS, OpenAQ, and EONET can query by coordinate
-      const hazardRaw = await fetchHazard(loc.latitude, loc.longitude, prisma);
+      const hazardRaw = await fetchHazard(loc.latitude, loc.longitude, prisma, req.signal);
 
       // Enrich heat index from temperature (hot weather = higher heat risk)
       const heatIndex = Math.max(0, Math.min((weather.temperature - 25) / 20, 1.0));
@@ -72,6 +72,8 @@ export async function POST(req: NextRequest) {
         floodIndex:      hazardRaw.floodIndex,
         landslideIndex:  hazardRaw.landslideIndex,
         earthquakeIndex: hazardRaw.earthquakeIndex ?? 0,
+        stormIndex:      hazardRaw.stormIndex,
+        accidentIndex:   hazardRaw.accidentIndex,
         heatIndex,
         airQuality:      hazardRaw.airQuality,
         source:          hazardRaw.source,
@@ -102,7 +104,9 @@ export async function POST(req: NextRequest) {
         {
           floodIndex:      hazard.floodIndex,
           landslideIndex:  hazard.landslideIndex,
-          earthquakeIndex: hazard.earthquakeIndex ?? 0,
+          earthquakeIndex: hazard.earthquakeIndex,
+          stormIndex:      hazard.stormIndex,
+          accidentIndex:   hazard.accidentIndex,
           heatIndex,
           airQuality:      hazard.airQuality,
         },

@@ -233,7 +233,7 @@ export function DestinationCard({
     fetch("/api/user/behavior", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, destinationId: dest.id }),
+      body: JSON.stringify({ action, destinationId: dest.id, category: dest.category }),
     }).catch(() => {});
   }
 

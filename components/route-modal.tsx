@@ -35,17 +35,36 @@ function formatDuration(seconds: number): string {
   return `${hours}h ${mins}m`;
 }
 
-function buildPlaceChain(road: EnhancedRoad, originName?: string): string[] {
-  const cleanOrigin = originName?.replace(/,+\s*$/, "");
+function stripWardSuffix(name: string): string {
+  return name.replace(/[-–—]\s*\d+\s*$/, "").trim();
+}
+
+function buildPlaceChain(road: EnhancedRoad, originName?: string, destinationName?: string): string[] {
+  const cleanOrigin = originName?.replace(/,+\s*$/, "").trim();
   const places: string[] = [];
+  const seen = new Set<string>();
   for (const seg of road.segments) {
     const from = places.length === 0 && cleanOrigin ? cleanOrigin : seg.fromName;
-    if (places.length === 0 || places[places.length - 1] !== from) {
+    const fromNorm = stripWardSuffix(from).toLowerCase();
+    if (places.length === 0 || !seen.has(fromNorm)) {
       places.push(from);
+      seen.add(fromNorm);
     }
-    if (places[places.length - 1] !== seg.toName) {
+    const toNorm = stripWardSuffix(seg.toName).toLowerCase();
+    if (!seen.has(toNorm)) {
       places.push(seg.toName);
+      seen.add(toNorm);
     }
+  }
+  if (destinationName && places.length > 0) {
+    const destNorm = stripWardSuffix(destinationName).toLowerCase();
+    const filtered = places.filter((p, i) =>
+      i === places.length - 1 ||
+      (!stripWardSuffix(p).toLowerCase().includes(destNorm) &&
+        !destNorm.includes(stripWardSuffix(p).toLowerCase()))
+    );
+    filtered[filtered.length - 1] = destinationName;
+    return filtered;
   }
   return places;
 }
@@ -273,7 +292,7 @@ export function RouteModal({ roads, destinationName, originName, onClose }: Rout
             {roads.length > 0 && <RouteMapMini roads={roads} />}
 
             {roads.map((road) => {
-              const chain = buildPlaceChain(road, originName);
+              const chain = buildPlaceChain(road, originName, destinationName);
               return (
                 <div key={road.id} className="rounded-xl border border-slate-700/70 bg-slate-800/50 overflow-hidden">
                   {/* Route header */}

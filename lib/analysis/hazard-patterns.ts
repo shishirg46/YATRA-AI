@@ -1,3 +1,5 @@
+import type { HazardSnapshot } from "@/lib/collectors/hazard";
+import type { WeatherSnapshot } from "@/lib/collectors/weather";
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
 
@@ -34,6 +36,8 @@ export interface SegmentHazardInput {
   floodIndex: number;
   landslideIndex: number;
   rainfall: number;
+  weather?: WeatherSnapshot | null;
+  hazard?: HazardSnapshot | null;
 }
 
 function classifyTerrain(lat: number): "Terai" | "Hill" | "Mountain" {
@@ -52,9 +56,33 @@ function currentSeason(): "Monsoon" | "Dry" {
 }
 
 const HISTORIC_THRESHOLDS = {
-  HIGH: 8,
-  MEDIUM: 4,
+  HIGH: 15,
+  MEDIUM: 8,
 } as const;
+
+export function hydrateSegmentHazardInput(
+  segment: Omit<SegmentHazardInput, "weather" | "hazard">,
+  weather?: WeatherSnapshot | null,
+  hazard?: HazardSnapshot | null,
+): SegmentHazardInput {
+  return {
+    ...segment,
+    floodIndex:
+      typeof hazard?.floodIndex === "number"
+        ? hazard.floodIndex
+        : segment.floodIndex ?? 0,
+    landslideIndex:
+      typeof hazard?.landslideIndex === "number"
+        ? hazard.landslideIndex
+        : segment.landslideIndex ?? 0,
+    rainfall:
+      typeof weather?.rainfall === "number"
+        ? weather.rainfall
+        : segment.rainfall ?? 0,
+    weather: weather ?? null,
+    hazard: hazard ?? null,
+  };
+}
 
 export function computeRealtimeRisk(
   segment: SegmentHazardInput,
@@ -62,16 +90,19 @@ export function computeRealtimeRisk(
 ): RealtimeRisk | undefined {
   const reasons: string[] = [];
 
-  if (segment.floodIndex > 0.75) {
-    reasons.push(`Flood index ${Math.round(segment.floodIndex * 100)}%`);
+  const floodIndex = segment.floodIndex * 100;
+  const landslideIndex = segment.landslideIndex * 100;
+
+  if (floodIndex >= 90) {
+    reasons.push(`Flood index ${Math.round(floodIndex)}%`);
   }
-  if (segment.landslideIndex > 0.75) {
-    reasons.push(`Landslide index ${Math.round(segment.landslideIndex * 100)}%`);
+  if (landslideIndex >= 90) {
+    reasons.push(`Landslide index ${Math.round(landslideIndex)}%`);
   }
-  if (segment.rainfall > 40) {
+  if (segment.rainfall >= 70) {
     reasons.push(`Heavy rainfall ${segment.rainfall}mm/h`);
   }
-  if (recentEvents >= 2) {
+  if (recentEvents >= 3) {
     reasons.push(`${recentEvents} recent disaster events nearby (last 30 days)`);
   }
 
@@ -177,10 +208,11 @@ export async function fetchSegmentHistoricPatterns(
     }
 
     const totalIncidents = patterns.reduce((s, p) => s + p.total, 0);
+    const weightedIncidents = patterns.reduce((s, p) => s + p.total * 0.6, 0);
     let severity: "HIGH" | "MEDIUM" | "LOW";
-    if (totalIncidents >= HISTORIC_THRESHOLDS.HIGH) {
+    if (weightedIncidents >= HISTORIC_THRESHOLDS.HIGH) {
       severity = "HIGH";
-    } else if (totalIncidents >= HISTORIC_THRESHOLDS.MEDIUM) {
+    } else if (weightedIncidents >= HISTORIC_THRESHOLDS.MEDIUM) {
       severity = "MEDIUM";
     } else {
       severity = "LOW";

@@ -146,11 +146,11 @@ async function getDestinationHandler(
       nearbyLocations,
     ] = await Promise.all([
       // Live weather
-      fetchWeather(location.latitude, location.longitude).catch(() => null),
+      fetchWeather(location.latitude, location.longitude, _req.signal).catch(() => null),
 
       // Live hazard
-      fetchHazard(location.latitude, location.longitude, prisma).catch(() => ({
-        floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, heatIndex: 0, airQuality: 0, source: "unavailable",
+      fetchHazard(location.latitude, location.longitude, prisma, _req.signal).catch(() => ({
+        floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, stormIndex: 0, accidentIndex: 0, heatIndex: 0, airQuality: 0, source: "unavailable",
         floodCount: 0, landslideCount: 0, earthquakeCount: 0,
       })),
 
@@ -249,7 +249,7 @@ async function getDestinationHandler(
 
     const safety = computeSafetyScore(
       liveWeather as { temperature: number; humidity: number; rainfall: number; windSpeed: number; pressure: number },
-      liveHazard as { floodIndex: number; landslideIndex: number; earthquakeIndex: number; heatIndex: number; airQuality: number },
+      liveHazard as { floodIndex: number; landslideIndex: number; earthquakeIndex: number; stormIndex: number; accidentIndex: number; heatIndex: number; airQuality: number },
       ["SOLO", ...scoringPurposes],
       "SOLO",
       (liveWeather as { source?: string }).source ?? "unknown",

@@ -99,7 +99,7 @@ describe("analysis optimizations", () => {
 
   it("skips alternative analysis for safe destinations", () => {
     expect(shouldRunAlternativeAnalysis("SAFE")).toBe(false);
-    expect(shouldRunAlternativeAnalysis("CAUTION")).toBe(true);
+    expect(shouldRunAlternativeAnalysis("CAUTION")).toBe(false);
     expect(shouldRunAlternativeAnalysis("HIGH_RISK")).toBe(true);
   });
 });

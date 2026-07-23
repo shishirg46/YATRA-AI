@@ -1,4 +1,5 @@
 import type { Destination, UserProfile } from "@/app/dashboard/_components/types";
+import { computeImplicitInterests } from "@/lib/recommendations/implicit-preferences";
 
 type RecommendationTier = {
   id: number;
@@ -147,16 +148,21 @@ function fieldMatchesPreference(fieldText: string, preference: string): boolean 
   return (PREFERENCE_KEYWORDS[preference] ?? []).some((keyword) => fieldText.includes(keyword));
 }
 
-function matchesPreference(destination: Destination, profile: UserProfile | null) {
-  const preferences = [
+function matchesPreference(destination: Destination, profile: UserProfile | null, implicitInterests?: Set<string>) {
+  const explicitPrefs = [
     ...(profile?.preference?.interests ?? []),
     ...(profile?.preference?.travelStyle ?? []),
   ].map(normalize).filter(Boolean);
 
-  if (preferences.length === 0) return false;
+  const allInterests = [...new Set([
+    ...explicitPrefs,
+    ...(implicitInterests ? [...implicitInterests].map(normalize) : []),
+  ])];
+
+  if (allInterests.length === 0) return false;
 
   const searchText = getSearchText(destination);
-  return preferences.some((preference) => {
+  return allInterests.some((preference) => {
     if (!searchText.includes(preference) &&
         !(PREFERENCE_KEYWORDS[preference] ?? []).some((keyword) => searchText.includes(keyword))) {
       return false;
@@ -250,13 +256,21 @@ function getTier(signals: RankedDestination["signals"], destination: Destination
 const TERRAIN_INTERESTS = new Set(["trekking", "hiking", "adventure", "nature", "wildlife"]);
 const LOWLAND_INTERESTS = new Set(["relaxing", "family"]);
 
-function tieBreakerScore(destination: Destination, profile: UserProfile | null, distanceKm: number | null) {
+function tieBreakerScore(destination: Destination, profile: UserProfile | null, distanceKm: number | null, categoryWeights?: Record<string, number>) {
   let score = destination.safetyScore;
   score += destination.routeRisk?.routeRiskScore ? destination.routeRisk.routeRiskScore * 0.45 : 25;
   score += destination.verified ? 10 : 0;
   score += destination.dataQualityScore ? Math.min(destination.dataQualityScore, 100) * 0.08 : 0;
   score += destination.confidence ? destination.confidence * 0.05 : 0;
   if (distanceKm != null) score += Math.max(0, 35 - distanceKm / 4);
+
+  // Implicit category affinity boost
+  if (categoryWeights && destination.category) {
+    const catWeight = categoryWeights[destination.category] ?? 0;
+    if (catWeight > 0) {
+      score += catWeight * 15;
+    }
+  }
 
   const altitude = destination.altitude ?? 0;
   const interests = new Set((profile?.preference?.interests ?? []).map(normalize));
@@ -287,13 +301,15 @@ export function rankRecommendedDestinations(
   destinations: Destination[],
   profile: UserProfile | null,
 ): RankedDestination[] {
+  const implicit = computeImplicitInterests(profile?.behavior?.metrics);
+
   return destinations
     .filter((destination) => !isHardFilteredRecommendation(destination))
     .map((destination) => {
       const distanceKm = distanceFromProfile(destination, profile);
       const safe = destination.safetyLevel === "SAFE";
       const caution = destination.safetyLevel === "CAUTION";
-      const preference = matchesPreference(destination, profile);
+      const preference = matchesPreference(destination, profile, implicit.implicitInterests);
       const health = getHealthSignal(destination, profile);
       const nearby = isNearby(destination, profile, distanceKm);
       const popular = getPopularSignal(destination);
@@ -306,7 +322,7 @@ export function rankRecommendedDestinations(
         destination,
         signals,
         tier,
-        score: (8 - tier.id) * 1000 + tieBreakerScore(destination, profile, distanceKm),
+        score: (8 - tier.id) * 1000 + tieBreakerScore(destination, profile, distanceKm, implicit.categoryWeights),
       };
     })
     .filter((item): item is RankedDestination => item !== null)

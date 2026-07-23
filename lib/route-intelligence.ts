@@ -6,6 +6,9 @@ import type { IndependentHazardScores } from "@/lib/disaster-pipeline";
 import { generateDynamicAlerts } from "@/lib/alert-engine";
 import { prisma } from "@/lib/prisma";
 import { buildSegmentedRoute } from "@/lib/routing/route-service";
+import { UnsupportedRegionError } from "@/lib/routing/geo";
+import { reverseGeocodeNepal } from "@/lib/routing/nominatim";
+import { extractSettlementName } from "@/lib/routing/route-generation";
 
 import { resolveDestination } from "@/lib/routing/place-resolver";
 import { fetchRoadRoute, fetchRouteGeometry } from "@/lib/routing/openroute-service";
@@ -13,7 +16,6 @@ import { createRouteBuffer } from "@/lib/routing/route-buffer";
 import { findPlacesAlongRoute } from "@/lib/routing/places-along-route";
 import { rankPlacesForRoute } from "@/lib/routing/route-ranking";
 import { findNearestLocation } from "@/lib/routing/spatial";
-import { snapToNearestRoad } from "@/lib/routing/osrm-nearest";
 import { labelPolylineSegments } from "@/lib/routing/geometry-projection";
 import type {
   BuiltRoute,
@@ -322,6 +324,7 @@ export async function buildRouteCore(
   }
 
   let routes: Route[] = [];
+  let skipFallback = false;
 
   try {
     const built = await buildSegmentedRoute({
@@ -367,37 +370,20 @@ export async function buildRouteCore(
       ),
     ];
   } catch (err) {
-    console.warn("[route-intelligence] segmented build failed:", err);
+    if (err instanceof UnsupportedRegionError) {
+      skipFallback = true;
+      console.debug("[route-intelligence] origin/destination outside Nepal — no route possible");
+    } else {
+      console.warn("[route-intelligence] segmented build failed:", err);
+    }
   }
 
-  if (routes.length === 0) {
+  if (routes.length === 0 && !skipFallback) {
     const storedRoutes = await fetchStoredRoutes(origin, resolvedDest);
     let roadRoutes: Route[] = [];
 
     if (storedRoutes.length === 0) {
       roadRoutes = await fetchRoadRoutesFallback(origin, resolvedDest, vehicle);
-
-      if (roadRoutes.length === 0) {
-        const [snappedOrigin, snappedDest] = await Promise.all([
-          snapToNearestRoad(origin.lat, origin.lon),
-          snapToNearestRoad(resolvedDest.lat, resolvedDest.lon),
-        ]);
-
-        const effectiveOrigin = snappedOrigin && snappedOrigin.distance <= 5000
-          ? { lat: snappedOrigin.lat, lon: snappedOrigin.lon, name: origin.name }
-          : origin;
-        const effectiveDest = snappedDest && snappedDest.distance <= 5000
-          ? { lat: snappedDest.lat, lon: snappedDest.lon, name: resolvedDest.name }
-          : resolvedDest;
-
-        if (effectiveOrigin.lat !== origin.lat || effectiveOrigin.lon !== origin.lon ||
-            effectiveDest.lat !== resolvedDest.lat || effectiveDest.lon !== resolvedDest.lon) {
-          roadRoutes = await fetchRoadRoutesFallback(effectiveOrigin, effectiveDest, vehicle);
-          if (roadRoutes.length > 0) {
-            resolvedDest = effectiveDest;
-          }
-        }
-      }
     }
 
     routes = storedRoutes.length > 0 ? storedRoutes : roadRoutes;
@@ -779,15 +765,18 @@ async function analyzeRouteHazards(route: Route, departureDate: string): Promise
   const sampledWaypoints = sampleWaypoints(route.waypoints, samplingStep);
   const analysisWaypoints = sampledWaypoints.length >= 2 ? sampledWaypoints : route.waypoints;
 
-  for (let i = 0; i < analysisWaypoints.length - 1; i++) {
-    const start = analysisWaypoints[i];
-    const end = analysisWaypoints[i + 1];
+  const resolvedNames = await Promise.all(
+    analysisWaypoints.map(async (wp) =>
+      wp.name ?? await reverseGeocodeSettlement(wp.lat, wp.lon)
+    )
+  );
 
+  for (let i = 0; i < analysisWaypoints.length - 1; i++) {
     segments.push({
       index: i,
-      startPoint: { lat: start.lat, lon: start.lon, name: start.name ?? getDistrictFromCoords(start.lat, start.lon) },
-      endPoint: { lat: end.lat, lon: end.lon, name: end.name ?? getDistrictFromCoords(end.lat, end.lon) },
-      distance: end.distanceFromStart - start.distanceFromStart,
+      startPoint: { lat: analysisWaypoints[i].lat, lon: analysisWaypoints[i].lon, name: resolvedNames[i] },
+      endPoint: { lat: analysisWaypoints[i + 1].lat, lon: analysisWaypoints[i + 1].lon, name: resolvedNames[i + 1] },
+      distance: analysisWaypoints[i + 1].distanceFromStart - analysisWaypoints[i].distanceFromStart,
       riskScore: 0,
       riskLevel: "LOW",
       hazards: [],
@@ -1142,6 +1131,16 @@ function scoreToLevel(score: number): "LOW" | "MEDIUM" | "HIGH" | "EXTREME" {
   if (score < 0.5) return "MEDIUM";
   if (score < 0.7) return "HIGH";
   return "EXTREME";
+}
+
+async function reverseGeocodeSettlement(lat: number, lon: number): Promise<string> {
+  try {
+    const result = await reverseGeocodeNepal(lat, lon);
+    if (!result) return getDistrictFromCoords(lat, lon);
+    const name = extractSettlementName(result.address ?? null);
+    if (name) return name;
+  } catch {}
+  return getDistrictFromCoords(lat, lon);
 }
 
 function getDistrictFromCoords(lat: number, lon: number): string {

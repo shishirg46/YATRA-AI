@@ -6,7 +6,7 @@ const baseWeather = {
 };
 
 const baseHazard = {
-  floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, heatIndex: 0, airQuality: 0,
+  floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, stormIndex: 0, accidentIndex: 0, heatIndex: 0, airQuality: 0,
 };
 
 describe("computeSafetyScore", () => {
@@ -89,6 +89,22 @@ describe("computeSafetyScore", () => {
     expect(result.decisionTrace.penalties.rainfall).toBeGreaterThan(0);
   });
 
+  it("applies humidity penalty when conditions are muggy", () => {
+    const humid = { ...baseWeather, humidity: 90 };
+    const result = computeSafetyScore(humid, baseHazard, ["TOURISM"], "live", "live", {
+      altitude: 500, districtName: "kathmandu", locationName: "Kathmandu",
+    });
+    expect(result.decisionTrace.penalties.humidity).toBeGreaterThan(0);
+  });
+
+  it("keeps humidity penalty low for comfortable humidity", () => {
+    const dry = { ...baseWeather, humidity: 45 };
+    const result = computeSafetyScore(dry, baseHazard, ["TOURISM"], "live", "live", {
+      altitude: 500, districtName: "kathmandu", locationName: "Kathmandu",
+    });
+    expect(result.decisionTrace.penalties.humidity).toBe(0);
+  });
+
   it("applies temperature extreme penalty for sub-zero", () => {
     const cold = { ...baseWeather, temperature: -10 };
     const result = computeSafetyScore(cold, baseHazard, ["TOURISM"], "live", "live", {
@@ -143,7 +159,7 @@ describe("computeSafetyScore", () => {
   });
 
   it("caps max penalty at 100", () => {
-    const badHazard = { floodIndex: 1, landslideIndex: 1, earthquakeIndex: 1, heatIndex: 1, airQuality: 1 };
+    const badHazard = { floodIndex: 1, landslideIndex: 1, earthquakeIndex: 1, stormIndex: 1, accidentIndex: 1, heatIndex: 1, airQuality: 1 };
     const result = computeSafetyScore(baseWeather, badHazard, ["SOLO"], "live", "live", {
       altitude: 5500, districtName: "solukhumbu", locationName: "Everest",
     });
@@ -152,7 +168,7 @@ describe("computeSafetyScore", () => {
   });
 
   it("returns EXTREME for worst case", () => {
-    const badHazard = { floodIndex: 1, landslideIndex: 1, earthquakeIndex: 1, heatIndex: 1, airQuality: 1 };
+    const badHazard = { floodIndex: 1, landslideIndex: 1, earthquakeIndex: 1, stormIndex: 1, accidentIndex: 1, heatIndex: 1, airQuality: 1 };
     const badWeather = { temperature: -20, humidity: 90, rainfall: 200, windSpeed: 80, pressure: 900 };
     const result = computeSafetyScore(badWeather, badHazard, ["SOLO", "TREKKING"], "live", "live", {
       altitude: 5500, districtName: "solukhumbu", locationName: "Everest",

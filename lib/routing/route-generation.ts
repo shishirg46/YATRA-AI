@@ -1,4 +1,4 @@
-import { haversineKm, haversineM, isPointInNepal } from "@/lib/routing/geo";
+import { haversineKm, isPointInNepal } from "@/lib/routing/geo";
 import { reverseGeocodeNepal } from "@/lib/routing/nominatim";
 import { fetchOsrmRouteThroughNodes } from "@/lib/routing/osrm-client";
 import type {
@@ -14,12 +14,12 @@ import type {
 type RouteCoord = { lat: number; lon: number };
 
 const SETTLEMENT_KEYS = ["city", "town", "village", "municipality"] as const;
-const DEFAULT_SAMPLE_INTERVAL_KM = 5;
-const MAX_REVERSE_GEOCODE_POINTS = 80;
+const DEFAULT_SAMPLE_INTERVAL_KM = 2;
+const MAX_REVERSE_GEOCODE_POINTS = 200;
 
 type SettlementKey = (typeof SETTLEMENT_KEYS)[number];
 
-type SettlementAddress = Partial<Record<SettlementKey, string | undefined>>;
+export type SettlementAddress = Partial<Record<SettlementKey, string | undefined>>;
 
 export interface GenerateRoadsInput {
   start: RouteCoord & { name?: string };
@@ -45,7 +45,7 @@ function normalizeSettlementName(name: string): string | null {
   return normalized.length > 0 ? normalized : null;
 }
 
-function extractSettlementName(address?: SettlementAddress | null): string | null {
+export function extractSettlementName(address?: SettlementAddress | null): string | null {
   if (!address) return null;
 
   for (const key of SETTLEMENT_KEYS) {
@@ -100,65 +100,6 @@ function sampleRouteCoordinates(
 
   const step = Math.ceil(samples.length / maxPoints);
   return samples.filter((_, index) => index % step === 0).slice(0, maxPoints);
-}
-
-/**
- * Check if a place is within a road-aligned rectangle:
- *   ±alongMeters along the road, ±crossMeters perpendicular.
- * Direction is derived from adjacent samples.
- */
-function inRoadCorridor(
-  lat: number, lon: number,
-  placeLat: number, placeLon: number,
-  samples: RouteCoord[],
-  index: number,
-  alongMeters: number,
-  crossMeters: number,
-): boolean {
-  const prev = index > 0 ? samples[index - 1] : null;
-  const next = index < samples.length - 1 ? samples[index + 1] : null;
-
-  let dlat: number, dlng: number;
-  if (prev && next) {
-    dlat = next.lat - prev.lat;
-    dlng = next.lon - prev.lon;
-  } else if (prev) {
-    dlat = lat - prev.lat;
-    dlng = lon - prev.lon;
-  } else if (next) {
-    dlat = next.lat - lat;
-    dlng = next.lon - lon;
-  } else {
-    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
-  }
-
-  const dirLen = Math.hypot(dlat, dlng);
-  if (dirLen < 1e-12) {
-    return haversineM(lat, lon, placeLat, placeLon) <= Math.hypot(alongMeters, crossMeters);
-  }
-
-  const ux = dlng / dirLen;
-  const uy = dlat / dirLen;
-
-  const cosLat = Math.cos(lat * Math.PI / 180);
-  const dx = (placeLon - lon) * (111320 * cosLat);
-  const dy = (placeLat - lat) * 111320;
-
-  const uxm = ux * (111320 * cosLat);
-  const uym = uy * 111320;
-  const umag = Math.hypot(uxm, uym);
-  if (umag < 1e-12) return true;
-
-  const uxn = uxm / umag;
-  const uyn = uym / umag;
-
-  const vxn = -uyn;
-  const vyn = uxn;
-
-  const along = dx * uxn + dy * uyn;
-  const cross = Math.abs(dx * vxn + dy * vyn);
-
-  return Math.abs(along) <= alongMeters && cross <= crossMeters;
 }
 
 async function buildGeneratedRoad(
@@ -308,7 +249,7 @@ function buildEnhancedSegments(
       toCoord: namedCoords[toNamedIdx].coord,
       subCoords,
       direction: `${fromName} → ${toName}`,
-      distance: Math.round(segDist),
+      distance: Math.round(segDist * 1000),
       duration: Math.round(segDuration),
     });
   }
@@ -341,11 +282,6 @@ async function buildEnhancedRoad(
         }
         const result = await reverseGeocodeNepal(point.lat, point.lon).catch(() => null);
         if (!result) return { coord: point, placeName: null, placeType: null };
-        if (idx > 0 && idx < rawSamples.length - 1) {
-          if (!inRoadCorridor(point.lat, point.lon, result.lat, result.lon, rawSamples, idx, 500, 250)) {
-            return { coord: point, placeName: null, placeType: null };
-          }
-        }
         const name = extractSettlementName(result.address);
         return {
           coord: point,

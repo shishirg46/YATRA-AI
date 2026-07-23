@@ -45,6 +45,7 @@ import { FirstRunCoachmarks } from "./_components/FirstRunCoachmarks";
 import { AppShell }            from "@/components/app-shell";
 import { LocationShareButton } from "@/components/location-share-button";
 import { useResolvedOrigin } from "@/lib/hooks/use-resolved-origin";
+import { getCurrentLocation, LocationError } from "@/lib/location/getCurrentLocation";
 import {
   rankRecommendedDestinations,
   recommendationSortScore,
@@ -147,6 +148,8 @@ export default function DashboardPage() {
     resolveFromGps,
     resolveFromManual,
     loadSavedHome,
+    setOrigin,
+    clearOrigin,
   } = useResolvedOrigin();
 
   const userLocation = resolvedOrigin
@@ -154,7 +157,10 @@ export default function DashboardPage() {
     : null;
   const manualLocationName = resolvedOrigin?.name ?? null;
 
-  function requestUserLocation() {
+  async function requestUserLocation() {
+    clearOrigin();
+    try { await fetch("/api/user/location", { method: "DELETE", credentials: "include" }); } catch {}
+
     if (!navigator.geolocation) {
       setLocationError("Geolocation is not supported in this browser.");
       return;
@@ -165,59 +171,59 @@ export default function DashboardPage() {
     setRetryAttempt(0);
 
     const MAX_ATTEMPTS = 3;
-
-    const attemptGps = (attempt: number) => {
-      setRetryAttempt(attempt);
-      navigator.geolocation.getCurrentPosition(
-        async (pos: GeolocationPosition) => {
-          const accuracy = pos.coords.accuracy;
-          if (accuracy <= 300 || attempt >= MAX_ATTEMPTS) {
-            setLocating(false);
-            setRetryAttempt(0);
-            const resolved = await resolveFromGps(pos.coords.latitude, pos.coords.longitude, accuracy);
-            if (!resolved) {
-              setLocationError("Could not resolve your location. Please try again or set your location manually.");
-            }
-          } else {
-            attemptGps(attempt + 1);
-          }
-        },
-        (err: GeolocationPositionError) => {
-          setLocating(false);
-          setRetryAttempt(0);
-          if (err.code === err.PERMISSION_DENIED) {
-            setLocationError("Permission denied. Please allow location access in browser settings.");
-          } else if (err.code === err.POSITION_UNAVAILABLE) {
-            setLocationError("Location unavailable. Please try again in an open area.");
-          } else if (err.code === err.TIMEOUT) {
-            setLocationError("Location request timed out. Please ensure GPS is enabled and try again.");
-          } else {
-            setLocationError(err.message || "Failed to get location.");
-          }
-        },
-        {
-          enableHighAccuracy: attempt < MAX_ATTEMPTS,
-          maximumAge: 0,
-          timeout: attempt === 1 ? 15000 : attempt === 2 ? 30000 : 45000,
-        },
-      );
-    };
+    const ACCEPT_THRESHOLD = 300;
 
     if (typeof navigator !== "undefined" && "permissions" in navigator) {
-      navigator.permissions.query({ name: "geolocation" as PermissionName }).then((status) => {
+      try {
+        const status = await navigator.permissions.query({ name: "geolocation" as PermissionName });
         if (status.state === "denied") {
           setLocating(false);
           setLocationError("Location is blocked by browser for localhost:3000. Change it to Allow in site settings, then tap Enable.");
           return;
         }
-        attemptGps(1);
-      }).catch(() => {
-        attemptGps(1);
-      });
-      return;
+      } catch { /* permissions API not available */ }
     }
 
-    attemptGps(1);
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      setRetryAttempt(attempt);
+      try {
+        const pos = await getCurrentLocation({
+          highAccuracy: attempt < MAX_ATTEMPTS,
+          timeout: attempt === 1 ? 15000 : attempt === 2 ? 30000 : 45000,
+        });
+
+        if (pos.accuracy <= ACCEPT_THRESHOLD || attempt >= MAX_ATTEMPTS) {
+          setLocating(false);
+          setRetryAttempt(0);
+          const resolved = await resolveFromGps(pos.lat, pos.lon, pos.accuracy);
+          if (!resolved) {
+            setLocationError("Could not resolve your location. Please try again or set your location manually.");
+          }
+          return;
+        }
+        // accuracy too high, retry
+      } catch (err) {
+        if (err instanceof LocationError && err.kind === "permission-denied") {
+          setLocating(false);
+          setRetryAttempt(0);
+          setLocationError("Permission denied. Please allow location access in browser settings.");
+          return;
+        }
+        if (attempt >= MAX_ATTEMPTS) {
+          setLocating(false);
+          setRetryAttempt(0);
+          const msg = err instanceof LocationError
+            ? err.message
+            : "Failed to get location.";
+          setLocationError(msg);
+          return;
+        }
+        // otherwise retry
+      }
+    }
+
+    setLocating(false);
+    setRetryAttempt(0);
   }
 
   // Do not auto-request on mount; request only from explicit user action.
@@ -682,7 +688,7 @@ export default function DashboardPage() {
                 <Navigation size={18} className={userLocation ? "text-primary" : "text-muted-foreground"} />
               </div>
               <div className="location-card__content">
-                <p className="location-card__eyebrow">Current Origin</p>
+                <p className="location-card__eyebrow">Current Location</p>
                 <div className="location-card__title-row">
                   <p className="location-card__title">
                     {(manualLocationName?.replace(/,+\s*$/, "") ?? (userLocation ? "Detected Location" : "Not Set"))}

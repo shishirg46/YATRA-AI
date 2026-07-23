@@ -1,13 +1,14 @@
 import type { GeoPoint, RoadRoute, RouteCoordinate, RouteInstruction, RouteLeg, VehicleProfile } from "./types";
+import { snapToNearestRoad } from "./osrm-nearest";
 
 const ORS_BASE = process.env.OPENROUTESERVICE_URL ?? "https://api.openrouteservice.org/v2";
 const OSRM_BASE = process.env.OSRM_URL ?? "http://localhost:5000";
-const TIMEOUT_MS = 25_000;
-const MAX_RETRIES = 2;
+const TIMEOUT_MS = 10_000;
+const MAX_RETRIES = 1;
 
 const VEHICLE_MAP: Record<VehicleProfile, string> = {
   car: "driving-car",
-  motorcycle: "driving-motorcycle",
+  motorcycle: "driving-car",
   jeep: "driving-hgv",
 };
 
@@ -294,29 +295,69 @@ export async function fetchRoadRoute(
     return fetchOsrmRoadRoute(start, end, vehicle, options, externalSignal);
   }
 
-  const points = [start, ...(options?.waypoints || []), end];
-  const coordsStr = buildCoordinateString(points);
-  const url = buildOrsUrl(vehicle, coordsStr, options?.alternatives ?? false);
+  async function doFetch(s: GeoPoint, e: GeoPoint): Promise<RoadRoute[]> {
+    const points = [s, ...(options?.waypoints || []), e];
+    const coordsStr = buildCoordinateString(points);
+    const url = buildOrsUrl(vehicle, coordsStr, options?.alternatives ?? false);
 
-  const res = await fetchWithRetry(url, {
-    method: "GET",
-    headers: {
-      Accept: "application/json, application/geo+json",
-    },
-  }, MAX_RETRIES, externalSignal);
+    const res = await fetchWithRetry(url, {
+      method: "GET",
+      headers: {
+        Accept: "application/json, application/geo+json",
+      },
+    }, MAX_RETRIES, externalSignal);
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "unknown error");
-    throw new Error(`OpenRouteService API error ${res.status}: ${text}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => "unknown error");
+      throw new Error(`OpenRouteService API error ${res.status}: ${text}`);
+    }
+
+    const data = (await res.json()) as OrsDirectionResponse;
+
+    if (!data.features?.length) {
+      throw new Error("OpenRouteService returned no routes");
+    }
+
+    return data.features.map(parseOrsRoute);
   }
 
-  const data = (await res.json()) as OrsDirectionResponse;
+  try {
+    return await doFetch(start, end);
+  } catch (err) {
+    const msg = (err as Error)?.message ?? "";
+    if (!msg.includes("Could not find routable point")) throw err;
 
-  if (!data.features?.length) {
-    throw new Error("OpenRouteService returned no routes");
+    async function snap(c: GeoPoint, radius: number): Promise<GeoPoint> {
+      const result = await snapToNearestRoad(c.lat, c.lon, radius);
+      return result && result.distance <= radius
+        ? { lat: result.lat, lon: result.lon }
+        : c;
+    }
+
+    const [snappedOrigin, snappedDest] = await Promise.all([
+      snap(start, 5_000),
+      snap(end, 5_000),
+    ]);
+
+    if (snappedOrigin.lat !== start.lat || snappedOrigin.lon !== start.lon ||
+        snappedDest.lat !== end.lat || snappedDest.lon !== end.lon) {
+      console.debug("[ors] snapped coordinates (5km) for routing failure");
+      return doFetch(snappedOrigin, snappedDest);
+    }
+
+    const [farOrigin, farDest] = await Promise.all([
+      snap(start, 50_000),
+      snap(end, 50_000),
+    ]);
+
+    if (farOrigin.lat !== start.lat || farOrigin.lon !== start.lon ||
+        farDest.lat !== end.lat || farDest.lon !== end.lon) {
+      console.debug("[ors] snapped coordinates (50km) for routing failure");
+      return doFetch(farOrigin, farDest);
+    }
+
+    throw err;
   }
-
-  return data.features.map(parseOrsRoute);
 }
 
 export async function fetchRouteWithAlternatives(

@@ -44,6 +44,8 @@ export interface SegmentDetail {
   floodIndex: number;
   landslideIndex: number;
   earthquakeIndex: number;
+  stormIndex: number;
+  accidentIndex: number;
   temperature: number;
   rainfall: number;
   windSpeed: number;
@@ -295,7 +297,7 @@ export async function computePillarModel(
         routePoints.length ? fetchHistoricalDisastersNearRoute(routePoints, 8).catch(() => []) : Promise.resolve([]),
         routePoints.length ? fetchRealtimeDisastersNearRoute(routePoints, 8, 7).catch(() => []) : Promise.resolve([]),
         routePoints.length ? getDisasterImpactSummary(routePoints, 12).catch(() => ({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 })) : Promise.resolve({ dead: 0, injured: 0, missing: 0, affected: 0, displaced: 0 }),
-        fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75).catch(() => null),
+        fetchHistoricalHazard(input.destination.district, input.destination.lat, input.destination.lon, input.travelDate, 5, 75, undefined, routePoints.length ? routePoints : undefined).catch(() => null),
         fetchHistoricalWeather(input.destination.lat, input.destination.lon, input.travelDate, 5).catch(() => null),
         fetchWeather(input.home.lat, input.home.lon).catch(() => null),
         fetchHazard(input.destination.lat, input.destination.lon, prisma).catch(() => null),
@@ -395,7 +397,7 @@ export async function computePillarModel(
   routeRealtimePenalty += Math.min(8, routeRealtime.length * 0.9);
   const blockedSegments = segFlags.filter((s) => s.status === "Blocked").length;
   if (blockedSegments > 0) routeRealtimePenalty += 6;
-  const hasActiveHigh = (bestRoute?.segments ?? []).some((s) => (s.realtime?.floodIndex ?? 0) > 0.7 || (s.realtime?.landslideIndex ?? 0) > 0.7);
+  const hasActiveHigh = (bestRoute?.segments ?? []).some((s) => (s.realtime?.floodIndex ?? 0) > 0.7 || (s.realtime?.landslideIndex ?? 0) > 0.7 || ((s.realtime as any)?.stormIndex ?? 0) > 0.7 || ((s.realtime as any)?.accidentIndex ?? 0) > 0.8);
   if (hasActiveHigh) routeRealtimePenalty += 6;
   const routeRealtimeScore = Math.round(clamp(15 - routeRealtimePenalty, 0, 15));
 
@@ -404,11 +406,20 @@ export async function computePillarModel(
   const histFlood = destinationHistorical?.historicalFloodRisk ?? 0;
   const histLand = destinationHistorical?.historicalLandslideRisk ?? 0;
   const histEq = destinationHistorical?.historicalEarthquakeRisk ?? 0;
-  destinationPenalty += histFlood * 1 + histLand * 1 + histEq * 0.5;
+  const histStorm = destinationHistorical?.historicalStormRisk ?? 0;
+  const histAccident = destinationHistorical?.historicalAccidentRisk ?? 0;
   const liveFlood = destinationLiveHazard?.floodIndex ?? 0;
   const liveLand = destinationLiveHazard?.landslideIndex ?? 0;
   const liveEq = destinationLiveHazard?.earthquakeIndex ?? 0;
-  destinationPenalty += (liveFlood + liveLand + liveEq) * 1.5;
+  const liveStorm = destinationLiveHazard?.stormIndex ?? 0;
+  const liveAccident = destinationLiveHazard?.accidentIndex ?? 0;
+  const destinationHumidity = destinationLiveWeather?.humidity ?? 45;
+  const destinationRain = destinationLiveWeather?.rainfall ?? (destinationWeather?.avgRainfall ?? 2);
+
+  destinationPenalty += histFlood * 0.8 + histLand * 0.8 + histEq * 0.4 + histStorm * 0.5 + histAccident * 0.3;
+  destinationPenalty += (liveFlood + liveLand + liveEq) * 1.2 + liveStorm * 0.8 + liveAccident * 0.4;
+  destinationPenalty += Math.max(0, destinationRain / 20) * 0.8;
+  destinationPenalty += Math.max(0, (destinationHumidity - 70) / 20) * 0.7;
   if ((destinationLiveHazard?.airQuality ?? 0) > 0.7) destinationPenalty += 2;
   const destinationScore = Math.round(clamp(20 - destinationPenalty, 0, 20));
 
@@ -432,11 +443,12 @@ export async function computePillarModel(
   if (altitudeDelta > 2500) { weatherPenalty += 6; wb.push({ label: "Altitude difference >2500m", value: -6, type: "penalty" }); }
   if (altitudeDelta > 3500) { weatherPenalty += 4; wb.push({ label: "Altitude difference >3500m", value: -4, type: "penalty" }); }
   if (travelMonth >= 6 && travelMonth <= 9) {
-    const monsoonScore = Math.min((destinationLiveWeather?.rainfall ?? 0) / 10, 8);
+    const monsoonScore = Math.min((destinationLiveWeather?.rainfall ?? 0) / 10, 6);
     weatherPenalty += monsoonScore;
     wb.push({ label: `Monsoon season — ${destinationLiveWeather?.rainfall ?? 0}mm now`, value: -monsoonScore, type: "penalty" });
   }
-  if ((destinationLiveWeather?.rainfall ?? 0) > 10) { weatherPenalty += 3; wb.push({ label: "Active heavy rainfall", value: -3, type: "penalty" }); }
+  if ((destinationLiveWeather?.rainfall ?? 0) > 10) { weatherPenalty += 2; wb.push({ label: "Active heavy rainfall", value: -2, type: "penalty" }); }
+  if (humidityDelta > 20) { weatherPenalty += 2; wb.push({ label: "Destination humidity significantly higher", value: -2, type: "penalty" }); }
   const effectiveWindChill = destTemp - ((destinationLiveWeather?.windSpeed ?? 0) * 1.5);
   if (effectiveWindChill < -15) { weatherPenalty += 4; wb.push({ label: "Wind chill below -15°C", value: -4, type: "penalty" }); }
   if (uv > 11) { weatherPenalty += 2; wb.push({ label: "Extreme UV index", value: -2, type: "penalty" }); }
@@ -452,6 +464,7 @@ export async function computePillarModel(
   const chronic = input.userHealth?.chronicConditions ?? [];
   const terrainDifficulty: "Easy" | "Moderate" | "Hard" | "Expert" =
     (input.destination.altitude ?? 0) > 4500 ? "Expert" : (input.destination.altitude ?? 0) > 3000 ? "Hard" : (input.destination.altitude ?? 0) > 1800 ? "Moderate" : "Easy";
+  const routeSegmentRisk = (bestRoute?.segments ?? []).reduce((sum, seg) => sum + ((seg.riskLevel === "HIGH" || seg.riskLevel === "EXTREME") ? 2 : seg.riskLevel === "MEDIUM" ? 1 : 0), 0);
   if (fitness === "LOW" && (terrainDifficulty === "Hard" || terrainDifficulty === "Expert")) {
     personalPenalty += 5;
     flags.push("Low fitness vs hard terrain");
@@ -480,6 +493,10 @@ export async function computePillarModel(
   if (input.tripType === "SOLO" && guideRequired) {
     personalPenalty += 4;
     flags.push("Solo risk elevated without guide");
+  }
+  if (routeSegmentRisk > 0) {
+    personalPenalty += Math.min(3, Math.floor(routeSegmentRisk / 3));
+    flags.push("Route segments include sustained hazard exposure");
   }
   const personalScore = Math.round(clamp(20 - personalPenalty, 0, 20));
 
@@ -575,6 +592,8 @@ export async function computePillarModel(
     floodIndex: seg.realtime?.floodIndex ?? 0,
     landslideIndex: seg.realtime?.landslideIndex ?? 0,
     earthquakeIndex: seg.realtime?.earthquakeIndex ?? 0,
+    stormIndex: (seg.realtime as any)?.stormIndex ?? 0,
+    accidentIndex: (seg.realtime as any)?.accidentIndex ?? 0,
     temperature: seg.realtime?.temperature ?? 0,
     rainfall: seg.realtime?.rainfall ?? 0,
     windSpeed: seg.realtime?.windSpeed ?? 0,
@@ -597,8 +616,8 @@ export async function computePillarModel(
       incidentBreakdown,
     },
     destination: {
-      historicProfile: `In ${extractMonthsHint(travelMonth)}, ${input.destination.district} has averaged ${destinationHistorical?.floodIncidents ?? 0} flood and ${destinationHistorical?.landslideIncidents ?? 0} landslide incidents over ${destinationHistorical?.yearsAnalysed ?? 5} years.`,
-      realtimeSnapshot: `BIPAD hazard indices - Flood ${Math.round(liveFlood * 100)}%, Landslide ${Math.round(liveLand * 100)}%, Quake ${Math.round(liveEq * 100)}%.`,
+      historicProfile: `In ${extractMonthsHint(travelMonth)}, ${input.destination.district} has averaged ${destinationHistorical?.floodIncidents ?? 0} flood, ${destinationHistorical?.landslideIncidents ?? 0} landslide, ${destinationHistorical?.stormIncidents ?? 0} storm, and ${destinationHistorical?.accidentIncidents ?? 0} accident incidents over ${destinationHistorical?.yearsAnalysed ?? 5} years.`,
+      realtimeSnapshot: `BIPAD hazard indices - Flood ${Math.round(liveFlood * 100)}%, Landslide ${Math.round(liveLand * 100)}%, Quake ${Math.round(liveEq * 100)}%, Storm ${Math.round((destinationLiveHazard?.stormIndex ?? 0) * 100)}%, Accident ${Math.round((destinationLiveHazard?.accidentIndex ?? 0) * 100)}%.`,
       notableEvents: destinationHistorical?.notableEvents ?? [],
     },
     weather: {

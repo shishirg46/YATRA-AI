@@ -51,6 +51,8 @@ export interface HazardInput {
   floodIndex:      number;
   landslideIndex:  number;
   earthquakeIndex: number;
+  stormIndex:      number;
+  accidentIndex:   number;
   heatIndex:       number;
   airQuality:      number;
 }
@@ -119,7 +121,7 @@ function safeCacheKey(
   riskTolerance?: "LOW" | "MEDIUM" | "HIGH",
 ): string {
   const loc = location ? `${location.districtName}|${location.altitude ?? 0}` : "";
-  return `${weather.temperature.toFixed(1)},${weather.rainfall.toFixed(1)},${weather.windSpeed.toFixed(1)}|${hazard.floodIndex.toFixed(2)},${hazard.landslideIndex.toFixed(2)}|${purposes.join(",")}|${assessmentType}|${dataSource}|${loc}|${riskTolerance ?? ""}`;
+  return `${weather.temperature.toFixed(1)},${weather.humidity.toFixed(1)},${weather.rainfall.toFixed(1)},${weather.windSpeed.toFixed(1)},${weather.pressure.toFixed(1)}|${hazard.floodIndex.toFixed(2)},${hazard.landslideIndex.toFixed(2)},${hazard.earthquakeIndex.toFixed(2)},${hazard.heatIndex.toFixed(2)},${hazard.airQuality.toFixed(2)}|${purposes.join(",")}|${assessmentType}|${dataSource}|${loc}|${riskTolerance ?? ""}`;
 }
 
 // ── Main scoring function ─────────────────────────────────────────────────────
@@ -214,6 +216,17 @@ export function computeSafetyScore(
   // Rainfall
   penalties.rainfall = Math.min((weather.rainfall / 50) * 20, 20);
 
+  // Humidity
+  if (weather.humidity >= 90) {
+    penalties.humidity = 4;
+    reasoning.push(`Very high humidity (${weather.humidity}%) — heat stress and fatigue risk`);
+  } else if (weather.humidity >= 80) {
+    penalties.humidity = 2;
+    reasoning.push(`High humidity (${weather.humidity}%) — discomfort and dehydration risk`);
+  } else {
+    penalties.humidity = 0;
+  }
+
   // Wind
   penalties.wind = Math.min((weather.windSpeed / 20) * 10, 10);
 
@@ -233,6 +246,8 @@ export function computeSafetyScore(
   penalties.flood      = hazard.floodIndex     * 15;
   penalties.landslide  = hazard.landslideIndex * 5;
   penalties.earthquake = hazard.earthquakeIndex * 4;
+  penalties.storm      = hazard.stormIndex     * 3;
+  penalties.accident   = hazard.accidentIndex  * 2;
   penalties.heatIndex  = hazard.heatIndex      * 5;
   penalties.airQuality = hazard.airQuality     * 5;
 

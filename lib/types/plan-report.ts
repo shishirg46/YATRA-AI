@@ -124,6 +124,8 @@ export interface PlanReport {
   routePlan?: {
     nodes: Array<{ name: string; lat: number; lon: number }>;
     segments: Array<{ from: string; to: string; distanceKm: number; riskLevel: string }>;
+    from: string;
+    to: string;
     distanceKm: number;
     durationHours: number;
     corridor: string;

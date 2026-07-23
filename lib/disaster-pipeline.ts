@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { haversineKm } from "@/lib/routing/geo";
-
-export type DisasterType = "flood" | "landslide" | "earthquake" | "other";
+import { classifyType } from "@/lib/disaster/classifier";
+import type { DisasterType } from "@/lib/disaster/types";
 
 export interface DisasterEventRecord {
   externalId: string;
@@ -11,6 +11,7 @@ export interface DisasterEventRecord {
   date: string;
   severity: string;
   source: "bipad" | "usgs";
+  district?: string | null;
   metadata?: Record<string, unknown>;
 }
 
@@ -104,14 +105,21 @@ export async function ensureDisasterEventTable(): Promise<void> {
       date TIMESTAMPTZ NOT NULL,
       severity TEXT NOT NULL,
       source TEXT NOT NULL,
+      district TEXT,
       metadata JSONB,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(source, external_id)
     );
   `);
+  await prisma.$executeRawUnsafe(`ALTER TABLE yatra_disaster_events ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();`);
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_disaster_events_lat_lon ON yatra_disaster_events (lat, lon);`);
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_disaster_events_date ON yatra_disaster_events (date);`);
   await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_disaster_events_type ON yatra_disaster_events (type);`);
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_de_source_date ON yatra_disaster_events (source, date);`);
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_de_source_type_date ON yatra_disaster_events (source, type, date);`);
+  await prisma.$executeRawUnsafe(`ALTER TABLE yatra_disaster_events ADD COLUMN IF NOT EXISTS district TEXT;`);
+  await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS idx_de_district ON yatra_disaster_events (district);`);
 }
 
 export async function fetchBipadData(startDate: string, endDate: string): Promise<any> {
@@ -197,6 +205,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
   const rows = Array.isArray(data?.results) ? data.results : [];
   let droppedNoCoords = 0;
   let unmappedType = 0;
+  let droppedEarthquake = 0;
 
   function extractCoords(item: any): { lat: number; lon: number } | null {
     const candidates = [
@@ -219,43 +228,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
     return null;
   }
 
-  function classifyType(item: any): DisasterType | null {
-    const blob = [
-      item?.event?.title,
-      item?.event?.title_en,
-      item?.event?.title_np,
-      item?.hazard?.title,
-      item?.hazard?.title_en,
-      item?.hazard?.title_np,
-      item?.incident_type?.title,
-      item?.incident_type?.title_en,
-      item?.incident_type?.title_np,
-      item?.title,
-      item?.description,
-      item?.remarks,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-
-    if (
-      blob.includes("flood") ||
-      blob.includes("inundation") ||
-      blob.includes("flash flood") ||
-      blob.includes("बाढी")
-    ) return "flood";
-    if (
-      blob.includes("landslide") ||
-      blob.includes("debris flow") ||
-      blob.includes("पहिरो")
-    ) return "landslide";
-    if (
-      blob.includes("earthquake") ||
-      blob.includes("aftershock") ||
-      blob.includes("भूकम्प")
-    ) return "earthquake";
-    return "other";
-  }
+  const classify = classifyType;
 
   const transformed = rows
     .map((item: any) => {
@@ -264,13 +237,18 @@ export function transformBipad(data: any): DisasterEventRecord[] {
         droppedNoCoords += 1;
         return null;
       }
-      const type = classifyType(item);
+      const type = classify(item);
       if (type === "other") {
         unmappedType += 1;
+      }
+      if (type === "earthquake") {
+        droppedEarthquake += 1;
+        return null;
       }
       const loss = Number(item?.loss?.estimated_loss ?? 0);
       const severity = type === "other" ? "low" : loss > 1_000_000 ? "high" : loss > 100_000 ? "medium" : "low";
       const people = item?.people_affected || item?.loss || {};
+      const district = item?.district?.title_en ?? null;
       return {
         externalId: String(item?.id ?? crypto.randomUUID()),
         type,
@@ -279,10 +257,10 @@ export function transformBipad(data: any): DisasterEventRecord[] {
         date: item?.incident_on || item?.date_of_incident || new Date().toISOString(),
         severity,
         source: "bipad",
+        district,
         metadata: {
           title: String(item?.event?.title || item?.incident_type?.title || item?.hazard?.title || item?.title || ""),
           rawType: String(item?.event?.title || item?.incident_type?.title || item?.hazard?.title || item?.title || ""),
-          district: item?.district?.title_en ?? null,
           ward: item?.ward?.title_en ?? null,
           municipality: item?.municipality?.title_en ?? null,
           province: item?.province?.title_en ?? null,
@@ -301,7 +279,7 @@ export function transformBipad(data: any): DisasterEventRecord[] {
     .filter((d: DisasterEventRecord | null): d is DisasterEventRecord => !!d)
     .filter((d: DisasterEventRecord) => Number.isFinite(d.lat) && Number.isFinite(d.lon));
 
-  console.log(`[disaster-ingest] transformBipad rows=${rows.length} kept=${transformed.length} droppedNoCoords=${droppedNoCoords} unmappedType=${unmappedType}`);
+  console.log(`[disaster-ingest] transformBipad rows=${rows.length} kept=${transformed.length} droppedNoCoords=${droppedNoCoords} unmappedType=${unmappedType} droppedEarthquake=${droppedEarthquake}`);
   return transformed;
 }
 
@@ -340,19 +318,15 @@ export async function storeDisasterEvents(records: DisasterEventRecord[]): Promi
   await ensureDisasterEventTable();
   let inserted = 0;
   for (const r of records) {
-    const result = await prisma.$executeRawUnsafe(
-      `INSERT INTO yatra_disaster_events (external_id, type, lat, lon, date, severity, source, metadata)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-       ON CONFLICT (source, external_id) DO NOTHING;`,
-      r.externalId,
-      r.type,
-      r.lat,
-      r.lon,
-      r.date,
-      r.severity,
-      r.source,
-      JSON.stringify(r.metadata ?? {})
-    );
+    const result = await prisma.$executeRaw`
+      INSERT INTO yatra_disaster_events (external_id, type, lat, lon, date, severity, source, district, metadata)
+      VALUES (${r.externalId}, ${r.type}, ${r.lat}, ${r.lon}, ${r.date}, ${r.severity}, ${r.source}, ${r.district ?? null}, ${JSON.stringify(r.metadata ?? {})})
+      ON CONFLICT (source, external_id) DO UPDATE SET
+        updated_at = NOW(),
+        severity = EXCLUDED.severity,
+        district = EXCLUDED.district,
+        metadata = EXCLUDED.metadata;
+    `;
     if (Number(result) > 0) inserted += 1;
   }
   return inserted;
@@ -380,6 +354,84 @@ export async function ingestHistoricalBipad(
     console.log(`[disaster-ingest] year=${y} fetched=${transformed.length} inserted=${insertedYear} skipped=${skipped} totalInserted=${inserted}`);
   }
   console.log(`[disaster-ingest] historical backfill complete: totalInserted=${inserted}`);
+  return { inserted, years, progress };
+}
+
+interface HistoricalIngestOptions {
+  fromYear?: number;
+  incremental?: boolean;
+}
+
+export async function ingestHistoricalUsgs(
+  options: HistoricalIngestOptions = {}
+): Promise<{ inserted: number; years: number[]; progress: Array<{ year: number; fetched: number; inserted: number; skipped: number }> }> {
+  const fromYear = options.fromYear ?? 2020;
+  const toYear = new Date().getFullYear();
+  let startYear = fromYear;
+
+  if (options.incremental) {
+    const latest = await prisma.$queryRaw<Array<{ maxDate: Date | null }>>`
+      SELECT MAX(date)::date AS "maxDate"
+      FROM yatra_disaster_events
+      WHERE source = 'usgs'
+    `;
+    const latestDate = latest[0]?.maxDate;
+    if (latestDate) {
+      startYear = Math.max(fromYear, latestDate.getFullYear());
+    }
+  }
+
+  let inserted = 0;
+  const years: number[] = [];
+  const progress: Array<{ year: number; fetched: number; inserted: number; skipped: number }> = [];
+
+  const minLatitude = 26.2;
+  const maxLatitude = 30.5;
+  const minLongitude = 80.0;
+  const maxLongitude = 89.0;
+
+  console.log(`[disaster-ingest] USGS historical start: ${startYear} -> ${toYear} incremental=${!!options.incremental}`);
+  for (let y = startYear; y <= toYear; y++) {
+    years.push(y);
+    const start = `${y}-01-01`;
+    const end = `${y}-12-31`;
+    const url = `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=${start}&endtime=${end}&minlatitude=${minLatitude}&maxlatitude=${maxLatitude}&minlongitude=${minLongitude}&maxlongitude=${maxLongitude}&minmagnitude=3.0`;
+    try {
+      const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+      if (!res.ok) {
+        console.warn(`[disaster-ingest] USGS year ${y} failed: HTTP ${res.status}`);
+        progress.push({ year: y, fetched: 0, inserted: 0, skipped: 0 });
+        continue;
+      }
+      const data = await res.json() as { features?: any[] };
+      const features = Array.isArray(data?.features) ? data.features : [];
+      const records: DisasterEventRecord[] = features
+        .filter((f: any) => Array.isArray(f?.geometry?.coordinates))
+        .map((f: any) => {
+          const mag = Number(f?.properties?.mag ?? 0);
+          return {
+            externalId: String(f?.id ?? crypto.randomUUID()),
+            type: "earthquake" as const,
+            lat: Number(f.geometry.coordinates[1]),
+            lon: Number(f.geometry.coordinates[0]),
+            date: new Date(Number(f?.properties?.time ?? Date.now())).toISOString(),
+            severity: mag >= 6 ? "high" : mag >= 5 ? "medium" : "low",
+            source: "usgs" as const,
+            metadata: { mag, place: f?.properties?.place ?? null },
+          };
+        })
+        .filter((d: DisasterEventRecord) => Number.isFinite(d.lat) && Number.isFinite(d.lon));
+      const insertedYear = await storeDisasterEvents(records);
+      inserted += insertedYear;
+      const skipped = records.length - insertedYear;
+      progress.push({ year: y, fetched: records.length, inserted: insertedYear, skipped });
+      console.log(`[disaster-ingest] USGS year=${y} fetched=${records.length} inserted=${insertedYear} skipped=${skipped} totalInserted=${inserted}`);
+    } catch (error) {
+      console.warn(`[disaster-ingest] USGS year ${y} error: ${String(error)}`);
+      progress.push({ year: y, fetched: 0, inserted: 0, skipped: 0 });
+    }
+  }
+  console.log(`[disaster-ingest] USGS historical complete: totalInserted=${inserted}`);
   return { inserted, years, progress };
 }
 
@@ -417,7 +469,7 @@ export async function ingestRealtime(lastHours = 24): Promise<{ inserted: number
 export async function fetchHistoricalDisastersNearRoute(
   routePoints: { lat: number; lon: number }[],
   radiusKm = 5
-): Promise<Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>> {
+): Promise<Array<{ type: DisasterType; lat: number; lon: number; count: number }>> {
   if (!routePoints.length) return [];
   await ensureDisasterEventTable();
   const latMin = Math.min(...routePoints.map((p) => p.lat)) - radiusKm / 111;
@@ -430,14 +482,14 @@ export async function fetchHistoricalDisastersNearRoute(
      FROM yatra_disaster_events
      WHERE source = 'bipad'
        AND date >= '2020-01-01'
-       AND type IN ('flood','landslide')
+       AND type IN ('flood','landslide','storm','accident')
        AND lat BETWEEN $1 AND $2
        AND lon BETWEEN $3 AND $4
      GROUP BY type, lat, lon;`,
     latMin, latMax, lonMin, lonMax
   );
 
-  const mapped = rows.map((r) => ({ type: r.type as "flood" | "landslide", lat: r.lat, lon: r.lon, count: Number(r.count) }));
+  const mapped = rows.map((r) => ({ type: r.type as DisasterType, lat: r.lat, lon: r.lon, count: Number(r.count) }));
   return mapped.filter((d) => isNearRoute(d, routePoints, radiusKm));
 }
 
@@ -462,7 +514,7 @@ export async function getDisasterImpactSummary(
       COALESCE(SUM((metadata->>'affected')::int),0)  AS affected,
       COALESCE(SUM((metadata->>'displaced')::int),0) AS displaced
      FROM yatra_disaster_events
-     WHERE type IN ('flood','landslide','earthquake')
+     WHERE type IN ('flood','landslide','earthquake','storm','accident')
        AND lat BETWEEN $1 AND $2
        AND lon BETWEEN $3 AND $4;`,
     latMin, latMax, lonMin, lonMax
@@ -493,11 +545,12 @@ export async function fetchRealtimeDisastersNearRoute(
 
   const rows = await prisma.$queryRawUnsafe<Array<{ type: DisasterType; lat: number; lon: number }>>(
     `SELECT type, lat, lon
-     FROM yatra_disaster_events
-     WHERE date >= $1
-       AND severity != 'low'
-       AND lat BETWEEN $2 AND $3
-       AND lon BETWEEN $4 AND $5;`,
+      FROM yatra_disaster_events
+      WHERE date >= $1
+        AND severity != 'low'
+        AND NOT (source = 'bipad' AND type = 'earthquake')
+        AND lat BETWEEN $2 AND $3
+        AND lon BETWEEN $4 AND $5;`,
     since, latMin, latMax, lonMin, lonMax
   );
   const deduped = dedupeRealtimeEvents(rows);
@@ -542,7 +595,7 @@ export function calculateRisk(
 export function calculateSegmentOwnedRouteRisk(input: {
   routePoints: { lat: number; lon: number }[];
   realtimeDisasters: Array<{ type: DisasterType; lat: number; lon: number }>;
-  historicalDisasters: Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>;
+  historicalDisasters: Array<{ type: DisasterType; lat: number; lon: number; count: number }>;
   weather: { rain_mm_per_hr?: number; wind_kph?: number };
   segments?: Array<{ from?: string; to?: string; midpoint?: { lat: number; lon: number } }>;
 }): RouteRiskResult {
@@ -649,10 +702,17 @@ export function calculateSegmentHazardRisk(input: SegmentRiskInput): SegmentRisk
   else if (wind > 35) weatherRisk += 0.1;
 
   // Cluster-driven raw signals (no per-point multiplication).
+  const HAZARD_WEIGHTS: Record<string, number> = {
+    earthquake: 1.1,
+    landslide:  1.0,
+    flood:      1.0,
+    storm:      0.8,
+    accident:   0.5,
+    avalanche:  0.7,
+    fire:       0.6,
+  };
   realtimeRiskRaw = realtimeClusters.reduce((sum, c) => {
-    const base =
-      c.type === "earthquake" ? 1.1 :
-      c.type === "landslide" ? 1.0 : 0.9;
+    const base = HAZARD_WEIGHTS[c.type] ?? 0.5;
     const distanceFactor = c.nearestDistanceKm <= 5 ? 1.0 : 0.6;
     return sum + base * distanceFactor;
   }, 0);
@@ -1178,10 +1238,10 @@ function assignRealtimeToNearestSegment(
 }
 
 function assignHistoricalToNearestSegment(
-  disasters: Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>,
+  disasters: Array<{ type: DisasterType; lat: number; lon: number; count: number }>,
   segments: Array<{ midpoint: { lat: number; lon: number } }>
-): Map<number, Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>> {
-  const map = new Map<number, Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>>();
+): Map<number, Array<{ type: DisasterType; lat: number; lon: number; count: number }>> {
+  const map = new Map<number, Array<{ type: DisasterType; lat: number; lon: number; count: number }>>();
   for (const d of disasters) {
     let bestIdx = -1;
     let minDist = Number.POSITIVE_INFINITY;
@@ -1211,7 +1271,7 @@ function minDistanceKmToRoute(point: { lat: number; lon: number }, routePoints: 
   return min;
 }
 
-function isNearRoute(
+export function isNearRoute(
   disaster: { lat: number; lon: number },
   routePoints: { lat: number; lon: number }[],
   radiusKm = 10
@@ -1255,7 +1315,7 @@ function clusterRealtimeDisasters(
 }
 
 function clusterHistoricalDisasters(
-  events: Array<{ type: "flood" | "landslide"; lat: number; lon: number; count: number }>,
+  events: Array<{ type: DisasterType; lat: number; lon: number; count: number }>,
   routePoints: { lat: number; lon: number }[],
   clusterRadiusKm = 5
 ): DisasterCluster[] {

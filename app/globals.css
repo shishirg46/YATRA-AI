@@ -843,4 +843,13 @@
   .map-container .leaflet-popup-content-wrapper {
     border-radius: 0.75rem;
   }
+
+  /* Hide scrollbar globally */
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
 }

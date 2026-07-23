@@ -446,6 +446,7 @@ export type DestinationWhereInput = {
   sourceLastFetch?: Prisma.DateTimeNullableFilter<"Destination"> | Date | string | null
   savedByUsers?: Prisma.SavedDestinationListRelationFilter
   photos?: Prisma.DestinationPhotoListRelationFilter
+  embeddings?: Prisma.XOR<Prisma.DestinationEmbeddingNullableScalarRelationFilter, Prisma.DestinationEmbeddingWhereInput> | null
 }
 
 export type DestinationOrderByWithRelationInput = {
@@ -481,6 +482,7 @@ export type DestinationOrderByWithRelationInput = {
   sourceLastFetch?: Prisma.SortOrderInput | Prisma.SortOrder
   savedByUsers?: Prisma.SavedDestinationOrderByRelationAggregateInput
   photos?: Prisma.DestinationPhotoOrderByRelationAggregateInput
+  embeddings?: Prisma.DestinationEmbeddingOrderByWithRelationInput
 }
 
 export type DestinationWhereUniqueInput = Prisma.AtLeast<{
@@ -520,6 +522,7 @@ export type DestinationWhereUniqueInput = Prisma.AtLeast<{
   sourceLastFetch?: Prisma.DateTimeNullableFilter<"Destination"> | Date | string | null
   savedByUsers?: Prisma.SavedDestinationListRelationFilter
   photos?: Prisma.DestinationPhotoListRelationFilter
+  embeddings?: Prisma.XOR<Prisma.DestinationEmbeddingNullableScalarRelationFilter, Prisma.DestinationEmbeddingWhereInput> | null
 }, "id" | "osmId" | "name_district_province">
 
 export type DestinationOrderByWithAggregationInput = {
@@ -629,6 +632,7 @@ export type DestinationCreateInput = {
   sourceLastFetch?: Date | string | null
   savedByUsers?: Prisma.SavedDestinationCreateNestedManyWithoutDestinationInput
   photos?: Prisma.DestinationPhotoCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationUncheckedCreateInput = {
@@ -664,6 +668,7 @@ export type DestinationUncheckedCreateInput = {
   sourceLastFetch?: Date | string | null
   savedByUsers?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutDestinationInput
   photos?: Prisma.DestinationPhotoUncheckedCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationUpdateInput = {
@@ -699,6 +704,7 @@ export type DestinationUpdateInput = {
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   savedByUsers?: Prisma.SavedDestinationUpdateManyWithoutDestinationNestedInput
   photos?: Prisma.DestinationPhotoUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUpdateOneWithoutDestinationNestedInput
 }
 
 export type DestinationUncheckedUpdateInput = {
@@ -734,6 +740,7 @@ export type DestinationUncheckedUpdateInput = {
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   savedByUsers?: Prisma.SavedDestinationUncheckedUpdateManyWithoutDestinationNestedInput
   photos?: Prisma.DestinationPhotoUncheckedUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedUpdateOneWithoutDestinationNestedInput
 }
 
 export type DestinationCreateManyInput = {
@@ -1006,6 +1013,20 @@ export type DestinationUpdateOneRequiredWithoutPhotosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.DestinationUpdateToOneWithWhereWithoutPhotosInput, Prisma.DestinationUpdateWithoutPhotosInput>, Prisma.DestinationUncheckedUpdateWithoutPhotosInput>
 }
 
+export type DestinationCreateNestedOneWithoutEmbeddingsInput = {
+  create?: Prisma.XOR<Prisma.DestinationCreateWithoutEmbeddingsInput, Prisma.DestinationUncheckedCreateWithoutEmbeddingsInput>
+  connectOrCreate?: Prisma.DestinationCreateOrConnectWithoutEmbeddingsInput
+  connect?: Prisma.DestinationWhereUniqueInput
+}
+
+export type DestinationUpdateOneRequiredWithoutEmbeddingsNestedInput = {
+  create?: Prisma.XOR<Prisma.DestinationCreateWithoutEmbeddingsInput, Prisma.DestinationUncheckedCreateWithoutEmbeddingsInput>
+  connectOrCreate?: Prisma.DestinationCreateOrConnectWithoutEmbeddingsInput
+  upsert?: Prisma.DestinationUpsertWithoutEmbeddingsInput
+  connect?: Prisma.DestinationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DestinationUpdateToOneWithWhereWithoutEmbeddingsInput, Prisma.DestinationUpdateWithoutEmbeddingsInput>, Prisma.DestinationUncheckedUpdateWithoutEmbeddingsInput>
+}
+
 export type DestinationCreateNestedOneWithoutSavedByUsersInput = {
   create?: Prisma.XOR<Prisma.DestinationCreateWithoutSavedByUsersInput, Prisma.DestinationUncheckedCreateWithoutSavedByUsersInput>
   connectOrCreate?: Prisma.DestinationCreateOrConnectWithoutSavedByUsersInput
@@ -1052,6 +1073,7 @@ export type DestinationCreateWithoutPhotosInput = {
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
   savedByUsers?: Prisma.SavedDestinationCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationUncheckedCreateWithoutPhotosInput = {
@@ -1086,6 +1108,7 @@ export type DestinationUncheckedCreateWithoutPhotosInput = {
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
   savedByUsers?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationCreateOrConnectWithoutPhotosInput = {
@@ -1136,6 +1159,7 @@ export type DestinationUpdateWithoutPhotosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   savedByUsers?: Prisma.SavedDestinationUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUpdateOneWithoutDestinationNestedInput
 }
 
 export type DestinationUncheckedUpdateWithoutPhotosInput = {
@@ -1170,6 +1194,163 @@ export type DestinationUncheckedUpdateWithoutPhotosInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   savedByUsers?: Prisma.SavedDestinationUncheckedUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedUpdateOneWithoutDestinationNestedInput
+}
+
+export type DestinationCreateWithoutEmbeddingsInput = {
+  id?: string
+  name: string
+  normalizedName: string
+  district: string
+  province: string
+  municipality?: string | null
+  latitude: number
+  longitude: number
+  altitude?: number | null
+  category: $Enums.DestinationCategory
+  description?: string | null
+  image?: string | null
+  tags?: Prisma.DestinationCreatetagsInput | string[]
+  osmId?: string | null
+  source: $Enums.DestinationSource
+  verified?: boolean
+  verifiedBy?: string | null
+  verifiedAt?: Date | string | null
+  routeAccessible?: boolean
+  coordinateAccuracy?: number | null
+  dataQualityScore?: number | null
+  popularityScore?: number | null
+  confidenceScore?: number | null
+  accessibilityScore?: number | null
+  tourismSupportScore?: number | null
+  destinationTier?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sourceLastFetch?: Date | string | null
+  savedByUsers?: Prisma.SavedDestinationCreateNestedManyWithoutDestinationInput
+  photos?: Prisma.DestinationPhotoCreateNestedManyWithoutDestinationInput
+}
+
+export type DestinationUncheckedCreateWithoutEmbeddingsInput = {
+  id?: string
+  name: string
+  normalizedName: string
+  district: string
+  province: string
+  municipality?: string | null
+  latitude: number
+  longitude: number
+  altitude?: number | null
+  category: $Enums.DestinationCategory
+  description?: string | null
+  image?: string | null
+  tags?: Prisma.DestinationCreatetagsInput | string[]
+  osmId?: string | null
+  source: $Enums.DestinationSource
+  verified?: boolean
+  verifiedBy?: string | null
+  verifiedAt?: Date | string | null
+  routeAccessible?: boolean
+  coordinateAccuracy?: number | null
+  dataQualityScore?: number | null
+  popularityScore?: number | null
+  confidenceScore?: number | null
+  accessibilityScore?: number | null
+  tourismSupportScore?: number | null
+  destinationTier?: number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sourceLastFetch?: Date | string | null
+  savedByUsers?: Prisma.SavedDestinationUncheckedCreateNestedManyWithoutDestinationInput
+  photos?: Prisma.DestinationPhotoUncheckedCreateNestedManyWithoutDestinationInput
+}
+
+export type DestinationCreateOrConnectWithoutEmbeddingsInput = {
+  where: Prisma.DestinationWhereUniqueInput
+  create: Prisma.XOR<Prisma.DestinationCreateWithoutEmbeddingsInput, Prisma.DestinationUncheckedCreateWithoutEmbeddingsInput>
+}
+
+export type DestinationUpsertWithoutEmbeddingsInput = {
+  update: Prisma.XOR<Prisma.DestinationUpdateWithoutEmbeddingsInput, Prisma.DestinationUncheckedUpdateWithoutEmbeddingsInput>
+  create: Prisma.XOR<Prisma.DestinationCreateWithoutEmbeddingsInput, Prisma.DestinationUncheckedCreateWithoutEmbeddingsInput>
+  where?: Prisma.DestinationWhereInput
+}
+
+export type DestinationUpdateToOneWithWhereWithoutEmbeddingsInput = {
+  where?: Prisma.DestinationWhereInput
+  data: Prisma.XOR<Prisma.DestinationUpdateWithoutEmbeddingsInput, Prisma.DestinationUncheckedUpdateWithoutEmbeddingsInput>
+}
+
+export type DestinationUpdateWithoutEmbeddingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  municipality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  altitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  category?: Prisma.EnumDestinationCategoryFieldUpdateOperationsInput | $Enums.DestinationCategory
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.DestinationUpdatetagsInput | string[]
+  osmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumDestinationSourceFieldUpdateOperationsInput | $Enums.DestinationSource
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  savedByUsers?: Prisma.SavedDestinationUpdateManyWithoutDestinationNestedInput
+  photos?: Prisma.DestinationPhotoUpdateManyWithoutDestinationNestedInput
+}
+
+export type DestinationUncheckedUpdateWithoutEmbeddingsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  normalizedName?: Prisma.StringFieldUpdateOperationsInput | string
+  district?: Prisma.StringFieldUpdateOperationsInput | string
+  province?: Prisma.StringFieldUpdateOperationsInput | string
+  municipality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  latitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  longitude?: Prisma.FloatFieldUpdateOperationsInput | number
+  altitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  category?: Prisma.EnumDestinationCategoryFieldUpdateOperationsInput | $Enums.DestinationCategory
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.DestinationUpdatetagsInput | string[]
+  osmId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  source?: Prisma.EnumDestinationSourceFieldUpdateOperationsInput | $Enums.DestinationSource
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  verifiedBy?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  verifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  routeAccessible?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  coordinateAccuracy?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  dataQualityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  popularityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  confidenceScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  accessibilityScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  tourismSupportScore?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  destinationTier?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  metadata?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  savedByUsers?: Prisma.SavedDestinationUncheckedUpdateManyWithoutDestinationNestedInput
+  photos?: Prisma.DestinationPhotoUncheckedUpdateManyWithoutDestinationNestedInput
 }
 
 export type DestinationCreateWithoutSavedByUsersInput = {
@@ -1204,6 +1385,7 @@ export type DestinationCreateWithoutSavedByUsersInput = {
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
   photos?: Prisma.DestinationPhotoCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationUncheckedCreateWithoutSavedByUsersInput = {
@@ -1238,6 +1420,7 @@ export type DestinationUncheckedCreateWithoutSavedByUsersInput = {
   updatedAt?: Date | string
   sourceLastFetch?: Date | string | null
   photos?: Prisma.DestinationPhotoUncheckedCreateNestedManyWithoutDestinationInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedCreateNestedOneWithoutDestinationInput
 }
 
 export type DestinationCreateOrConnectWithoutSavedByUsersInput = {
@@ -1288,6 +1471,7 @@ export type DestinationUpdateWithoutSavedByUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   photos?: Prisma.DestinationPhotoUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUpdateOneWithoutDestinationNestedInput
 }
 
 export type DestinationUncheckedUpdateWithoutSavedByUsersInput = {
@@ -1322,6 +1506,7 @@ export type DestinationUncheckedUpdateWithoutSavedByUsersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sourceLastFetch?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   photos?: Prisma.DestinationPhotoUncheckedUpdateManyWithoutDestinationNestedInput
+  embeddings?: Prisma.DestinationEmbeddingUncheckedUpdateOneWithoutDestinationNestedInput
 }
 
 
@@ -1397,6 +1582,7 @@ export type DestinationSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   sourceLastFetch?: boolean
   savedByUsers?: boolean | Prisma.Destination$savedByUsersArgs<ExtArgs>
   photos?: boolean | Prisma.Destination$photosArgs<ExtArgs>
+  embeddings?: boolean | Prisma.Destination$embeddingsArgs<ExtArgs>
   _count?: boolean | Prisma.DestinationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["destination"]>
 
@@ -1503,6 +1689,7 @@ export type DestinationOmit<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type DestinationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   savedByUsers?: boolean | Prisma.Destination$savedByUsersArgs<ExtArgs>
   photos?: boolean | Prisma.Destination$photosArgs<ExtArgs>
+  embeddings?: boolean | Prisma.Destination$embeddingsArgs<ExtArgs>
   _count?: boolean | Prisma.DestinationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DestinationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1513,6 +1700,7 @@ export type $DestinationPayload<ExtArgs extends runtime.Types.Extensions.Interna
   objects: {
     savedByUsers: Prisma.$SavedDestinationPayload<ExtArgs>[]
     photos: Prisma.$DestinationPhotoPayload<ExtArgs>[]
+    embeddings: Prisma.$DestinationEmbeddingPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1941,6 +2129,7 @@ export interface Prisma__DestinationClient<T, Null = never, ExtArgs extends runt
   readonly [Symbol.toStringTag]: "PrismaPromise"
   savedByUsers<T extends Prisma.Destination$savedByUsersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Destination$savedByUsersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedDestinationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   photos<T extends Prisma.Destination$photosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Destination$photosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DestinationPhotoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  embeddings<T extends Prisma.Destination$embeddingsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Destination$embeddingsArgs<ExtArgs>>): Prisma.Prisma__DestinationEmbeddingClient<runtime.Types.Result.GetResult<Prisma.$DestinationEmbeddingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2438,6 +2627,25 @@ export type Destination$photosArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.DestinationPhotoScalarFieldEnum | Prisma.DestinationPhotoScalarFieldEnum[]
+}
+
+/**
+ * Destination.embeddings
+ */
+export type Destination$embeddingsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DestinationEmbedding
+   */
+  select?: Prisma.DestinationEmbeddingSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the DestinationEmbedding
+   */
+  omit?: Prisma.DestinationEmbeddingOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.DestinationEmbeddingInclude<ExtArgs> | null
+  where?: Prisma.DestinationEmbeddingWhereInput
 }
 
 /**

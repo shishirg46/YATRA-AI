@@ -29,12 +29,16 @@ export interface HazardSnapshot {
   floodIndex:      number; // 0–1 derived from 5-year incident count
   landslideIndex:  number; // 0–1 derived from 5-year incident count
   earthquakeIndex: number; // 0–1 derived from max USGS magnitude
+  stormIndex:      number; // 0–1 derived from 5-year incident count
+  accidentIndex:   number; // 0–1 derived from 5-year incident count
   heatIndex:       number; // 0–1 (filled by assess route from OWM temp)
   airQuality:      number; // 0–1 live PM2.5
   source:          string;
   floodCount:      number; // raw incidents (5 yr, 5 km radius)
   landslideCount:  number;
   earthquakeCount: number;
+  stormCount:      number;
+  accidentCount:   number;
 }
 
 interface DbCountRow { type: string; count: bigint }
@@ -54,16 +58,17 @@ export async function fetchHazard(
 
   // ── 1. Disaster counts from DB (spatial query, 5 yr window) ────────────
 
-  let floodCount = 0, landslideCount = 0, earthquakeCount = 0;
+  let floodCount = 0, landslideCount = 0, earthquakeCount = 0, stormCount = 0, accidentCount = 0;
 
   try {
     const rows = await prisma.$queryRawUnsafe(
       `SELECT type, COUNT(*)::bigint AS count
        FROM yatra_disaster_events
-       WHERE date >= $1
-         AND type IN ('flood','landslide','earthquake')
-         AND lat BETWEEN $2 AND $3
-         AND lon BETWEEN $4 AND $5
+        WHERE date >= $1
+          AND type IN ('flood','landslide','earthquake','storm','accident')
+          AND NOT (source = 'bipad' AND type = 'earthquake')
+          AND lat BETWEEN $2 AND $3
+          AND lon BETWEEN $4 AND $5
        GROUP BY type`,
       FIVE_YEARS_AGO,
       lat - deg, lat + deg,
@@ -75,6 +80,8 @@ export async function fetchHazard(
       if (r.type === "flood")        floodCount     += n;
       else if (r.type === "landslide") landslideCount += n;
       else if (r.type === "earthquake") earthquakeCount += n;
+      else if (r.type === "storm")     stormCount    += n;
+      else if (r.type === "accident")  accidentCount += n;
     }
   } catch {
     // DB read failure — graceful degradation to zeros
@@ -111,6 +118,8 @@ export async function fetchHazard(
 
   const floodIndex     = Math.min(floodCount / 5, 1.0);
   const landslideIndex = Math.min(landslideCount / 5, 1.0);
+  const stormIndex     = Math.min(stormCount / 5, 1.0);
+  const accidentIndex  = Math.min(accidentCount / 5, 1.0);
 
   // ── 4. Live air quality (real-time PM2.5 — no DB equivalent) ────────────
 
@@ -122,12 +131,16 @@ export async function fetchHazard(
     floodIndex:      round(floodIndex),
     landslideIndex:  round(landslideIndex),
     earthquakeIndex: round(earthquakeIndex),
+    stormIndex:      round(stormIndex),
+    accidentIndex:   round(accidentIndex),
     heatIndex:       0,
     airQuality:      round(airQuality),
     source,
     floodCount,
     landslideCount,
     earthquakeCount,
+    stormCount,
+    accidentCount,
   };
 }
 

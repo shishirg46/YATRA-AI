@@ -64,13 +64,35 @@ export class ExplanationEngine {
     const debugTraces: DebugTrace[] = [];
 
     const raw = this.collect(ctx, profiler);
+    const confidence = computeConfidence(ctx);
+    const meta = profiler.getMeta();
+
+    if (raw.length === 0) {
+      return assemble({
+        rendered: [],
+        summaryText: "No additional travel concerns identified.",
+        confidence,
+        meta,
+        debugTraces,
+        topTip: "",
+      });
+    }
+
     const deduped = deduplicate(raw);
     const filtered = filterSegments(deduped);
+    if (filtered.length === 0) {
+      return assemble({
+        rendered: [],
+        summaryText: "No additional travel concerns identified.",
+        confidence,
+        meta,
+        debugTraces,
+        topTip: "",
+      });
+    }
     const ranked = this.prioritize(filtered);
     const rendered = this.renderWithTracking(ranked, ctx, debugTraces, profiler);
     const summaryText = buildSummary(rendered, ctx, this.cache);
-    const confidence = computeConfidence(ctx);
-    const meta = profiler.getMeta();
 
     const topTip = this.extractTopTip(rendered);
 

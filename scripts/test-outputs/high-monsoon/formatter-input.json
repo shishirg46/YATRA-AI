@@ -1,0 +1,30 @@
+{
+  "overallRisk": "HIGH",
+  "corridorFrom": "Biratnagar",
+  "corridorTo": "Janakpur",
+  "distanceKm": 180,
+  "durationH": 4.5,
+  "segments": [
+    {
+      "from": "Biratnagar",
+      "to": "Lahan",
+      "riskLevel": "HIGH",
+      "riskScore": 70,
+      "hazards": [
+        "Flood-prone Terai belt",
+        "Recent Flood activity detected"
+      ]
+    },
+    {
+      "from": "Lahan",
+      "to": "Janakpur",
+      "riskLevel": "HIGH",
+      "riskScore": 75,
+      "hazards": [
+        "Flood-prone Terai belt",
+        "Heavy rain detected",
+        "Waterlogged road sections"
+      ]
+    }
+  ]
+}

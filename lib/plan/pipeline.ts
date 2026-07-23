@@ -15,9 +15,8 @@ import { computePillarModel } from "@/lib/analysis/pillar-score";
 import { generateRouteIntelligence } from "@/lib/route-intelligence";
 import { computeRouteRisk } from "@/lib/scoring/route-risk";
 import type { RouteRiskResult } from "@/lib/scoring/route-risk";
-import { TemplateCache } from "@/lib/explain/templates/cache";
-import { runExplanationEngine } from "@/lib/explain/mapper";
 import type { EvaluatorInput } from "@/lib/explain/types";
+import { generateAiNarrative } from "@/lib/explain/narrative-service";
 import { fetchDisasterCounts, buildCorridorLookup } from "@/lib/scoring/disaster-data";
 import { fetchWeather } from "@/lib/collectors/weather";
 import { fetchHazard } from "@/lib/collectors/hazard";
@@ -370,11 +369,15 @@ async function stageAnalyzeTravellers(
     ...groupMembers.map((m) => ({ ...m, isLeader: false })),
   ];
 
+  const routeWaypoints = state.routeIntelligence?.bestRoute?.waypoints?.map(
+    (wp) => ({ lat: wp.lat, lon: wp.lon })
+  );
   const memberAnalyses = await analyzeTravellers(
     allTravellers,
     locationInfo!,
     ctx.startDate,
     ctx.tripType,
+    routeWaypoints,
   );
   const leaderAnalysis = memberAnalyses[0];
 
@@ -496,42 +499,28 @@ async function stageFindAlternatives(
   return { alternatives };
 }
 
-// ── Stage 8: Deterministic explanation engine ──────────────────────────────
+// ── Stage 8: AI narrative generation (Groq → template fallback) ────────────
 
 async function stageGenerateAiNarrative(
   state: PipelineState,
-  _ctx: StageContext,
+  ctx: StageContext,
 ): Promise<StageOutputMap["ai"]> {
-  const startTime = performance.now();
-
-  if (!TemplateCache.instance.size) {
-    try {
-      await TemplateCache.initialize(prisma);
-    } catch (err) {
-      console.error("[pipeline] TemplateCache init failed:", err);
-    }
-  }
-
   const input = buildEvaluatorInput(state);
 
-  let output = { ai: emptyAiResult(), routeAdvice: "" };
-  try {
-    const result = await runExplanationEngine(input);
-    output = result.output;
-  } catch (err) {
-    console.error("[pipeline] ExplanationEngine failed:", err);
-  }
-
-  const durationMs = performance.now() - startTime;
+  const { result, diagnostics } = await generateAiNarrative(input, {
+    signal: ctx.signal,
+  });
 
   return {
-    ai: output.ai,
-    routeAdvice: output.routeAdvice,
+    ai: result,
+    routeAdvice: "",
     aiDiagnostics: {
-      provider: "deterministic",
-      model: "explanation-engine-v2",
-      durationMs,
-      fallbackUsed: false,
+      ...diagnostics,
+      provider: diagnostics.provider ?? "none",
+      model: diagnostics.model ?? "none",
+      durationMs: diagnostics.durationMs ?? 0,
+      fallbackUsed: diagnostics.fallbackUsed ?? false,
+      cacheHit: diagnostics.cacheHit ?? false,
     },
   };
 }
@@ -649,6 +638,8 @@ function buildEvaluatorInput(state: PipelineState): EvaluatorInput {
         distanceKm: Math.round((s.distance / 1000) * 10) / 10,
         riskLevel: s.riskLevel,
       })),
+      from: state.routePlan.nodes[0]?.name ?? "",
+      to: state.routePlan.nodes[state.routePlan.nodes.length - 1]?.name ?? "",
       distanceKm: Math.round((state.routePlan!.distance / 1000) * 10) / 10,
       durationHours: Math.round((state.routePlan!.duration / 3600) * 10) / 10,
       corridor: state.routePlan.nodes.map((n: any) => n.name).join(" \u2192 "),
@@ -756,6 +747,8 @@ function buildResponse(state: Readonly<PipelineState>): AnalysisResult {
         distanceKm: Math.round((s.distance / 1000) * 10) / 10,
         riskLevel: s.riskLevel,
       })),
+      from: routePlan.nodes[0]?.name ?? "",
+      to: routePlan.nodes[routePlan.nodes.length - 1]?.name ?? "",
       distanceKm: Math.round((routePlan.distance / 1000) * 10) / 10,
       durationHours: Math.round((routePlan.duration / 3600) * 10) / 10,
       corridor: routePlan.nodes.map((n: any) => n.name).join(" → "),

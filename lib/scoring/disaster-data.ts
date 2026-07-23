@@ -2,6 +2,8 @@ export interface SeasonalCounts {
   flood: number;
   landslide: number;
   earthquake: number;
+  storm: number;
+  accident: number;
 }
 
 export interface DisasterCounts {
@@ -15,7 +17,7 @@ export interface CorridorAnchor {
   district: string;
 }
 
-const emptySeasonal: SeasonalCounts = { flood: 0, landslide: 0, earthquake: 0 };
+const emptySeasonal: SeasonalCounts = { flood: 0, landslide: 0, earthquake: 0, storm: 0, accident: 0 };
 
 function makeCounts(): DisasterCounts {
   return { monsoon: { ...emptySeasonal }, dry: { ...emptySeasonal } };
@@ -42,14 +44,15 @@ export async function fetchDisasterCounts(prisma: any): Promise<{
   try {
     const rawHist = await prisma.$queryRaw<DisasterRow[]>`
       SELECT
-        metadata->>'district' AS district,
+        district,
         type,
         COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) BETWEEN 6 AND 9)::bigint AS monsoon_count,
         COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) NOT BETWEEN 6 AND 9)::bigint AS dry_count
       FROM "yatra_disaster_events"
       WHERE date >= ${fiveYrAgo}
-        AND metadata->>'district' IS NOT NULL
-      GROUP BY metadata->>'district', type
+        AND district IS NOT NULL
+        AND NOT (source = 'bipad' AND type = 'earthquake')
+      GROUP BY district, type
     `;
     for (const r of rawHist) {
       const d = r.district.toLowerCase();
@@ -60,18 +63,21 @@ export async function fetchDisasterCounts(prisma: any): Promise<{
       if (r.type === "flood") { h.monsoon.flood += mc; h.dry.flood += dc; }
       else if (r.type === "landslide") { h.monsoon.landslide += mc; h.dry.landslide += dc; }
       else if (r.type === "earthquake") { h.monsoon.earthquake += mc; h.dry.earthquake += dc; }
+      else if (r.type === "storm") { h.monsoon.storm += mc; h.dry.storm += dc; }
+      else if (r.type === "accident") { h.monsoon.accident += mc; h.dry.accident += dc; }
     }
 
     const rawRecent = await prisma.$queryRaw<DisasterRow[]>`
       SELECT
-        metadata->>'district' AS district,
+        district,
         type,
         COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) BETWEEN 6 AND 9)::bigint AS monsoon_count,
         COUNT(*) FILTER (WHERE EXTRACT(MONTH FROM date) NOT BETWEEN 6 AND 9)::bigint AS dry_count
       FROM "yatra_disaster_events"
       WHERE date >= ${thirtyDaysAgo}
-        AND metadata->>'district' IS NOT NULL
-      GROUP BY metadata->>'district', type
+        AND district IS NOT NULL
+        AND NOT (source = 'bipad' AND type = 'earthquake')
+      GROUP BY district, type
     `;
     for (const r of rawRecent) {
       const d = r.district.toLowerCase();
@@ -82,6 +88,8 @@ export async function fetchDisasterCounts(prisma: any): Promise<{
       if (r.type === "flood") { h.monsoon.flood += mc; h.dry.flood += dc; }
       else if (r.type === "landslide") { h.monsoon.landslide += mc; h.dry.landslide += dc; }
       else if (r.type === "earthquake") { h.monsoon.earthquake += mc; h.dry.earthquake += dc; }
+      else if (r.type === "storm") { h.monsoon.storm += mc; h.dry.storm += dc; }
+      else if (r.type === "accident") { h.monsoon.accident += mc; h.dry.accident += dc; }
     }
   } catch {
     // Continue without disaster data

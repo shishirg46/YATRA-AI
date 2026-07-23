@@ -82,7 +82,7 @@ function SegmentCard({ seg, defaultOpen }: { seg: SegmentRow; defaultOpen: boole
         <div className="px-4 pb-4 border-t border-slate-700/30 grid grid-cols-1 md:grid-cols-2 gap-4 pt-3">
           {/* Left: hazards + weather */}
           <div className="space-y-2">
-            <p className="font-body text-[10px] text-slate-600 uppercase tracking-widest">Hazard Indices</p>
+            <p className="font-body text-[10px] text-slate-600 uppercase tracking-widest">Segment Hazard (realtime)</p>
             <HazardBar value={seg.floodIndex} label="Flood" />
             <HazardBar value={seg.landslideIndex} label="Landslide" />
             <HazardBar value={seg.earthquakeIndex} label="Earthquake" />

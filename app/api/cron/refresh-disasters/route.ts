@@ -19,7 +19,7 @@ export const maxDuration = 120; // Vercel timeout — 2 minutes for this batch
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ensureDisasterEventTable, ingestRealtime, ingestHistoricalBipad } from "@/lib/disaster-pipeline";
+import { ensureDisasterEventTable, ingestRealtime, ingestHistoricalBipad, ingestHistoricalUsgs } from "@/lib/disaster-pipeline";
 import { fetchHazard } from "@/lib/collectors/hazard";
 import { fetchRecentBipadIncidents, matchAlertsToUsers } from "@/lib/bipad-alerts";
 
@@ -51,10 +51,15 @@ export async function GET(req: NextRequest) {
     results.notificationsWritten = notificationsWritten;
     console.log("[cron/refresh-disasters] Notifications written:", notificationsWritten);
 
-    // Step 3: Historical ingestion (once daily — checks internal dedup)
+    // Step 3: Historical BIPAD ingestion (idempotent — ON CONFLICT DO NOTHING)
     const historicalResult = await ingestHistoricalBipad(2020, new Date().getFullYear());
     results.historical = historicalResult;
-    console.log("[cron/refresh-disasters] Historical ingestion:", historicalResult);
+    console.log("[cron/refresh-disasters] Historical BIPAD ingestion:", historicalResult);
+
+    // Step 3.5: Historical USGS ingestion (incremental — only fetches missing years)
+    const usgsHistoricalResult = await ingestHistoricalUsgs({ incremental: true });
+    results.usgsHistorical = usgsHistoricalResult;
+    console.log("[cron/refresh-disasters] Historical USGS ingestion:", usgsHistoricalResult);
 
     // Step 4: Refresh hazard data for all locations
     const locations = await prisma.location.findMany({

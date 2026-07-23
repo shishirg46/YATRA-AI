@@ -124,7 +124,6 @@ export function PenaltyBreakdown({ penalties }: {
         <div key={key}>
           <div className="flex items-center justify-between mb-0.5">
             <span className="font-body text-xs text-slate-400">{labels[key] ?? key}</span>
-            <span className="font-body text-xs text-slate-500">-{val.toFixed(1)} pts</span>
           </div>
           <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
             <div className="h-full rounded-full transition-all duration-700"

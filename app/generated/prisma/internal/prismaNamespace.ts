@@ -397,6 +397,7 @@ export const ModelName = {
   Verification: 'Verification',
   Destination: 'Destination',
   DestinationPhoto: 'DestinationPhoto',
+  DestinationEmbedding: 'DestinationEmbedding',
   Province: 'Province',
   District: 'District',
   Location: 'Location',
@@ -449,7 +450,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "userHealth" | "userPreference" | "emergencyContact" | "emergencyAlert" | "locationShareSession" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "destinationPhoto" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "savedDestination" | "routeTemplate" | "routeTemplatePoint" | "osmWay" | "roadSegment" | "roadJunction" | "adminRegion" | "hazardHex" | "edgeCache" | "routeUsageLog" | "routeIntelligenceJob" | "weatherData" | "hazardData" | "communityHazardReport" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog" | "yatra_disaster_events" | "intersection" | "hazard" | "segmentHazard" | "graphConfig" | "explanationTemplate" | "userPrivacy" | "tripPhoto"
+    modelProps: "user" | "userHealth" | "userPreference" | "emergencyContact" | "emergencyAlert" | "locationShareSession" | "userBehavior" | "friendship" | "session" | "account" | "verification" | "destination" | "destinationPhoto" | "destinationEmbedding" | "province" | "district" | "location" | "place" | "routeNode" | "routeEdge" | "userSavedLocation" | "savedDestination" | "routeTemplate" | "routeTemplatePoint" | "osmWay" | "roadSegment" | "roadJunction" | "adminRegion" | "hazardHex" | "edgeCache" | "routeUsageLog" | "routeIntelligenceJob" | "weatherData" | "hazardData" | "communityHazardReport" | "riskAssessment" | "travelPlan" | "travelStop" | "travelPlanMember" | "travelGroup" | "travelGroupMember" | "notification" | "auditLog" | "yatra_disaster_events" | "intersection" | "hazard" | "segmentHazard" | "graphConfig" | "explanationTemplate" | "userPrivacy" | "tripPhoto"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1412,6 +1413,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.DestinationPhotoCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.DestinationPhotoCountAggregateOutputType> | number
+        }
+      }
+    }
+    DestinationEmbedding: {
+      payload: Prisma.$DestinationEmbeddingPayload<ExtArgs>
+      fields: Prisma.DestinationEmbeddingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DestinationEmbeddingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DestinationEmbeddingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        findFirst: {
+          args: Prisma.DestinationEmbeddingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DestinationEmbeddingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        findMany: {
+          args: Prisma.DestinationEmbeddingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>[]
+        }
+        create: {
+          args: Prisma.DestinationEmbeddingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        createMany: {
+          args: Prisma.DestinationEmbeddingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DestinationEmbeddingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>[]
+        }
+        delete: {
+          args: Prisma.DestinationEmbeddingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        update: {
+          args: Prisma.DestinationEmbeddingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        deleteMany: {
+          args: Prisma.DestinationEmbeddingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DestinationEmbeddingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DestinationEmbeddingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>[]
+        }
+        upsert: {
+          args: Prisma.DestinationEmbeddingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DestinationEmbeddingPayload>
+        }
+        aggregate: {
+          args: Prisma.DestinationEmbeddingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDestinationEmbedding>
+        }
+        groupBy: {
+          args: Prisma.DestinationEmbeddingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DestinationEmbeddingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DestinationEmbeddingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DestinationEmbeddingCountAggregateOutputType> | number
         }
       }
     }
@@ -4378,6 +4453,16 @@ export const DestinationPhotoScalarFieldEnum = {
 export type DestinationPhotoScalarFieldEnum = (typeof DestinationPhotoScalarFieldEnum)[keyof typeof DestinationPhotoScalarFieldEnum]
 
 
+export const DestinationEmbeddingScalarFieldEnum = {
+  destinationId: 'destinationId',
+  vector: 'vector',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DestinationEmbeddingScalarFieldEnum = (typeof DestinationEmbeddingScalarFieldEnum)[keyof typeof DestinationEmbeddingScalarFieldEnum]
+
+
 export const ProvinceScalarFieldEnum = {
   id: 'id',
   name: 'name'
@@ -4867,8 +4952,10 @@ export const Yatra_disaster_eventsScalarFieldEnum = {
   date: 'date',
   severity: 'severity',
   source: 'source',
+  district: 'district',
   metadata: 'metadata',
-  created_at: 'created_at'
+  created_at: 'created_at',
+  updated_at: 'updated_at'
 } as const
 
 export type Yatra_disaster_eventsScalarFieldEnum = (typeof Yatra_disaster_eventsScalarFieldEnum)[keyof typeof Yatra_disaster_eventsScalarFieldEnum]
@@ -5548,6 +5635,7 @@ export type GlobalOmitConfig = {
   verification?: Prisma.VerificationOmit
   destination?: Prisma.DestinationOmit
   destinationPhoto?: Prisma.DestinationPhotoOmit
+  destinationEmbedding?: Prisma.DestinationEmbeddingOmit
   province?: Prisma.ProvinceOmit
   district?: Prisma.DistrictOmit
   location?: Prisma.LocationOmit

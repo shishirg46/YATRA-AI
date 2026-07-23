@@ -354,7 +354,7 @@ export default function DestinationDetailPage({ params }: { params: Promise<{ id
           <div className="detail-card rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <AlertTriangle size={15} className="text-orange-400" />
-              <span className="font-display font-bold text-white text-sm">Hazard Indices</span>
+              <span className="font-display font-bold text-white text-sm">Destination Hazard Index (realtime)</span>
             </div>
             <HazardBars data={[
               { label: "Flood Risk", value: liveHazard.floodIndex, color: "#3b82f6" },

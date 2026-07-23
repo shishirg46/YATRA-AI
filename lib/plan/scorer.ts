@@ -36,6 +36,7 @@ export async function analyzeTravellers(
   destination: { name: string; district: string; province: string; lat: number; lon: number; altitude: number | null },
   travelDate: string,
   tripType: "SOLO" | "GROUP",
+  routeWaypoints?: { lat: number; lon: number }[],
 ) {
   return Promise.all(
     travellers.map(async (t) => {
@@ -49,6 +50,7 @@ export async function analyzeTravellers(
         travelDate,
         userHealth: t.health ? { ...t.health, homeAltitude: t.homeAltitude, homeProvince: t.homeProvince } : null,
         tripType,
+        routePoints: routeWaypoints,
       });
       return {
         userId: t.id,

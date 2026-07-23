@@ -31,6 +31,8 @@ export interface HazardDataPoint {
   floodIndex: number;
   landslideIndex: number;
   earthquakeIndex: number;
+  stormIndex: number;
+  accidentIndex: number;
   heatIndex: number;
   airQuality: number;
 }
@@ -44,6 +46,8 @@ export interface SeasonalCounts {
   flood: number;
   landslide: number;
   earthquake: number;
+  storm: number;
+  accident: number;
 }
 
 export interface DisasterCounts {
@@ -134,7 +138,7 @@ function lookupDistrict(
   return best;
 }
 
-const emptySeasonal: SeasonalCounts = { flood: 0, landslide: 0, earthquake: 0 };
+const emptySeasonal: SeasonalCounts = { flood: 0, landslide: 0, earthquake: 0, storm: 0, accident: 0 };
 const emptyCounts: DisasterCounts = { monsoon: emptySeasonal, dry: emptySeasonal };
 
 function isMonsoonMonth(m: number): boolean {
@@ -179,6 +183,20 @@ function disasterPenalty(
     labels.push(`historic floods (${histUse.flood})`);
   }
 
+  // Historic storms — weather-correlated hazard
+  if (histUse.storm > 5) {
+    const sPen = Math.min(histUse.storm / 10, 1) * 4 * floodFactor;
+    p += sPen;
+    labels.push(`historic storms (${histUse.storm})`);
+  }
+
+  // Historic accidents — lower confidence, contextual penalty
+  if (histUse.accident > 5) {
+    const aPen = Math.min(histUse.accident / 10, 1) * 2;
+    p += aPen;
+    labels.push(`historic accidents (${histUse.accident})`);
+  }
+
   // Recent landslides
   if (recentUse.landslide > 0) {
     const rPen = Math.min(recentUse.landslide, 5) * 3 * landslideFactor;
@@ -191,6 +209,20 @@ function disasterPenalty(
     const rPen = Math.min(recentUse.flood, 5) * 2.5 * floodFactor;
     p += rPen;
     labels.push(`active floods (${recentUse.flood})`);
+  }
+
+  // Recent storms
+  if (recentUse.storm > 0) {
+    const rPen = Math.min(recentUse.storm, 5) * 1.5 * floodFactor;
+    p += rPen;
+    labels.push(`recent storms (${recentUse.storm})`);
+  }
+
+  // Recent accidents — minimal weight, contextual only
+  if (recentUse.accident > 0) {
+    const rPen = Math.min(recentUse.accident, 5) * 0.5;
+    p += rPen;
+    labels.push(`recent accidents (${recentUse.accident})`);
   }
 
   return { penalty: p, labels };
@@ -322,13 +354,16 @@ export function computeRouteRisk(params: RouteRiskParams): RouteRiskResult {
   // Distance-weighted blend of origin and destination hazard along the corridor.
   // This captures hazards mid-route (not just at endpoints).
 
-  const oH = originHazard ?? { floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, heatIndex: 0, airQuality: 0 };
-  const dH = destHazard ?? { floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, heatIndex: 0, airQuality: 0 };
+  const defaultHazard: HazardDataPoint = { floodIndex: 0, landslideIndex: 0, earthquakeIndex: 0, stormIndex: 0, accidentIndex: 0, heatIndex: 0, airQuality: 0 };
+  const oH = originHazard ?? defaultHazard;
+  const dH = destHazard ?? defaultHazard;
   const hazardDistWeight = Math.min(distanceKm / 100, 1); // full blending beyond 100km
 
   let floodRt = oH.floodIndex * (1 - hazardDistWeight) + dH.floodIndex * hazardDistWeight;
   let lsRt = oH.landslideIndex * (1 - hazardDistWeight) + dH.landslideIndex * hazardDistWeight;
   let eqRt = oH.earthquakeIndex * (1 - hazardDistWeight) + dH.earthquakeIndex * hazardDistWeight;
+  let stormRt = oH.stormIndex * (1 - hazardDistWeight) + dH.stormIndex * hazardDistWeight;
+  let accidentRt = oH.accidentIndex * (1 - hazardDistWeight) + dH.accidentIndex * hazardDistWeight;
   let aqRt = oH.airQuality * (1 - hazardDistWeight) + dH.airQuality * hazardDistWeight;
 
   // Also bring in the max as a ceiling so single-point extreme hazards aren't missed
@@ -336,6 +371,8 @@ export function computeRouteRisk(params: RouteRiskParams): RouteRiskResult {
     floodRt = Math.max(floodRt, destHazard.floodIndex * hazardDistWeight * 0.3);
     lsRt = Math.max(lsRt, destHazard.landslideIndex * hazardDistWeight * 0.3);
     eqRt = Math.max(eqRt, destHazard.earthquakeIndex * hazardDistWeight * 0.3);
+    stormRt = Math.max(stormRt, destHazard.stormIndex * hazardDistWeight * 0.3);
+    accidentRt = Math.max(accidentRt, destHazard.accidentIndex * hazardDistWeight * 0.3);
     aqRt = Math.max(aqRt, destHazard.airQuality * hazardDistWeight * 0.3);
     sources.add("dest-hazard");
   }
@@ -363,6 +400,18 @@ export function computeRouteRisk(params: RouteRiskParams): RouteRiskResult {
     penalty += 8 * eqRt * eqAmp;
     dynamicMsg.push(`earthquake ${(eqRt * 100).toFixed(0)}%`);
     sources.add("realtime-earthquake");
+  }
+
+  if (stormRt > HAZARD_THRESHOLD) {
+    penalty += 6 * stormRt;
+    dynamicMsg.push(`storm ${(stormRt * 100).toFixed(0)}%`);
+    sources.add("realtime-storm");
+  }
+
+  if (accidentRt > HAZARD_THRESHOLD) {
+    penalty += 3 * accidentRt;
+    dynamicMsg.push(`accident ${(accidentRt * 100).toFixed(0)}%`);
+    sources.add("realtime-accident");
   }
 
   if (aqRt > 0.3) {

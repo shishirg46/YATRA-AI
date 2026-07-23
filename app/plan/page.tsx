@@ -16,6 +16,7 @@ import {
   Wallet,
   Sparkles, ArrowRight, AlertCircle, Car, Map,
 } from "lucide-react";
+import { getCurrentLocation, LocationError } from "@/lib/location/getCurrentLocation";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -88,72 +89,60 @@ function PlanInner() {
 
     // Fallback: browser geolocation at submit-time if permission exists.
     if ((requestOriginLat == null || requestOriginLon == null) && typeof navigator !== "undefined" && navigator.geolocation) {
-      const geo = await new Promise<{ lat: number; lon: number; accuracy: number } | null>((resolve) => {
-        let done = false;
-        const timer = setTimeout(() => {
-          if (done) return;
-          done = true;
-          setLocationWarning("Location request timed out. Proceeding without precise origin location.");
-          resolve(null);
-        }, 4500);
+      try {
+        const geo = await getCurrentLocation();
+        const accuracy = geo.accuracy;
+        console.log(`Geolocation received. Accuracy: ${accuracy.toFixed(1)}m`);
 
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            if (done) return;
-            done = true;
-            clearTimeout(timer);
-
-            const accuracy = pos.coords.accuracy;
-            console.log(`Geolocation received. Accuracy: ${accuracy.toFixed(1)}m`);
-
-            if (!Number.isFinite(accuracy) || accuracy > 10000) {
-              setLocationWarning(
-                `Location accuracy is very low (${accuracy > 10000 ? (accuracy / 1000).toFixed(0) + "km" : Math.round(accuracy) + "m"}). ` +
-                `Move to an open area or enable high-accuracy location, then try again.`
-              );
-              resolve(null);
-              return;
-            }
-
-            if (accuracy > 150) {
-              setLocationWarning(
-                `Location accuracy is moderate (${accuracy.toFixed(0)}m). Results may be less precise. ` +
-                `For better accuracy, move to an open area with clear sky view.`
-              );
-            }
-
-            resolve({ lat: pos.coords.latitude, lon: pos.coords.longitude, accuracy });
-          },
-          (error) => {
-            if (done) return;
-            done = true;
-            clearTimeout(timer);
-
-            let warningMsg = "Could not access device location. ";
-            if (error.code === 1) {
-              warningMsg += "Location permission denied. Grant location access in your browser settings.";
-            } else if (error.code === 2) {
-              warningMsg += "Location unavailable. Move outdoors and ensure location services are enabled.";
-            } else if (error.code === 3) {
-              warningMsg += "Location request timed out.";
-            }
-
-            setLocationWarning(warningMsg);
-            resolve(null);
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 12000,
-            maximumAge: 0,
+        if (!Number.isFinite(accuracy) || accuracy > 10000) {
+          setLocationWarning(
+            `Location accuracy is very low (${accuracy > 10000 ? (accuracy / 1000).toFixed(0) + "km" : Math.round(accuracy) + "m"}). ` +
+            `Move to an open area or enable high-accuracy location, then try again.`
+          );
+        } else {
+          if (accuracy > 150) {
+            setLocationWarning(
+              `Location accuracy is moderate (${accuracy.toFixed(0)}m). Results may be less precise. ` +
+              `For better accuracy, move to an open area with clear sky view.`
+            );
           }
-        );
-      });
-      if (geo) {
-        requestOriginLat = geo.lat;
-        requestOriginLon = geo.lon;
-        setOriginLat(geo.lat);
-        setOriginLon(geo.lon);
-        console.log(`Using geolocation: lat=${geo.lat}, lon=${geo.lon}, accuracy=${geo.accuracy.toFixed(1)}m`);
+          requestOriginLat = geo.lat;
+          requestOriginLon = geo.lon;
+          setOriginLat(geo.lat);
+          setOriginLon(geo.lon);
+          console.log(`Geolocation: lat=${geo.lat}, lon=${geo.lon}, accuracy=${accuracy.toFixed(1)}m`);
+
+          // Attempt road snapping — raw GPS is the fallback on failure/timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          try {
+            const res = await fetch("/api/routing/resolve-origin", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ lat: geo.lat, lon: geo.lon, accuracy }),
+              signal: controller.signal,
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.lat != null && data.lon != null) {
+                requestOriginLat = data.lat;
+                requestOriginLon = data.lon;
+                setOriginLat(data.lat);
+                setOriginLon(data.lon);
+                console.log(`Snapped to road: lat=${data.lat}, lon=${data.lon}`);
+              }
+            }
+          } catch {
+            // Use raw GPS coordinates — already set above
+          } finally {
+            clearTimeout(timeoutId);
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof LocationError
+          ? err.message
+          : "Could not access device location.";
+        setLocationWarning(msg);
       }
     }
 

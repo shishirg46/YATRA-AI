@@ -65,9 +65,7 @@ export class ExternalApiCache {
   ): Promise<T | null> {
     const { signal, timeoutMs } = options ?? {};
 
-    if (!signal) {
-      console.warn("[external-cache] MISSING_SIGNAL", { key });
-    } else if (signal.aborted) {
+    if (signal?.aborted) {
       console.warn("[external-cache] FETCH_ABORTED", { key });
       return null;
     }

@@ -111,6 +111,7 @@ export async function analyzeTemporalRisk(params: {
   userHealth:      UserHealthProfile | null;
   tripType:        "SOLO" | "GROUP";
   precomputedSeasonalContext?: string; // skip AI call if provided
+  routePoints?:    { lat: number; lon: number }[]; // corridor-filter historical hazard
 }): Promise<TravelRiskReport> {
 
   const { destinationName, district, province, lat, lon, altitude, travelDate, userHealth, tripType, precomputedSeasonalContext } = params;
@@ -127,7 +128,7 @@ export async function analyzeTemporalRisk(params: {
   );
   const [weatherStats, hazardStats, currentWeather, seasonalCtx] = await Promise.all([
     fetchHistoricalWeather(lat, lon, travelDate, 5),
-    fetchHistoricalHazard(district, lat, lon, travelDate, 5),
+    fetchHistoricalHazard(district, lat, lon, travelDate, 5, 150, undefined, params.routePoints),
     fetchWeather(lat, lon),
     seasonalContextTask,
   ]);

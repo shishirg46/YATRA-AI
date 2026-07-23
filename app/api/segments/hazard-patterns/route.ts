@@ -3,8 +3,10 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { withRateLimit } from "@/lib/rate-limit";
-import { fetchSegmentHistoricPatterns, fetchRecentSegmentEvents, buildSegmentHazardPattern } from "@/lib/analysis/hazard-patterns";
+import { fetchHazard } from "@/lib/collectors/hazard";
+import { fetchWeather } from "@/lib/collectors/weather";
+import { prisma } from "@/lib/prisma";
+import { fetchSegmentHistoricPatterns, fetchRecentSegmentEvents, buildSegmentHazardPattern, hydrateSegmentHazardInput } from "@/lib/analysis/hazard-patterns";
 
 export async function POST(req: NextRequest) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -46,12 +48,29 @@ export async function POST(req: NextRequest) {
     rainfall: s.rainfall ?? 0,
   }));
 
+  const hydratedInputs = await Promise.all(
+    inputs.map(async (input) => {
+      const midpointLat = (input.fromLat + input.toLat) / 2;
+      const midpointLon = (input.fromLon + input.toLon) / 2;
+
+      const [weatherResult, hazardResult] = await Promise.allSettled([
+        fetchWeather(midpointLat, midpointLon, req.signal),
+        fetchHazard(midpointLat, midpointLon, prisma, req.signal),
+      ]);
+
+      const weather = weatherResult.status === "fulfilled" ? weatherResult.value : null;
+      const hazard = hazardResult.status === "fulfilled" ? hazardResult.value : null;
+
+      return hydrateSegmentHazardInput(input, weather, hazard);
+    }),
+  );
+
   const [historicMap, recentMap] = await Promise.all([
-    fetchSegmentHistoricPatterns(inputs),
-    fetchRecentSegmentEvents(inputs),
+    fetchSegmentHistoricPatterns(hydratedInputs),
+    fetchRecentSegmentEvents(hydratedInputs),
   ]);
 
-  const patterns = inputs.map((input) => ({
+  const patterns = hydratedInputs.map((input) => ({
     index: input.index,
     pattern: buildSegmentHazardPattern(input, historicMap.get(input.index), recentMap.get(input.index) ?? 0),
   }));

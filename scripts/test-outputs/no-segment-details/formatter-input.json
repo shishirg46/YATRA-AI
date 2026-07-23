@@ -1,0 +1,8 @@
+{
+  "overallRisk": "MEDIUM",
+  "corridorFrom": "Kathmandu",
+  "corridorTo": "Kathmandu",
+  "distanceKm": 5,
+  "durationH": 0.25,
+  "segments": []
+}

@@ -41,6 +41,7 @@ export interface LiveDestinationResult {
 export async function computeDestinationLive(
   destinationId: string,
   userId: string,
+  signal?: AbortSignal,
 ): Promise<LiveDestinationResult> {
   const isPrewarm = userId === "prewarm";
   const [destination, user, profileNotif, userHealth] = await Promise.all([
@@ -82,7 +83,7 @@ export async function computeDestinationLive(
   const travelPurposes: string[] = profile?.travelPurposes ?? [];
   const healthFlags = userHealth ? buildHealthFlags(userHealth) : [];
 
-  const weather = await fetchWeather(destination.latitude, destination.longitude);
+  const weather = await fetchWeather(destination.latitude, destination.longitude, signal);
 
   const liveWeather = {
     temperature: weather?.temperature ?? 18,
@@ -96,7 +97,7 @@ export async function computeDestinationLive(
     officialSource: weather?.officialSource ?? false,
   };
 
-  const hazard = await fetchHazard(destination.latitude, destination.longitude, prisma);
+  const hazard = await fetchHazard(destination.latitude, destination.longitude, prisma, signal);
 
   const liveHazard = {
     ...hazard,
